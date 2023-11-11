@@ -439,7 +439,7 @@
     (stroke (width 0.1524) (type solid))
     (fill (color 0 0 0 0.0000))
     (uuid d6dd27c9-8e5b-4d17-a34a-73b51937c448)
-    (property "Sheetname" "PIC32MZ_DA_2" (at 82.55 154.2284 0)
+    (property "Sheetname" "PIC32MZ DA 2" (at 82.55 154.2284 0)
       (effects (font (size 1.27 1.27)) (justify left bottom))
     )
     (property "Sheetfile" "PIC32MZ_DA_2.kicad_sch" (at 82.55 159.3346 0)

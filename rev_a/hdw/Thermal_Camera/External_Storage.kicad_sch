@@ -1,6 +1,6 @@
 (kicad_sch (version 20230121) (generator eeschema)
 
-  (uuid 856a36a4-285c-45a4-b99b-f92eaf8c4251)
+  (uuid 85649dae-f42d-4e13-8e2f-a825f21f4d87)
 
   (paper "A")
 
@@ -14,4 +14,9 @@
   (lib_symbols
   )
 
+
+  (text "SD CARD, SQI FLASH" (at 77.47 76.2 0)
+    (effects (font (face "Courier New") (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
+    (uuid 80f34ea3-aa4f-4150-81aa-03ccf347b9e6)
+  )
 )
