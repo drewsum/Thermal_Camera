@@ -1,0 +1,17 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid e494ced6-0fbf-4887-81e1-13d0f98bdddd)
+
+  (paper "A")
+
+  (title_block
+    (title "Thermal Camera")
+    (date "2023-11-11")
+    (rev "PRELIM")
+    (company "Drew Maatman and Michael Laffin")
+  )
+
+  (lib_symbols
+  )
+
+)

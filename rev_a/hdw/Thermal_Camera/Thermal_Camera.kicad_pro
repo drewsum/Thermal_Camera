@@ -1,5 +1,6 @@
 {
   "board": {
+    "3dviewports": [],
     "design_settings": {
       "defaults": {
         "board_outline_line_width": 0.1,
@@ -22,40 +23,394 @@
       },
       "track_widths": [],
       "via_dimensions": []
-    }
+    },
+    "layer_presets": [],
+    "viewports": []
   },
   "boards": [],
+  "cvpcb": {
+    "equivalence_files": []
+  },
+  "erc": {
+    "erc_exclusions": [],
+    "meta": {
+      "version": 0
+    },
+    "pin_map": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        2,
+        2,
+        2,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        2
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        2,
+        1,
+        2,
+        0,
+        0,
+        1,
+        0,
+        2,
+        2,
+        2,
+        2
+      ],
+      [
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    ],
+    "rule_severities": {
+      "bus_definition_conflict": "error",
+      "bus_entry_needed": "error",
+      "bus_to_bus_conflict": "error",
+      "bus_to_net_conflict": "error",
+      "conflicting_netclasses": "error",
+      "different_unit_footprint": "error",
+      "different_unit_net": "error",
+      "duplicate_reference": "error",
+      "duplicate_sheet_names": "error",
+      "endpoint_off_grid": "warning",
+      "extra_units": "error",
+      "global_label_dangling": "warning",
+      "hier_label_mismatch": "error",
+      "label_dangling": "error",
+      "lib_symbol_issues": "warning",
+      "missing_bidi_pin": "warning",
+      "missing_input_pin": "warning",
+      "missing_power_pin": "error",
+      "missing_unit": "warning",
+      "multiple_net_names": "warning",
+      "net_not_bus_member": "warning",
+      "no_connect_connected": "warning",
+      "no_connect_dangling": "warning",
+      "pin_not_connected": "error",
+      "pin_not_driven": "error",
+      "pin_to_pin": "warning",
+      "power_pin_not_driven": "error",
+      "similar_labels": "warning",
+      "simulation_model_issue": "ignore",
+      "unannotated": "error",
+      "unit_value_mismatch": "error",
+      "unresolved_variable": "error",
+      "wire_dangling": "error"
+    }
+  },
   "libraries": {
     "pinned_footprint_libs": [],
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "kicad.kicad_pro",
+    "filename": "Thermal_Camera.kicad_pro",
     "version": 1
   },
   "net_settings": {
     "classes": [
       {
+        "bus_width": 12,
         "clearance": 0.2,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
+        "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
         "name": "Default",
-        "nets": [],
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.25,
         "via_diameter": 0.8,
-        "via_drill": 0.4
+        "via_drill": 0.4,
+        "wire_width": 6
       }
     ],
     "meta": {
-      "version": 0
-    }
+      "version": 3
+    },
+    "net_colors": null,
+    "netclass_assignments": null,
+    "netclass_patterns": []
   },
   "pcbnew": {
+    "last_paths": {
+      "gencad": "",
+      "idf": "",
+      "netlist": "",
+      "specctra_dsn": "",
+      "step": "",
+      "vrml": ""
+    },
     "page_layout_descr_file": ""
   },
-  "sheets": [],
+  "schematic": {
+    "annotate_start_num": 0,
+    "drawing": {
+      "dashed_lines_dash_length_ratio": 12.0,
+      "dashed_lines_gap_length_ratio": 3.0,
+      "default_line_thickness": 6.0,
+      "default_text_size": 50.0,
+      "field_names": [],
+      "intersheets_ref_own_page": false,
+      "intersheets_ref_prefix": "",
+      "intersheets_ref_short": false,
+      "intersheets_ref_show": false,
+      "intersheets_ref_suffix": "",
+      "junction_size_choice": 3,
+      "label_size_ratio": 0.375,
+      "pin_symbol_size": 25.0,
+      "text_offset_ratio": 0.15
+    },
+    "legacy_lib_dir": "",
+    "legacy_lib_list": [],
+    "meta": {
+      "version": 1
+    },
+    "net_format_name": "",
+    "page_layout_descr_file": "",
+    "plot_directory": "",
+    "spice_current_sheet_as_root": false,
+    "spice_external_command": "spice \"%I\"",
+    "spice_model_current_sheet_as_root": true,
+    "spice_save_all_currents": false,
+    "spice_save_all_voltages": false,
+    "subpart_first_id": 65,
+    "subpart_id_separator": 0
+  },
+  "sheets": [
+    [
+      "4bd21e0b-5408-4b93-866e-c82ac5b31fa9",
+      ""
+    ],
+    [
+      "83e737bd-36e4-4450-be79-c684a42552df",
+      "POS12_Input"
+    ],
+    [
+      "78c72208-6db1-4ab8-a8df-528bec958adb",
+      "POS12 Telemetry"
+    ],
+    [
+      "3996b81d-92d5-40b5-9537-6a34278c1c5b",
+      "POS3P3 Power Supply"
+    ],
+    [
+      "b7b56698-10d6-435b-a853-cd2553062653",
+      "POS3P3 Telemetry"
+    ],
+    [
+      "3fa2ed45-8dc3-4842-ae64-2bab78bff715",
+      "POS1P8 Power Supply"
+    ],
+    [
+      "0de09790-3bdf-4530-8052-3de2ac984c76",
+      "POS1P8 Telemetry"
+    ],
+    [
+      "079d68a7-d67d-4f5f-9c02-dfffe75c3c82",
+      "Battery Management"
+    ],
+    [
+      "c8b41008-ee29-40ae-a4f4-13001b750237",
+      "PIC32MZ DA Programming"
+    ],
+    [
+      "b2bf3717-0f22-469b-940c-2d570066d2c6",
+      "PIC32MZ DA Clocking"
+    ],
+    [
+      "233c632f-69aa-4522-9769-6eaba4a6884e",
+      "PIC32MZ DA Power"
+    ],
+    [
+      "1b710e3d-a955-405b-a057-cf08e93463c9",
+      "PIC32MZ DA 1"
+    ],
+    [
+      "d6dd27c9-8e5b-4d17-a34a-73b51937c448",
+      "PIC32MZ_DA_2"
+    ],
+    [
+      "21507370-f247-4205-8e94-91a7207a6f8b",
+      "External Storage"
+    ],
+    [
+      "c2d59ecd-441a-4d58-9156-a852d244de52",
+      "Graphic LCD"
+    ],
+    [
+      "7ad8c94b-0781-4549-8ff5-8042e4172cf8",
+      "USB UART"
+    ],
+    [
+      "e683c214-7fe6-4d85-9668-46cd89bb0f39",
+      "Elapsed Time Counter"
+    ],
+    [
+      "8e36227e-06f5-40d4-ad69-6dce116b22fe",
+      "FLIR Lepton Sensor"
+    ],
+    [
+      "32b7cc5b-624e-4280-95a3-ec3048c4197d",
+      "USB HS Port"
+    ],
+    [
+      "c698b831-0a89-446b-a0f6-e678b516ea4f",
+      "PGOOD LEDs"
+    ],
+    [
+      "cee2a0fc-8649-4419-b564-711d3b494b86",
+      "Status LEDs"
+    ],
+    [
+      "a61c133c-fe37-4b38-bebe-91678215771d",
+      "Mechanical"
+    ]
+  ],
   "text_variables": {}
 }
