@@ -1,0 +1,6 @@
+(kipart_venv) C:\Users\drewm\OneDrive\Documents\KiCad Projects\Projects\Thermal_Camera\rev_a\hdw\PIC32MZ_DA_symbol>kipart pinout_updated.xlsx --fill=bg_fill --center -d
+Warning: Replaced whitespace with '_' in pin 'No Connect' of part PIC32MZ2064DAR176.
+Warning: Replaced whitespace with '_' in pin 'No Connect' of part PIC32MZ2064DAR176.
+Warning: Replaced whitespace with '_' in pin 'No Connect' of part PIC32MZ2064DAR176.
+Warning: Replaced whitespace with '_' in pin 'No Connect' of part PIC32MZ2064DAR176.
+Writing pinout_updated.lib 1
