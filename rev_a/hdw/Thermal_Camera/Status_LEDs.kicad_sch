@@ -6,7 +6,7 @@
 
   (title_block
     (title "Thermal Camera")
-    (date "2023-11-11")
+    (date "2023-11-12")
     (rev "PRELIM")
     (company "Drew Maatman and Michael Laffin")
   )
@@ -458,6 +458,11 @@
   (wire (pts (xy 149.225 125.73) (xy 142.875 125.73))
     (stroke (width 0) (type default))
     (uuid ea657d4c-9071-4c14-be01-6b22bcf91ab9)
+  )
+
+  (text "MUST USE\nOUTPUT COMPARE\nPIN" (at 55.88 83.185 0)
+    (effects (font (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
+    (uuid cfbfa5ba-1c0e-458c-b8fa-89a28c7dac6b)
   )
 
   (global_label "Heartbeat_LED" (shape input) (at 90.17 74.93 180) (fields_autoplaced)
