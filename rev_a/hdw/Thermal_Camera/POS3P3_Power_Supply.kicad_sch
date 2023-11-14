@@ -6,7 +6,7 @@
 
   (title_block
     (title "Thermal Camera")
-    (date "2023-11-12")
+    (date "2023-11-13")
     (rev "PRELIM")
     (company "Drew Maatman and Michael Laffin")
   )
@@ -784,58 +784,6 @@
         (pin passive line (at 2.54 5.08 270) (length 2.54)
           (name "D" (effects (font (size 1.27 1.27))))
           (number "3" (effects (font (size 1.27 1.27))))
-        )
-      )
-    )
-    (symbol "power:+12V" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
-      (property "Reference" "#PWR" (at 0 -3.81 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Value" "+12V" (at 0 3.556 0)
-        (effects (font (size 1.27 1.27)))
-      )
-      (property "Footprint" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Datasheet" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_keywords" "global power" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_description" "Power symbol creates a global label with name \"+12V\"" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (symbol "+12V_0_1"
-        (polyline
-          (pts
-            (xy -0.762 1.27)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 0)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 2.54)
-            (xy 0.762 1.27)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-      )
-      (symbol "+12V_1_1"
-        (pin power_in line (at 0 0 90) (length 0) hide
-          (name "+12V" (effects (font (size 1.27 1.27))))
-          (number "1" (effects (font (size 1.27 1.27))))
         )
       )
     )
@@ -1987,53 +1935,6 @@
     )
   )
 
-  (symbol (lib_id "power:+12V") (at 73.66 48.26 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 4f5bf6f9-14d4-44fe-b635-f56e070d3280)
-    (property "Reference" "#PWR0406" (at 73.66 52.07 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+12V" (at 73.66 44.704 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 73.66 48.26 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 73.66 48.26 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 220e1998-4673-40e4-9858-8643b24484fb))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0406") (unit 1)
-        )
-      )
-      (project "LED_Panel_Controller"
-        (path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005e0dc082"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005eae2d8a"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005cb7718d"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005f581ba3"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005e0f263a"
-          (reference "#PWR?") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0306") (unit 1)
-        )
-      )
-    )
-  )
-
   (symbol (lib_id "Custom_Library:C_Custom") (at 118.11 58.42 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 5ca2f5b1-fc4b-4861-a269-8aaea7feba37)
@@ -2420,36 +2321,6 @@
     )
   )
 
-  (symbol (lib_id "power:+5VP") (at 69.85 101.6 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 729e7c17-024d-4931-a526-315a86339c0f)
-    (property "Reference" "#PWR0404" (at 69.85 105.41 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+5VP" (at 69.85 98.044 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 69.85 101.6 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 69.85 101.6 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 019d1ada-5c0f-4aa9-a9ec-272660b20fc8))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0404") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0304") (unit 1)
-        )
-      )
-    )
-  )
-
   (symbol (lib_id "power:GND") (at 106.68 173.99 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 77187b17-651d-4d20-8c30-2b830ff4dfa4)
@@ -2588,36 +2459,6 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "R304") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+5VP") (at 125.73 157.48 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 835d0bcf-c675-4e54-ad81-2236d14922c8)
-    (property "Reference" "#PWR0416" (at 125.73 161.29 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+5VP" (at 125.73 153.924 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 125.73 157.48 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 125.73 157.48 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid a81dbf67-2b8e-492b-ba8d-6026be64d716))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0416") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0315") (unit 1)
         )
       )
     )
@@ -2819,36 +2660,6 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "C302") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+5VP") (at 88.9 140.97 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 90dca98f-6386-4f6c-968d-27aa48b6e301)
-    (property "Reference" "#PWR0409" (at 88.9 144.78 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+5VP" (at 88.9 137.414 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 88.9 140.97 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 88.9 140.97 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid f34b4c41-986e-4b96-923b-3eb4bfa472a1))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0409") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0309") (unit 1)
         )
       )
     )
@@ -3085,36 +2896,6 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "#FLG0301") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+5VP") (at 73.66 74.93 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid b0cf1c7b-4ddd-47dd-8856-2342d24f3f40)
-    (property "Reference" "#PWR0408" (at 73.66 78.74 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+5VP" (at 73.66 71.374 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 73.66 74.93 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 73.66 74.93 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 97411c2c-594c-48d8-b645-93a789058303))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0408") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0308") (unit 1)
         )
       )
     )
@@ -3416,36 +3197,6 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "#PWR0320") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+5VP") (at 63.5 88.9 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid d926d01d-f3f3-4a9f-928f-4efccce828ec)
-    (property "Reference" "#PWR0402" (at 63.5 92.71 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+5VP" (at 63.5 85.344 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 63.5 88.9 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 63.5 88.9 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid ca86bb27-78fb-4059-95d2-1ebcf1866d17))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
-          (reference "#PWR0402") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-          (reference "#PWR0302") (unit 1)
         )
       )
     )

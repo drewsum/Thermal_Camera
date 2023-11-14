@@ -501,12 +501,32 @@
       "POS3P0 Power Supply"
     ],
     [
+      "b3c718cc-90a5-4aa5-ae10-076f0f4c138c",
+      "POS3P0 Telemetry"
+    ],
+    [
       "cb0180f5-1543-4708-8311-b1b82e278e59",
       "POS2P8 Power Supply"
     ],
     [
+      "104c33c0-d87b-4dd1-aa85-8699a8ece217",
+      "POS2P8 Telemetry"
+    ],
+    [
       "1dc02484-5971-43c1-9ad1-5e210833b5e7",
       "POS1P2 Power Supply"
+    ],
+    [
+      "33f8bcd3-de2b-4702-9d20-adccf74b10e9",
+      "POS1P2 Telemetry"
+    ],
+    [
+      "d07f990c-7861-4c98-9d45-acb3b8f709d7",
+      "LCD Backlight Power Supply"
+    ],
+    [
+      "62eeb8ea-0624-4e55-957b-7df5ce00f512",
+      "LCD Backlight Telemetry"
     ],
     [
       "079d68a7-d67d-4f5f-9c02-dfffe75c3c82",
