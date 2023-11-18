@@ -482,11 +482,11 @@
     ],
     [
       "3996b81d-92d5-40b5-9537-6a34278c1c5b",
-      "POS3P3 Power Supply"
+      "POS3P0 Power Supply"
     ],
     [
       "b7b56698-10d6-435b-a853-cd2553062653",
-      "POS3P3 Telemetry"
+      "POS3P0 Telemetry"
     ],
     [
       "3fa2ed45-8dc3-4842-ae64-2bab78bff715",
@@ -495,14 +495,6 @@
     [
       "0de09790-3bdf-4530-8052-3de2ac984c76",
       "POS1P8 Telemetry"
-    ],
-    [
-      "d0953b37-a206-4148-9855-c141d69bda41",
-      "POS3P0 Power Supply"
-    ],
-    [
-      "b3c718cc-90a5-4aa5-ae10-076f0f4c138c",
-      "POS3P0 Telemetry"
     ],
     [
       "cb0180f5-1543-4708-8311-b1b82e278e59",

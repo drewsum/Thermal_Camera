@@ -69,6 +69,58 @@
         )
       )
     )
+    (symbol "Custom Library:+3.0V" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
+      (property "Reference" "#PWR" (at 0 -3.81 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Value" "+3.0V" (at 0 3.556 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_keywords" "Power Flag Symbol" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "power-flag symbol" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "+3.0V_0_1"
+        (polyline
+          (pts
+            (xy -0.762 1.27)
+            (xy 0 2.54)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 0 0)
+            (xy 0 2.54)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 0 2.54)
+            (xy 0.762 1.27)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+      )
+      (symbol "+3.0V_1_1"
+        (pin power_in line (at 0 0 90) (length 0) hide
+          (name "+3.0V" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
     (symbol "Custom_Library:C_Custom" (pin_numbers hide) (pin_names (offset 0.254)) (in_bom yes) (on_board yes)
       (property "Reference" "C" (at 0.635 2.54 0)
         (effects (font (size 1.27 1.27)) (justify left))
@@ -216,58 +268,6 @@
         )
       )
     )
-    (symbol "power:+3.3V" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
-      (property "Reference" "#PWR" (at 0 -3.81 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Value" "+3.3V" (at 0 3.556 0)
-        (effects (font (size 1.27 1.27)))
-      )
-      (property "Footprint" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Datasheet" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_keywords" "global power" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_description" "Power symbol creates a global label with name \"+3.3V\"" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (symbol "+3.3V_0_1"
-        (polyline
-          (pts
-            (xy -0.762 1.27)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 0)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 2.54)
-            (xy 0.762 1.27)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-      )
-      (symbol "+3.3V_1_1"
-        (pin power_in line (at 0 0 90) (length 0) hide
-          (name "+3.3V" (effects (font (size 1.27 1.27))))
-          (number "1" (effects (font (size 1.27 1.27))))
-        )
-      )
-    )
     (symbol "power:GND" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
       (property "Reference" "#PWR" (at 0 -6.35 0)
         (effects (font (size 1.27 1.27)) hide)
@@ -379,6 +379,10 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 4eb2e70b-11df-46f1-95a0-96023e1093cb)
   )
+  (text "INA219 NOT +3.0V VDD TOLERANT" (at 168.91 50.8 0)
+    (effects (font (face "Courier New") (size 5.08 5.08) (thickness 0.508) bold (color 194 0 0 1)) (justify left bottom))
+    (uuid de56d189-8174-4d7c-940c-f67edf67694d)
+  )
 
   (global_label "I2C_SCL" (shape input) (at 146.05 49.53 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
@@ -487,6 +491,56 @@
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
           (reference "C?") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom Library:+3.0V") (at 135.89 102.87 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 241972d5-8c92-40b5-95b5-cceb22547bf5)
+    (property "Reference" "#PWR0307" (at 135.89 106.68 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3.0V" (at 135.89 99.314 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 135.89 102.87 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 135.89 102.87 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 1703d81f-dc6f-40fb-a9fa-370042c979be))
+    (instances
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
+          (reference "#PWR0307") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom Library:+3.0V") (at 135.89 140.97 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 278cafe1-e3d4-4000-943b-16d68e60f79f)
+    (property "Reference" "#PWR0305" (at 135.89 144.78 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3.0V" (at 135.89 137.414 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 135.89 140.97 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 135.89 140.97 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 48d9dad0-130e-40be-a957-41aa4a1abd7f))
+    (instances
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
+          (reference "#PWR0305") (unit 1)
         )
       )
     )
@@ -611,106 +665,6 @@
     )
   )
 
-  (symbol (lib_id "power:+3.3V") (at 135.89 102.87 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 30594704-84f8-4b46-b60f-51966705e531)
-    (property "Reference" "#PWR0505" (at 135.89 106.68 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3.3V" (at 135.89 99.314 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 135.89 102.87 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 135.89 102.87 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 746596fd-964d-472a-b5fb-7191d7bacfa1))
-    (instances
-      (project "Nixie_Clock_Core"
-        (path "/16fdce21-b570-4d81-a458-e8839d611806/9c9d19c1-3649-44f4-8893-4087e4bbe058"
-          (reference "#PWR0505") (unit 1)
-        )
-      )
-      (project "LED_Panel_Controller"
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0a0e29"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d84"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b77"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e052856"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0652ba"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b58"
-          (reference "#PWR?") (unit 1)
-        )
-      )
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
-          (reference "#PWR0305") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+3.3V") (at 135.89 72.39 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 3c079e46-44ee-476a-a5e9-7bebcdaf061c)
-    (property "Reference" "#PWR0503" (at 135.89 76.2 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3.3V" (at 135.89 68.834 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 135.89 72.39 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 135.89 72.39 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid fe7d9b34-ba74-4c03-8936-b2e1570d4142))
-    (instances
-      (project "Nixie_Clock_Core"
-        (path "/16fdce21-b570-4d81-a458-e8839d611806/9c9d19c1-3649-44f4-8893-4087e4bbe058"
-          (reference "#PWR0503") (unit 1)
-        )
-      )
-      (project "LED_Panel_Controller"
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0a0e29"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d84"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b77"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e052856"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0652ba"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b58"
-          (reference "#PWR?") (unit 1)
-        )
-      )
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
-          (reference "#PWR0303") (unit 1)
-        )
-      )
-    )
-  )
-
   (symbol (lib_id "Sensor_Temperature:MCP9804_DFN") (at 135.89 115.57 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 49b923c9-764a-4d59-bcd9-f178e7b04f6a)
@@ -773,56 +727,6 @@
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
           (reference "U?") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+3.3V") (at 135.89 140.97 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 51b67031-2cf8-4067-b59f-8d1af1e790d1)
-    (property "Reference" "#PWR0507" (at 135.89 144.78 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3.3V" (at 135.89 137.414 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 135.89 140.97 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 135.89 140.97 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 45e5acce-7182-4493-b4cf-029bab6982be))
-    (instances
-      (project "Nixie_Clock_Core"
-        (path "/16fdce21-b570-4d81-a458-e8839d611806/9c9d19c1-3649-44f4-8893-4087e4bbe058"
-          (reference "#PWR0507") (unit 1)
-        )
-      )
-      (project "LED_Panel_Controller"
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0a0e29"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d84"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b77"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e052856"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0652ba"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b58"
-          (reference "#PWR?") (unit 1)
-        )
-      )
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
-          (reference "#PWR0307") (unit 1)
         )
       )
     )
@@ -989,56 +893,6 @@
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
           (reference "U?") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "power:+3.3V") (at 135.89 41.91 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 96c4898f-4ab8-47a7-bd85-17c4eea1278a)
-    (property "Reference" "#PWR0501" (at 135.89 45.72 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3.3V" (at 135.89 38.354 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 135.89 41.91 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 135.89 41.91 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid 47565e99-a1ac-4b26-a6a2-10458fa4471a))
-    (instances
-      (project "Nixie_Clock_Core"
-        (path "/16fdce21-b570-4d81-a458-e8839d611806/9c9d19c1-3649-44f4-8893-4087e4bbe058"
-          (reference "#PWR0501") (unit 1)
-        )
-      )
-      (project "LED_Panel_Controller"
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0a0e29"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d84"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b77"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e052856"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0652ba"
-          (reference "#PWR?") (unit 1)
-        )
-        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b58"
-          (reference "#PWR?") (unit 1)
-        )
-      )
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"
-          (reference "#PWR0301") (unit 1)
         )
       )
     )

@@ -12,6 +12,58 @@
   )
 
   (lib_symbols
+    (symbol "Custom Library:+3.0V" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
+      (property "Reference" "#PWR" (at 0 -3.81 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Value" "+3.0V" (at 0 3.556 0)
+        (effects (font (size 1.27 1.27)))
+      )
+      (property "Footprint" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "Datasheet" "" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_keywords" "Power Flag Symbol" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (property "ki_description" "power-flag symbol" (at 0 0 0)
+        (effects (font (size 1.27 1.27)) hide)
+      )
+      (symbol "+3.0V_0_1"
+        (polyline
+          (pts
+            (xy -0.762 1.27)
+            (xy 0 2.54)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 0 0)
+            (xy 0 2.54)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+        (polyline
+          (pts
+            (xy 0 2.54)
+            (xy 0.762 1.27)
+          )
+          (stroke (width 0) (type default))
+          (fill (type none))
+        )
+      )
+      (symbol "+3.0V_1_1"
+        (pin power_in line (at 0 0 90) (length 0) hide
+          (name "+3.0V" (effects (font (size 1.27 1.27))))
+          (number "1" (effects (font (size 1.27 1.27))))
+        )
+      )
+    )
     (symbol "Custom Library:PIC32MZ2064DAR176" (in_bom yes) (on_board yes)
       (property "Reference" "U" (at -35.56 49.53 0)
         (effects (font (size 1.27 1.27)) (justify left))
@@ -803,58 +855,6 @@
         )
       )
     )
-    (symbol "power:+3.3V" (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)
-      (property "Reference" "#PWR" (at 0 -3.81 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Value" "+3.3V" (at 0 3.556 0)
-        (effects (font (size 1.27 1.27)))
-      )
-      (property "Footprint" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "Datasheet" "" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_keywords" "global power" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (property "ki_description" "Power symbol creates a global label with name \"+3.3V\"" (at 0 0 0)
-        (effects (font (size 1.27 1.27)) hide)
-      )
-      (symbol "+3.3V_0_1"
-        (polyline
-          (pts
-            (xy -0.762 1.27)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 0)
-            (xy 0 2.54)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-        (polyline
-          (pts
-            (xy 0 2.54)
-            (xy 0.762 1.27)
-          )
-          (stroke (width 0) (type default))
-          (fill (type none))
-        )
-      )
-      (symbol "+3.3V_1_1"
-        (pin power_in line (at 0 0 90) (length 0) hide
-          (name "+3.3V" (effects (font (size 1.27 1.27))))
-          (number "1" (effects (font (size 1.27 1.27))))
-        )
-      )
-    )
   )
 
 
@@ -992,31 +992,6 @@
     (uuid ff9ed914-e47f-4b6a-98a7-248dcc2f909c)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 73.1921 62.23 0)
       (effects (font (size 1.27 1.27)) (justify right) hide)
-    )
-  )
-
-  (symbol (lib_id "power:+3.3V") (at 53.975 168.275 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 3c06120c-f645-4d7f-8b8d-9042a0644896)
-    (property "Reference" "#PWR01201" (at 53.975 172.085 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Value" "+3.3V" (at 53.975 164.719 0)
-      (effects (font (size 1.27 1.27)))
-    )
-    (property "Footprint" "" (at 53.975 168.275 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 53.975 168.275 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (pin "1" (uuid ed4b3fdb-821f-4e54-bf57-170a01cb3fb0))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-          (reference "#PWR01201") (unit 1)
-        )
-      )
     )
   )
 
@@ -1224,13 +1199,13 @@
     )
   )
 
-  (symbol (lib_id "power:+3.3V") (at 60.325 168.275 0) (unit 1)
+  (symbol (lib_id "Custom Library:+3.0V") (at 60.325 168.275 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
-    (uuid 976ee2d9-d290-4936-b216-75e4ad447eed)
-    (property "Reference" "#PWR01202" (at 60.325 172.085 0)
+    (uuid 5d225452-9e6f-41df-9003-6b0b3faeb4e0)
+    (property "Reference" "#PWR01810" (at 60.325 172.085 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+3.3V" (at 60.325 164.719 0)
+    (property "Value" "+3.0V" (at 60.325 164.719 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "" (at 60.325 168.275 0)
@@ -1239,11 +1214,11 @@
     (property "Datasheet" "" (at 60.325 168.275 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 079403d6-05cc-4609-9800-99206faa2798))
+    (pin "1" (uuid dcb8353e-a52d-4aa3-9d6c-c2506ba33084))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-          (reference "#PWR01202") (unit 1)
+          (reference "#PWR01810") (unit 1)
         )
       )
     )
@@ -1295,6 +1270,31 @@
         )
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
           (reference "R?") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom Library:+3.0V") (at 53.975 168.275 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid ceec1940-35d6-42bd-91c2-89089f4e7061)
+    (property "Reference" "#PWR01809" (at 53.975 172.085 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3.0V" (at 53.975 164.719 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 53.975 168.275 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 53.975 168.275 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid b1f851aa-61fb-4345-b0ba-5894c7b8b291))
+    (instances
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
+          (reference "#PWR01809") (unit 1)
         )
       )
     )
