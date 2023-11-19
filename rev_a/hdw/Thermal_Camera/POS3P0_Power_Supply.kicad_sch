@@ -964,6 +964,9 @@
   (junction (at 139.7 111.76) (diameter 0) (color 0 0 0 0)
     (uuid 080ad662-e8a4-4e87-b476-d64acf29cc14)
   )
+  (junction (at 204.47 59.69) (diameter 0) (color 0 0 0 0)
+    (uuid 190ed826-dbf4-4c17-b69b-8dd475bbe5ee)
+  )
   (junction (at 106.68 162.56) (diameter 0) (color 0 0 0 0)
     (uuid 44c0c58e-87ab-4871-906f-31407ef45af6)
   )
@@ -1084,6 +1087,10 @@
     (stroke (width 0) (type default))
     (uuid 73fe3133-0255-4936-b345-3605b817e587)
   )
+  (wire (pts (xy 191.77 59.69) (xy 194.31 59.69))
+    (stroke (width 0) (type default))
+    (uuid 7a610332-3822-43e3-a5f0-ba2c198f874d)
+  )
   (wire (pts (xy 106.68 162.56) (xy 106.68 163.83))
     (stroke (width 0) (type default))
     (uuid 7bc0994c-8e66-4497-b719-139acd77ed03)
@@ -1144,6 +1151,10 @@
     (stroke (width 0) (type default))
     (uuid b4c08159-6d43-4d97-a69e-60ff0fd842ce)
   )
+  (wire (pts (xy 201.93 59.69) (xy 204.47 59.69))
+    (stroke (width 0) (type default))
+    (uuid b680501b-c00b-4f18-bf00-08cde1a5878e)
+  )
   (wire (pts (xy 191.77 62.23) (xy 191.77 59.69))
     (stroke (width 0) (type default))
     (uuid c67d0560-b075-4976-b744-ba10559b28df)
@@ -1151,6 +1162,14 @@
   (wire (pts (xy 139.7 111.76) (xy 137.16 111.76))
     (stroke (width 0) (type default))
     (uuid c7b92e3f-82bb-4f21-b30d-6988c58cc777)
+  )
+  (wire (pts (xy 204.47 59.69) (xy 224.79 59.69))
+    (stroke (width 0) (type default))
+    (uuid c7bce955-cbde-4757-82f7-a6025e4122f1)
+  )
+  (wire (pts (xy 204.47 54.61) (xy 204.47 59.69))
+    (stroke (width 0) (type default))
+    (uuid cd58f7de-b4ad-4ad1-97c3-ecb952303791)
   )
   (wire (pts (xy 109.22 95.25) (xy 127 95.25))
     (stroke (width 0) (type default))
@@ -1163,10 +1182,6 @@
   (wire (pts (xy 224.79 82.55) (xy 224.79 90.17))
     (stroke (width 0) (type default))
     (uuid e074c70a-b217-4348-9ed3-d91b1129a9f9)
-  )
-  (wire (pts (xy 191.77 59.69) (xy 224.79 59.69))
-    (stroke (width 0) (type default))
-    (uuid e904f3b8-f852-4f0e-820e-6402ab8c894b)
   )
   (wire (pts (xy 50.8 91.44) (xy 50.8 101.6))
     (stroke (width 0) (type default))
@@ -1183,6 +1198,10 @@
   (wire (pts (xy 125.73 107.95) (xy 125.73 105.41))
     (stroke (width 0) (type default))
     (uuid f386231b-d502-4668-9f6e-f5cf159c8ebd)
+  )
+  (wire (pts (xy 191.77 54.61) (xy 191.77 59.69))
+    (stroke (width 0) (type default))
+    (uuid f5073972-21b1-4034-a9bf-ce8b85f03161)
   )
   (wire (pts (xy 118.11 162.56) (xy 106.68 162.56))
     (stroke (width 0) (type default))
@@ -1219,6 +1238,13 @@
       (effects (font (size 1.27 1.27)) (justify right) hide)
     )
   )
+  (global_label "POS3P0_SNS-" (shape passive) (at 204.47 46.99 90) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left))
+    (uuid 5825675c-baa8-4cb9-8db2-f87135cc9f26)
+    (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 204.47 31.3276 90)
+      (effects (font (size 1.27 1.27)) (justify left) hide)
+    )
+  )
   (global_label "POS12_PGOOD" (shape input) (at 41.91 168.91 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid c330f51b-25db-4852-ab8b-6250c76d26b3)
@@ -1237,6 +1263,13 @@
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid d25d6169-3e53-4cd2-b47e-594be072613d)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 86.5028 92.71 0)
+      (effects (font (size 1.27 1.27)) (justify left) hide)
+    )
+  )
+  (global_label "POS3P0_SNS+" (shape passive) (at 191.77 46.99 90) (fields_autoplaced)
+    (effects (font (size 1.27 1.27)) (justify left))
+    (uuid dc144a49-ff61-481c-bd6a-b721aeec26f7)
+    (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 191.77 31.3276 90)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
   )
@@ -1286,6 +1319,84 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "#PWR0312") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom_Library:R_Custom") (at 198.12 59.69 90) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 06073520-0a50-4a15-a68c-aaca8bb41696)
+    (property "Reference" "R?" (at 198.12 62.23 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "0.02" (at 198.12 59.69 90)
+      (effects (font (size 1.016 1.016)))
+    )
+    (property "Footprint" "Resistors_SMD:R_0612" (at 198.12 59.69 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 198.12 59.69 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Digi-Key PN" "P16010CT-ND" (at 187.96 52.07 0)
+      (effects (font (size 1.524 1.524)) hide)
+    )
+    (property "display_footprint" "0612" (at 198.12 57.15 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Tolerance" "1%" (at 198.12 54.61 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Wattage" "1W" (at 198.12 52.07 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (pin "1" (uuid b5b00372-c9e9-4653-8f68-6430529d9210))
+    (pin "2" (uuid 6fd53325-a034-4523-9fb4-361c53123384))
+    (instances
+      (project "Nixie_Clock_Core"
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/0b6dccc1-0a92-424d-9916-2441ea7dc052"
+          (reference "R?") (unit 1)
+        )
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
+          (reference "R206") (unit 1)
+        )
+      )
+      (project "LED_Panel_Controller"
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb7718d"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0f263a"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939d31"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d66"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb6f1ed"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d8a"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b41"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939cff"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e0dc082"
+          (reference "R?") (unit 1)
+        )
+      )
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/83e737bd-36e4-4450-be79-c684a42552df"
+          (reference "R?") (unit 1)
+        )
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -1889,6 +2000,87 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "#PWR0303") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom_Library:R_Custom") (at 191.77 50.8 0) (mirror y) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 3fa05de2-632b-4872-9b0b-513398f2b171)
+    (property "Reference" "R?" (at 194.31 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10" (at 191.77 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "Resistors_SMD:R_0603" (at 191.77 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 191.77 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "display_footprint" "0603" (at 189.23 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Tolerance" "1%" (at 186.69 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Wattage" "1/10W" (at 184.15 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Digi-Key PN" "541-10.0HCT-ND" (at 191.77 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Configuration" "Telemetry" (at 189.484 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (pin "1" (uuid 3bf445a1-d652-4541-9ed1-fd5d054486b3))
+    (pin "2" (uuid 0130d7fe-4399-45a8-82d7-7fbd085617bb))
+    (instances
+      (project "Nixie_Clock_Core"
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/0b6dccc1-0a92-424d-9916-2441ea7dc052"
+          (reference "R?") (unit 1)
+        )
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
+          (reference "R205") (unit 1)
+        )
+      )
+      (project "LED_Panel_Controller"
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e1352f5"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb7718d"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939d31"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d66"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb0bc26"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d8a"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b41"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939cff"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb6f1ed"
+          (reference "R?") (unit 1)
+        )
+      )
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/83e737bd-36e4-4450-be79-c684a42552df"
+          (reference "R?") (unit 1)
+        )
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -3410,6 +3602,87 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
           (reference "TP301") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Custom_Library:R_Custom") (at 204.47 50.8 0) (mirror y) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid e35ff38e-df87-4aac-8837-99d9fb47d2c3)
+    (property "Reference" "R?" (at 207.01 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "10" (at 204.47 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "Resistors_SMD:R_0603" (at 204.47 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 204.47 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "display_footprint" "0603" (at 201.93 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Tolerance" "1%" (at 199.39 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Wattage" "1/10W" (at 196.85 50.8 90)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Digi-Key PN" "541-10.0HCT-ND" (at 204.47 50.8 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Configuration" "Telemetry" (at 202.184 50.8 90)
+      (effects (font (size 1.27 1.27)))
+    )
+    (pin "1" (uuid 0540ac12-0105-43b5-8b44-0f82c451240a))
+    (pin "2" (uuid 86525216-626b-45cd-9b86-892e7ce34b0b))
+    (instances
+      (project "Nixie_Clock_Core"
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/0b6dccc1-0a92-424d-9916-2441ea7dc052"
+          (reference "R?") (unit 1)
+        )
+        (path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
+          (reference "R208") (unit 1)
+        )
+      )
+      (project "LED_Panel_Controller"
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e1352f5"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb7718d"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939d31"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d66"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb0bc26"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005eae2d8a"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005f581b41"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005e939cff"
+          (reference "R?") (unit 1)
+        )
+        (path "/22e05ee1-b227-4be7-9418-94433f274720/00000000-0000-0000-0000-00005cb6f1ed"
+          (reference "R?") (unit 1)
+        )
+      )
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/83e737bd-36e4-4450-be79-c684a42552df"
+          (reference "R?") (unit 1)
+        )
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3996b81d-92d5-40b5-9537-6a34278c1c5b"
+          (reference "R?") (unit 1)
         )
       )
     )
