@@ -1285,7 +1285,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid a1b80db0-6ee6-444a-8ecb-25b651e56822)
   )
-  (text "+3.3V Logic Level" (at 188.214 94.488 0)
+  (text "+3.0V logic level at +13.2Vin" (at 188.214 94.488 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid b9f215fe-6b14-49be-bf67-742f95346ec9)
   )
@@ -2226,6 +2226,63 @@
     )
   )
 
+  (symbol (lib_id "Custom_Library:R_Custom") (at 173.99 106.68 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 821a45d5-ac2f-4d0f-b5f9-ef7e59aa5744)
+    (property "Reference" "R?" (at 171.704 106.68 0)
+      (effects (font (size 1.27 1.27)) (justify right))
+    )
+    (property "Value" "1.15k" (at 173.99 106.68 90)
+      (effects (font (size 1.016 1.016)))
+    )
+    (property "Footprint" "Resistors_SMD:R_0603" (at 173.99 106.68 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 173.99 106.68 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "display_footprint" "0603" (at 176.53 104.902 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Tolerance" "1%" (at 176.53 107.442 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Wattage" "1/10W" (at 176.53 109.982 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Digi-Key PN" "541-1.15KHCT-ND" (at 181.61 96.52 0)
+      (effects (font (size 1.524 1.524)) hide)
+    )
+    (pin "1" (uuid ff685ed4-19e7-44f6-adec-11bf2b8f3cdc))
+    (pin "2" (uuid a94360e2-3bb4-4136-9eb6-d4e3ed8f3f36))
+    (instances
+      (project "Thermal_Camera"
+        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/83e737bd-36e4-4450-be79-c684a42552df"
+          (reference "R?") (unit 1)
+        )
+      )
+      (project "Analog_Clock"
+        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d6c0d23"
+          (reference "R?") (unit 1)
+        )
+        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005e939cff"
+          (reference "R?") (unit 1)
+        )
+        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d77a516"
+          (reference "R?") (unit 1)
+        )
+        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d6b2673"
+          (reference "R?") (unit 1)
+        )
+      )
+      (project "USB_Hub"
+        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
+          (reference "R202") (unit 1)
+        )
+      )
+    )
+  )
+
   (symbol (lib_id "Custom_Library:R_Custom") (at 193.04 128.27 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 82225876-feb8-49ba-af3b-ef4ee1d9c9b8)
@@ -2302,63 +2359,6 @@
       (project "USB_Hub"
         (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
           (reference "R208") (unit 1)
-        )
-      )
-    )
-  )
-
-  (symbol (lib_id "Custom_Library:R_Custom") (at 173.99 106.68 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
-    (uuid 83adf1db-7fff-4fe3-a329-e584ab5c6dfa)
-    (property "Reference" "R?" (at 171.704 106.68 0)
-      (effects (font (size 1.27 1.27)) (justify right))
-    )
-    (property "Value" "5.11k" (at 173.99 106.68 90)
-      (effects (font (size 1.016 1.016)))
-    )
-    (property "Footprint" "Resistors_SMD:R_0603" (at 173.99 106.68 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "Datasheet" "" (at 173.99 106.68 0)
-      (effects (font (size 1.27 1.27)) hide)
-    )
-    (property "display_footprint" "0603" (at 176.53 104.902 0)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Tolerance" "1%" (at 176.53 107.442 0)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Wattage" "1/10W" (at 176.53 109.982 0)
-      (effects (font (size 1.27 1.27)) (justify left))
-    )
-    (property "Digi-Key PN" "541-5.11KHCT-ND" (at 181.61 96.52 0)
-      (effects (font (size 1.524 1.524)) hide)
-    )
-    (pin "1" (uuid f5e629a7-59af-4214-b90d-b8017177300e))
-    (pin "2" (uuid 40fb5cdf-5678-4799-b35c-88e598ba2dc7))
-    (instances
-      (project "Thermal_Camera"
-        (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/83e737bd-36e4-4450-be79-c684a42552df"
-          (reference "R?") (unit 1)
-        )
-      )
-      (project "Analog_Clock"
-        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d6c0d23"
-          (reference "R?") (unit 1)
-        )
-        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005e939cff"
-          (reference "R?") (unit 1)
-        )
-        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d77a516"
-          (reference "R?") (unit 1)
-        )
-        (path "/4c0a1b3a-0b35-42a0-8d96-e340db30946e/00000000-0000-0000-0000-00005d6b2673"
-          (reference "R?") (unit 1)
-        )
-      )
-      (project "USB_Hub"
-        (path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
-          (reference "R207") (unit 1)
         )
       )
     )
@@ -2638,8 +2638,8 @@
     (property "Reference" "R?" (at 171.958 95.25 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Value" "13k" (at 173.99 95.25 90)
-      (effects (font (size 1.27 1.27)))
+    (property "Value" "5.11k" (at 173.99 95.25 90)
+      (effects (font (size 1.016 1.016)))
     )
     (property "Footprint" "Resistors_SMD:R_0603" (at 173.99 95.25 0)
       (effects (font (size 1.27 1.27)) hide)
