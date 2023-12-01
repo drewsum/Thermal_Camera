@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "Custom Library")(type "KiCad")(uri "C:/Users/dmaatman/Desktop/KiCad_Custom_Libs_v6/Custom Library.kicad_sym")(options "")(descr ""))
+)
