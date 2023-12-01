@@ -980,18 +980,18 @@
     (property "Digi-Key PN" "296-41263-1-ND" (at 135.89 49.53 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "B1" (uuid 3955921b-5ad6-4746-8662-6defcb2cbfdf))
-    (pin "C2" (uuid 41d135a2-97d9-4dc5-a60c-937c4a44664d))
     (pin "A1" (uuid e741c25e-b984-48ad-a013-1b8d8c78a6e9))
     (pin "A2" (uuid c57a25f8-d310-45de-838b-47157ab80228))
     (pin "A3" (uuid c89b9524-790b-4d56-a9ac-a87b5bc68abc))
+    (pin "B1" (uuid 3955921b-5ad6-4746-8662-6defcb2cbfdf))
+    (pin "B2" (uuid ee9c37a1-9e96-42db-a22e-93bbd4191f07))
     (pin "B3" (uuid a94f68aa-2d96-45fb-8f95-33d66b1cf189))
     (pin "C1" (uuid 168c40c8-7ff9-4618-ad66-5b0ca3923757))
+    (pin "C2" (uuid 41d135a2-97d9-4dc5-a60c-937c4a44664d))
     (pin "C3" (uuid 373f8aef-c2b3-4386-a75e-386fa1694a4f))
-    (pin "B2" (uuid ee9c37a1-9e96-42db-a22e-93bbd4191f07))
+    (pin "D1" (uuid 0a86f578-9581-4117-bb52-53513b2105be))
     (pin "D2" (uuid 8ad09c00-78ad-404e-bc79-960f21333496))
     (pin "D3" (uuid 31e96cb8-cabd-4ad7-865f-dffe0f2e1909))
-    (pin "D1" (uuid 0a86f578-9581-4117-bb52-53513b2105be))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/78c72208-6db1-4ab8-a8df-528bec958adb"

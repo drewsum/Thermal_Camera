@@ -1586,12 +1586,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 87.63 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
+    (pin "1" (uuid cddb1962-ff03-4734-8bc7-a34322af0d84))
+    (pin "2" (uuid 6d1e465b-fc9a-4a23-a7e4-a9862275c761))
+    (pin "5" (uuid 71f0a119-3988-44c6-a85e-5df411df8aad))
+    (pin "3" (uuid 9c9f6782-6482-4005-84a0-8cd2dbdefd8e))
     (pin "4" (uuid 903d1dd4-081a-4833-aa10-3c4bdc0bef25))
     (pin "6" (uuid 0f2ce6c1-a8f3-4eb9-8084-6bcc6775a71f))
-    (pin "2" (uuid 6d1e465b-fc9a-4a23-a7e4-a9862275c761))
-    (pin "1" (uuid cddb1962-ff03-4734-8bc7-a34322af0d84))
-    (pin "3" (uuid 9c9f6782-6482-4005-84a0-8cd2dbdefd8e))
-    (pin "5" (uuid 71f0a119-3988-44c6-a85e-5df411df8aad))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -1616,17 +1616,17 @@
     (property "Datasheet" "https://www.hirose.com/product/en/download_file/key_name/DM3/category/Catalog/doc_file_id/49662/?file_category_id=4&item_id=195&is_series=1" (at 175.26 50.165 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "11" (uuid 7eeb82e4-7cde-466f-b039-fbb5252cfa98))
-    (pin "4" (uuid 4421ce3d-244c-4bd4-8f2e-6ee3a5dfa73a))
-    (pin "7" (uuid 3bc58c15-94c1-4a21-b0e0-01e5830662ee))
-    (pin "6" (uuid 7941d963-8dff-49f1-8b14-acb5cf367fee))
     (pin "1" (uuid 290ef0c4-02ee-46fc-aadd-aa0c9fe05b08))
-    (pin "3" (uuid fb2857e0-33ad-46b5-be8a-79df7cc71774))
-    (pin "9" (uuid caa6bfb5-00e8-43e7-b564-629f3b907918))
     (pin "10" (uuid 52f49a87-9a45-4171-b684-dc37b342d922))
-    (pin "5" (uuid 655fc036-776f-4851-a687-a5a4e000c171))
-    (pin "8" (uuid bc5edc66-ae79-442f-8128-2ae0f2e4f007))
+    (pin "11" (uuid 7eeb82e4-7cde-466f-b039-fbb5252cfa98))
     (pin "2" (uuid db861181-f02d-4758-a551-cd7083e19193))
+    (pin "3" (uuid fb2857e0-33ad-46b5-be8a-79df7cc71774))
+    (pin "4" (uuid 4421ce3d-244c-4bd4-8f2e-6ee3a5dfa73a))
+    (pin "5" (uuid 655fc036-776f-4851-a687-a5a4e000c171))
+    (pin "6" (uuid 7941d963-8dff-49f1-8b14-acb5cf367fee))
+    (pin "7" (uuid 3bc58c15-94c1-4a21-b0e0-01e5830662ee))
+    (pin "8" (uuid bc5edc66-ae79-442f-8128-2ae0f2e4f007))
+    (pin "9" (uuid caa6bfb5-00e8-43e7-b564-629f3b907918))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -1745,12 +1745,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 102.87 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac91))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c347))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d1))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d3d))
-    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760245))
     (pin "3" (uuid da34a61b-ea78-4b45-bd62-487ba0c93eea))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c347))
+    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760245))
+    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac91))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -1800,12 +1800,12 @@
     (property "Datasheet" "http://ww1.microchip.com/downloads/en/DeviceDoc/20005045C.pdf" (at 151.13 125.095 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 9e754604-1451-4d85-b91a-71c8198286be))
-    (pin "4" (uuid 21e77edf-79a6-45d1-b875-57f1ecd7c506))
-    (pin "5" (uuid 2f7172eb-c2d3-4d10-9ef6-394bb6bd1f06))
     (pin "1" (uuid e318c18f-5801-47e6-ae80-25e4291fa149))
     (pin "2" (uuid fa4e8da7-b078-4b85-841b-5891a8d553f6))
     (pin "3" (uuid 1cb08eeb-e308-4703-920a-6d4fbd419427))
+    (pin "4" (uuid 21e77edf-79a6-45d1-b875-57f1ecd7c506))
+    (pin "5" (uuid 2f7172eb-c2d3-4d10-9ef6-394bb6bd1f06))
+    (pin "6" (uuid 9e754604-1451-4d85-b91a-71c8198286be))
     (pin "7" (uuid 83607e89-cfc1-42f8-9491-48b765b88fe9))
     (pin "8" (uuid 7623828f-dacd-4c6f-afd9-204f54f53ad0))
     (instances
@@ -2146,12 +2146,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 92.71 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac92))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c348))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d2))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d3e))
-    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760246))
     (pin "3" (uuid 458bfe4a-ca1e-41af-adad-4e18813748ad))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c348))
+    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760246))
+    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac92))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -2428,13 +2428,13 @@
     (property "Datasheet" "http://www.ti.com/lit/ds/symlink/tps22810.pdf" (at 137.795 97.79 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "7" (uuid 4c6a88db-c227-4541-bd00-bc9a1d15e7a2))
-    (pin "2" (uuid 86713551-22b2-4cb4-b9ad-a1ba864717de))
-    (pin "4" (uuid bdb4de51-449d-4736-89ac-918f408824a4))
-    (pin "6" (uuid be93c4aa-3bab-45a4-bc69-811ca2f6849b))
-    (pin "3" (uuid 83a6ab8a-822e-4350-9c7f-fb304f791f54))
     (pin "1" (uuid f2c535ae-30c8-4126-94e8-9e1a2950925a))
+    (pin "2" (uuid 86713551-22b2-4cb4-b9ad-a1ba864717de))
+    (pin "3" (uuid 83a6ab8a-822e-4350-9c7f-fb304f791f54))
+    (pin "4" (uuid bdb4de51-449d-4736-89ac-918f408824a4))
     (pin "5" (uuid 6a4cd298-6dc7-4d8b-919c-4a49213029d4))
+    (pin "6" (uuid be93c4aa-3bab-45a4-bc69-811ca2f6849b))
+    (pin "7" (uuid 4c6a88db-c227-4541-bd00-bc9a1d15e7a2))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -2459,12 +2459,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 107.95 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
+    (pin "1" (uuid 0b19d6a7-35d3-4882-8063-812d12cbcb44))
+    (pin "2" (uuid c26a5822-d15c-4d87-9463-60883b1be0fe))
+    (pin "5" (uuid a7af7308-8aa3-4e21-a9f3-2a623f6e462e))
+    (pin "3" (uuid 9c9f6782-6482-4005-84a0-8cd2dbdefd8f))
     (pin "4" (uuid 903d1dd4-081a-4833-aa10-3c4bdc0bef26))
     (pin "6" (uuid 0f2ce6c1-a8f3-4eb9-8084-6bcc6775a720))
-    (pin "2" (uuid c26a5822-d15c-4d87-9463-60883b1be0fe))
-    (pin "1" (uuid 0b19d6a7-35d3-4882-8063-812d12cbcb44))
-    (pin "3" (uuid 9c9f6782-6482-4005-84a0-8cd2dbdefd8f))
-    (pin "5" (uuid a7af7308-8aa3-4e21-a9f3-2a623f6e462e))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -2841,12 +2841,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 118.11 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 9cddcc04-8ee0-4a2a-842b-e85619adf562))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c349))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d3))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d3f))
-    (pin "4" (uuid 4ccff91b-b0e1-4da9-9cc6-df5f1525c19a))
     (pin "3" (uuid 458bfe4a-ca1e-41af-adad-4e18813748ae))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c349))
+    (pin "4" (uuid 4ccff91b-b0e1-4da9-9cc6-df5f1525c19a))
+    (pin "6" (uuid 9cddcc04-8ee0-4a2a-842b-e85619adf562))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -3167,12 +3167,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 113.03 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac93))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34a))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d4))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d40))
-    (pin "4" (uuid af2d9889-6808-4353-8d12-aae0c870e165))
     (pin "3" (uuid 458bfe4a-ca1e-41af-adad-4e18813748af))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34a))
+    (pin "4" (uuid af2d9889-6808-4353-8d12-aae0c870e165))
+    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac93))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -3324,12 +3324,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 97.79 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac94))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34b))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d5))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d41))
-    (pin "4" (uuid 4ccff91b-b0e1-4da9-9cc6-df5f1525c19b))
     (pin "3" (uuid 458bfe4a-ca1e-41af-adad-4e18813748b0))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34b))
+    (pin "4" (uuid 4ccff91b-b0e1-4da9-9cc6-df5f1525c19b))
+    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac94))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"
@@ -3649,12 +3649,12 @@
     (property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf" (at 82.55 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac95))
+    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34c))
     (pin "2" (uuid 3dedee23-0896-42d6-92b3-ca7cf22cb8d6))
     (pin "5" (uuid f7927c5e-80f4-4a53-87fe-64b91d473d42))
-    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760247))
     (pin "3" (uuid aae52cf6-48ec-4ba8-a1f3-c1057c41c169))
-    (pin "1" (uuid 4d226084-d92c-42f0-b88e-cce5f009c34c))
+    (pin "4" (uuid 00c9126b-5999-4a4a-bf91-6dd43d760247))
+    (pin "6" (uuid 1e350b62-0cb2-4b4f-bec4-c807ec2eac95))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/21507370-f247-4205-8e94-91a7207a6f8b"

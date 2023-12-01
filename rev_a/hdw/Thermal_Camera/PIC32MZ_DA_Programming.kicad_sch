@@ -1859,8 +1859,8 @@
     (property "Datasheet" "~" (at 77.47 147.32 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "2" (uuid 2599a0ba-e64b-428d-ab2a-3527e84e691b))
     (pin "1" (uuid c08203e2-a422-4bc0-9b72-acdfb830b44d))
+    (pin "2" (uuid 2599a0ba-e64b-428d-ab2a-3527e84e691b))
     (instances
       (project "Thermal_Camera"
         (path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c8b41008-ee29-40ae-a4f4-13001b750237"
