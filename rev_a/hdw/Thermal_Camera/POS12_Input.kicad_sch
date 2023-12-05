@@ -1276,10 +1276,6 @@
     (uuid ff347b67-cc50-4d8c-80e5-6faa377fa9f3)
   )
 
-  (text "Switch to +3.0V logic?" (at 60.325 29.21 0)
-    (effects (font (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
-    (uuid 80bddd6c-597b-49bb-ab8a-f1332c3d99a3)
-  )
   (text "UVLO threshold set to 10.8V\nOVLO threshold set to 13.2V\n\nMODE set to Circuit Breaker with Auto-Retry\n\nOutput Current Limit set to 1.2A"
     (at 40.132 129.794 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))

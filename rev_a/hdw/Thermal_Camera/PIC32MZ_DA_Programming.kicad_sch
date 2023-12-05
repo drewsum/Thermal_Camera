@@ -857,12 +857,6 @@
     (uuid f2513595-ca1c-4019-b052-42e8fe3d63f1)
   )
 
-  (text "COPIED FROM PIC32MZ EF\nFIX FOR PIC32MZ DA\nCONSIDER REMOVING BEADS"
-    (at 76.2 34.29 0)
-    (effects (font (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
-    (uuid b5c8f4d5-87c5-4594-82ec-67a5ad62633c)
-  )
-
   (global_label "~{PIC32MZ_MCLR}" (shape passive) (at 147.32 46.99 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 32d00c20-9829-4676-b742-ac360cb853a8)
