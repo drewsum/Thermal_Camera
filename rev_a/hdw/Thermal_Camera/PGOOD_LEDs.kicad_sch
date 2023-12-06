@@ -407,7 +407,7 @@
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
   )
-  (global_label "POS24_PGOOD" (shape input) (at 64.77 55.88 180) (fields_autoplaced)
+  (global_label "POS12_PGOOD" (shape input) (at 64.77 55.88 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid 6a27bb87-76a7-4a03-b8a4-b9cf28e1029f)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 48.1966 55.88 0)

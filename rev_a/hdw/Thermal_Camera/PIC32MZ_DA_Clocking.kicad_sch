@@ -675,11 +675,6 @@
     (uuid f8102c16-1044-412e-8f41-39085cdcd884)
   )
 
-  (text "COPIED FROM PIC32MZ EF\nFIX FOR PIC32MZ DA" (at 86.36 35.56 0)
-    (effects (font (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
-    (uuid e1f5e5cf-5da8-44e9-87ff-5dfc1aebe9f8)
-  )
-
   (global_label "PIC32MZ_SOSC_EC" (shape output) (at 195.58 125.73 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 4ad4635a-5cee-45f3-bdc3-b92445e704fc)
@@ -701,7 +696,7 @@
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
   )
-  (global_label "POS3P3_PGOOD" (shape input) (at 55.88 73.66 180) (fields_autoplaced)
+  (global_label "POS3P0_PGOOD" (shape input) (at 55.88 73.66 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid a5eaa9da-98cd-4501-855b-9292cc7d16e9)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 38.0366 73.66 0)
