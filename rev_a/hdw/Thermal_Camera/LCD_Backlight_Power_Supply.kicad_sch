@@ -486,6 +486,16 @@
     (uuid ff244a81-8b91-4a53-84d7-4d049c04ffcf)
   )
 
+  (text "If = 40mA" (at 140.97 106.68 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid b0041034-c3ab-47fe-bd73-bf27f1236f52)
+  )
+  (text "This most likely will not be able to do\nenough voltage"
+    (at 30.48 135.89 0)
+    (effects (font (face "Courier New") (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
+    (uuid fcc75420-f8bd-417f-ade8-3a5b7b4581ea)
+  )
+
   (global_label "BACKLIGHT_ANODE" (shape passive) (at 198.12 80.01 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 35f4252c-ffc3-4f45-a69a-ba46f44d2153)
