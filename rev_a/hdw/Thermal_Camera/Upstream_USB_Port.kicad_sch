@@ -2,7 +2,14 @@
 
   (uuid cfc20327-5182-4f4f-a51a-5f4322ab8ec2)
 
-  (paper "A4")
+  (paper "A")
+
+  (title_block
+    (title "Thermal Camera")
+    (date "2023-12-07")
+    (rev "PRELIM")
+    (company "Drew Maatman and Michael Laffin")
+  )
 
   (lib_symbols
     (symbol "Connector:USB_B_Mini" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
