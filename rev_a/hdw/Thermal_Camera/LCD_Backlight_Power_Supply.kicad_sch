@@ -491,7 +491,7 @@
     (uuid b0041034-c3ab-47fe-bd73-bf27f1236f52)
   )
   (text "This most likely will not be able to do\nenough voltage"
-    (at 30.48 135.89 0)
+    (at 46.99 45.72 0)
     (effects (font (face "Courier New") (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
     (uuid fcc75420-f8bd-417f-ade8-3a5b7b4581ea)
   )
