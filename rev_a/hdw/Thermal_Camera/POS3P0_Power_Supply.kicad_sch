@@ -1218,11 +1218,6 @@
     (uuid f7591b75-9662-4e84-9e18-ca625b5295d1)
   )
 
-  (text "figure out sequencing" (at 101.6 27.94 0)
-    (effects (font (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
-    (uuid 76df3fa8-9eeb-4206-91e9-36c6dd02bbaa)
-  )
-
   (global_label "POS3P0_RUN" (shape output) (at 49.53 168.91 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 00749e51-17c1-4d82-b1d2-77cdcc9e19c2)

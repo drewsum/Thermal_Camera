@@ -822,10 +822,6 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 5e6388dc-b9ed-48ed-8b5a-c75c2b9dc4c4)
   )
-  (text "CONSIDER SERIAL BRIDGE WITH\nLARGER BUFFER" (at 144.78 170.18 0)
-    (effects (font (face "Courier New") (size 5.08 5.08) (thickness 1.016) bold (color 194 0 0 1)) (justify left bottom))
-    (uuid dc129b02-9f46-46bb-b737-6fed8c1a4275)
-  )
 
   (label "BRIDGE_USB+" (at 97.79 110.49 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
