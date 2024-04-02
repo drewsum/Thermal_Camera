@@ -1336,6 +1336,16 @@
 	)
 	(wire
 		(pts
+			(xy 86.36 133.35) (xy 86.36 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "755d5e12-6f4c-4df0-bee5-dd8233c6e13b")
+	)
+	(wire
+		(pts
 			(xy 187.96 95.25) (xy 187.96 92.71)
 		)
 		(stroke
@@ -1373,6 +1383,16 @@
 			(type default)
 		)
 		(uuid "acb30ce6-6192-4450-9e25-53cad088c0bb")
+	)
+	(wire
+		(pts
+			(xy 78.74 133.35) (xy 86.36 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b2a4f1fa-1a34-43bd-b076-87216ab366d4")
 	)
 	(wire
 		(pts
@@ -1571,23 +1591,23 @@
 		)
 	)
 	(global_label "BATT_LOWBAT"
-		(shape output)
-		(at 104.14 135.89 0)
+		(shape input)
+		(at 64.77 132.08 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "89d0a2f6-e3c5-4507-92b2-3a1588b6ebb1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 119.4434 135.89 0)
+			(at 49.3872 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -1649,6 +1669,28 @@
 		(uuid "dc0f0ae7-b1ff-43d6-a033-d8eef6140cbf")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 95.6704 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PGOOD_LED_SHDN"
+		(shape input)
+		(at 64.77 134.62 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f2b5e6b8-3bee-46ae-8039-7d893469838e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 44.8704 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2003,6 +2045,111 @@
 					(unit 1)
 				)
 			)
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom_Library:R_Custom")
+		(at 86.36 119.38 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "24a2c2c3-d4e5-4ebe-bbab-8b50cf198422")
+		(property "Reference" "R?"
+			(at 87.884 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "1k"
+			(at 86.36 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistors_SMD:R_0603"
+			(at 86.36 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 86.36 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 86.36 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "display_footprint" "0603"
+			(at 84.582 117.348 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Tolerance" "1%"
+			(at 84.582 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Wattage" "1/10W"
+			(at 84.582 121.158 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Digi-Key PN" "541-1.00KHCT-ND"
+			(at 78.74 109.22 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7f4278e1-71a1-47fd-8bfd-13e8f49ce305")
+		)
+		(pin "2"
+			(uuid "c1ebbaff-7767-4efc-bb42-5841560485d4")
+		)
+		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
 					(reference "R?")
@@ -2648,6 +2795,149 @@
 		)
 	)
 	(symbol
+		(lib_id "Custom Library:+3.0V")
+		(at 72.39 130.81 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3e6d56ce-0bee-477a-ac8a-7d1b11d493be")
+		(property "Reference" "#PWR02741"
+			(at 72.39 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.0V"
+			(at 72.39 127.254 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 72.39 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 72.39 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 72.39 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6e481742-ebdd-4df5-aa01-05e48df24aa9")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "#PWR02741")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:LED")
+		(at 86.36 127 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4389eb04-dc10-483b-9f72-4bf2e0cddd9a")
+		(property "Reference" "D?"
+			(at 89.3318 126.0094 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Red"
+			(at 89.3318 128.3208 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "LEDs:LED_0603"
+			(at 86.36 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 86.36 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 86.36 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" ""
+			(at 246.888 258.064 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "03dd8f90-e152-45ea-9f89-38ae1ef7d6bc")
+		)
+		(pin "2"
+			(uuid "58258af4-454d-4bda-bb12-b195d0c89578")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "D?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:LED")
 		(at 137.16 88.9 90)
 		(unit 1)
@@ -2760,6 +3050,71 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
 					(reference "D?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 69.85 119.38 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4fc82ad8-8eaf-4c1e-99ea-a4aa585a2283")
+		(property "Reference" "#PWR02740"
+			(at 69.85 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 69.85 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 69.85 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.85 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 69.85 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "530620c7-063e-4a89-bbe7-746510418cc7")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "#PWR02740")
 					(unit 1)
 				)
 			)
@@ -4081,6 +4436,71 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
 					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 72.39 135.89 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7712ffe2-af0c-4a17-b960-e858c7c73db2")
+		(property "Reference" "#PWR02742"
+			(at 72.39 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 72.39 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 72.39 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 72.39 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 72.39 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9ab54b70-0def-46cb-9386-2050a2a44988")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "#PWR02742")
 					(unit 1)
 				)
 			)
@@ -5413,6 +5833,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Custom Library:+3.0V")
+		(at 86.36 115.57 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ae4a998c-da98-4f3e-ab45-e2637ee721cf")
+		(property "Reference" "#PWR02743"
+			(at 86.36 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.0V"
+			(at 86.36 112.014 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 86.36 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 86.36 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 86.36 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0fbe6bac-1498-42d2-b793-49a8b0732609")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "#PWR02743")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 26.67 60.325 0)
 		(unit 1)
@@ -6202,6 +6687,71 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
 					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom Library:+3.0V")
+		(at 69.85 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c75cbef1-1801-4b1e-8bfb-e9cad1156969")
+		(property "Reference" "#PWR02739"
+			(at 69.85 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.0V"
+			(at 69.85 108.204 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 69.85 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.85 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 69.85 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e744b16b-b0db-45a3-b5da-aea2b5fe8623")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "#PWR02739")
 					(unit 1)
 				)
 			)
@@ -7066,6 +7616,202 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
 					(reference "R?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom_Library:74LVC1G97_Power_NAND_INV")
+		(at 72.39 133.35 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f2fab68e-bbc1-42fc-8b27-6a37ea990130")
+		(property "Reference" "U?"
+			(at 73.914 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "74LVC1G97"
+			(at 73.914 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-363_SC-70-6"
+			(at 73.66 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/sn74lvc1g97.pdf"
+			(at 73.66 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 72.39 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "296-15582-1-ND"
+			(at 72.39 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "004f75c9-f055-447d-9ebf-212436f60d3f")
+		)
+		(pin "2"
+			(uuid "4b5562d2-407c-4e60-850d-51c2d9c73663")
+		)
+		(pin "3"
+			(uuid "255a96e0-dfc4-45da-835d-d4e40672773b")
+		)
+		(pin "4"
+			(uuid "14e6fb87-894e-4d50-be31-737a371cabcc")
+		)
+		(pin "5"
+			(uuid "0c6940a2-2020-4d1d-972a-725978d6259a")
+		)
+		(pin "6"
+			(uuid "ae2457f5-4e1b-43e3-bed7-0bf8d38f3ad7")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "U?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom_Library:C_Custom")
+		(at 69.85 115.57 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f7dee9f1-e19e-45a5-82fc-8b957be67f35")
+		(property "Reference" "C?"
+			(at 69.215 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 69.215 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitors_SMD:C_0603"
+			(at 68.8848 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.215 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 69.85 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "1276-1935-1-ND"
+			(at 59.055 102.87 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(hide yes)
+			)
+		)
+		(property "display_footprint" "0603"
+			(at 73.66 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Voltage" "50V"
+			(at 73.66 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Dielectric" "X7R"
+			(at 73.66 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "1"
+			(uuid "2b807e52-56d0-49c5-ae05-ae818449f05e")
+		)
+		(pin "2"
+			(uuid "11b0082d-f911-4817-bfda-cbffa6fff4c8")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
+					(reference "C?")
 					(unit 1)
 				)
 			)

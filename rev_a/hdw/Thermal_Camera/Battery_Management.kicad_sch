@@ -2197,7 +2197,261 @@
 				)
 			)
 		)
-		(symbol "Transistor_FET:BSS214NW"
+		(symbol "Device:Thermistor_NTC"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TH"
+				(at -4.445 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Thermistor_NTC"
+				(at 3.175 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "thermistor NTC resistor sensor RTD"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "*NTC* *Thermistor* PIN?ARRAY* bornier* *Terminal?Block* R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Thermistor_NTC_0_1"
+				(arc
+					(start -3.048 2.159)
+					(mid -3.0495 2.3143)
+					(end -3.175 2.413)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -3.048 2.159)
+					(mid -2.9736 1.9794)
+					(end -2.794 1.905)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -3.048 2.794)
+					(mid -2.9736 2.6144)
+					(end -2.794 2.54)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 1.905)
+					(mid -2.6144 1.9794)
+					(end -2.54 2.159)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 2.54)
+					(mid -2.4393 2.5587)
+					(end -2.159 2.794)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.794 3.048)
+					(mid -2.9736 2.9736)
+					(end -3.048 2.794)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -2.54 2.794)
+					(mid -2.6144 2.9736)
+					(end -2.794 3.048)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.016 2.54)
+					(end 1.016 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 2.159) (xy -2.54 2.794)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 2.54) (xy -1.778 1.524) (xy 1.778 -1.524) (xy 1.778 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 -3.683) (xy -2.54 -1.397) (xy -2.794 -2.159) (xy -2.286 -2.159) (xy -2.54 -1.397) (xy -2.54 -1.651)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 -1.397) (xy -1.778 -3.683) (xy -2.032 -2.921) (xy -1.524 -2.921) (xy -1.778 -3.683)
+						(xy -1.778 -3.429)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(symbol "Thermistor_NTC_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Transistor_FET:DMN3042L"
 			(pin_names hide)
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2211,7 +2465,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "BSS214NW"
+			(property "Value" "DMN3042L"
 				(at 5.08 0 0)
 				(effects
 					(font
@@ -2220,7 +2474,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
 				(at 5.08 -1.905 0)
 				(effects
 					(font
@@ -2231,8 +2485,8 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://www.infineon.com/dgdl/Infineon-BSS214NW-DS-v02_02-en.pdf?fileId=db3a30431b3e89eb011b695aebc01bde"
-				(at 0 0 0)
+			(property "Datasheet" "http://www.diodes.com/assets/Datasheets/DMN3042L.pdf"
+				(at 5.08 -3.81 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2241,7 +2495,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "20V Vds, 1.5A Id, N-Channel MOSFET, SOT-323"
+			(property "Description" "5.8A Id, 30V Vds, N-Channel MOSFET, SOT-23"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2259,7 +2513,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "SOT?323*"
+			(property "ki_fp_filters" "SOT?23*"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2268,7 +2522,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "BSS214NW_0_1"
+			(symbol "DMN3042L_0_1"
 				(polyline
 					(pts
 						(xy 0.254 0) (xy -2.54 0)
@@ -2435,7 +2689,7 @@
 					)
 				)
 			)
-			(symbol "BSS214NW_1_1"
+			(symbol "DMN3042L_1_1"
 				(pin input line
 					(at -5.08 0 0)
 					(length 2.54)
@@ -2848,12 +3102,6 @@
 		(uuid "1a375da2-7be0-4c3b-9342-c9d77cb0c57f")
 	)
 	(junction
-		(at 43.18 187.96)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "1ceff646-5a3e-4981-ab80-145287722924")
-	)
-	(junction
 		(at 48.26 31.75)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2948,6 +3196,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b390a99a-400a-4317-9971-ee725d31eb74")
+	)
+	(junction
+		(at 43.18 187.96)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b3b1869a-c791-430f-8dfa-337ff537bfe1")
 	)
 	(junction
 		(at 142.24 110.49)
@@ -3128,16 +3382,6 @@
 			(type default)
 		)
 		(uuid "1d7e3ec4-e612-4d04-842f-6c4046809f15")
-	)
-	(wire
-		(pts
-			(xy 142.24 110.49) (xy 151.13 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "204c062e-c7f6-43d2-a9bc-0b2ac9743c5e")
 	)
 	(wire
 		(pts
@@ -3398,16 +3642,6 @@
 			(type default)
 		)
 		(uuid "546dd71b-97e9-46f7-a162-49c5894914b4")
-	)
-	(wire
-		(pts
-			(xy 35.56 187.96) (xy 43.18 187.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "566f8614-e50a-40b5-b303-cc71eb86aff1")
 	)
 	(wire
 		(pts
@@ -3741,6 +3975,16 @@
 	)
 	(wire
 		(pts
+			(xy 142.24 110.49) (xy 142.24 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9c938c18-ef5f-4b71-924c-032e063ad7b0")
+	)
+	(wire
+		(pts
 			(xy 152.4 54.61) (xy 154.94 54.61)
 		)
 		(stroke
@@ -3898,6 +4142,16 @@
 			(type default)
 		)
 		(uuid "ba6e256b-56fd-4c0f-aee3-661aa283b7f1")
+	)
+	(wire
+		(pts
+			(xy 43.18 187.96) (xy 43.18 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bb2d8b94-3f62-40a1-9582-fff7f26d7114")
 	)
 	(wire
 		(pts
@@ -4279,33 +4533,25 @@
 		)
 		(uuid "fc501bb8-f414-4006-95e7-916965588a24")
 	)
-	(text "This fuel gauge is sketchy\nWant to find battery with NTC"
+	(text "4.325V"
 		(exclude_from_sim no)
-		(at 156.718 173.736 0)
+		(at 180.086 31.496 0)
 		(effects
 			(font
-				(size 5.08 5.08)
-				(thickness 1.016)
-				(bold yes)
-				(color 194 0 0 1)
+				(size 1.27 1.27)
 			)
-			(justify left bottom)
 		)
-		(uuid "53d444e9-ad0c-4966-8824-82d4a19af822")
+		(uuid "32ffd938-c274-4c8a-95c8-2b8fb2a94b3b")
 	)
-	(text "Determine specific version of each chip to use"
+	(text "4.2V"
 		(exclude_from_sim no)
-		(at 25.4 20.32 0)
+		(at 182.8572 50.7222 0)
 		(effects
 			(font
-				(size 5.08 5.08)
-				(thickness 1.016)
-				(bold yes)
-				(color 194 0 0 1)
+				(size 1.27 1.27)
 			)
-			(justify left bottom)
 		)
-		(uuid "f3be2276-d210-4951-b0f1-bcfaa861f889")
+		(uuid "abadccb0-2558-45b5-b7cb-a9a06f1a2d82")
 	)
 	(global_label "BATT_LOWBAT"
 		(shape output)
@@ -4505,28 +4751,6 @@
 			)
 		)
 	)
-	(global_label "BATT_NTC2"
-		(shape passive)
-		(at 35.56 187.96 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a41a271f-68f8-4585-9c87-c3f05a6c979e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 23.6471 187.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "~{BATT_CEN}"
 		(shape input)
 		(at 30.48 123.19 180)
@@ -4545,28 +4769,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "BATT_NTC1"
-		(shape passive)
-		(at 151.13 110.49 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "bb403cff-50a5-42e3-a396-2e44eaf6e9b4")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 163.0429 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -4678,7 +4880,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "5.9k"
 			(at 129.54 137.16 90)
 			(effects
 				(font
@@ -5149,6 +5351,85 @@
 				)
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
 					(reference "C202")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Thermistor_NTC")
+		(at 43.18 194.31 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1b7fb921-a343-4559-a9f4-7f6c5230d2c2")
+		(property "Reference" "TH?"
+			(at 45.72 193.3574 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 45.72 195.8974 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 43.18 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 43.18 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+			(at 43.18 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "445-174911-1-ND"
+			(at 43.18 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "ae5ccd7a-dec8-4966-8cd4-81394494dae5")
+		)
+		(pin "1"
+			(uuid "18d9b1de-18fe-448f-a7aa-d702a6e4ba73")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "TH?")
 					(unit 1)
 				)
 			)
@@ -5694,6 +5975,138 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 142.24 120.65 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2bc9d7fe-af09-4136-9b67-85f0ab28bbfd")
+		(property "Reference" "#PWR01401"
+			(at 142.24 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 142.24 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 142.24 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 142.24 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 142.24 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "59a38967-0c9f-430f-9801-f50e1ebc50c5")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "#PWR01401")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 43.18 198.12 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2f43a70b-aed2-4de4-8845-e8e1a645567e")
+		(property "Reference" "#PWR01402"
+			(at 43.18 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 43.18 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 43.18 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 43.18 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 43.18 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5ec9d4eb-0caa-47c6-b132-8f345d49eade")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "#PWR01402")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:Battery_Cell")
 		(at 208.28 99.06 0)
 		(unit 1)
@@ -5758,6 +6171,85 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
 					(reference "J?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Thermistor_NTC")
+		(at 142.24 116.84 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "36111a47-59ca-4bea-97e8-72323e8efbc2")
+		(property "Reference" "TH?"
+			(at 144.78 115.8874 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 144.78 118.4274 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 142.24 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 142.24 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Temperature dependent resistor, negative temperature coefficient"
+			(at 142.24 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "445-174911-1-ND"
+			(at 142.24 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "4063089e-973d-43f7-a9c6-6a7544aa791b")
+		)
+		(pin "1"
+			(uuid "2d1b1093-9355-48f2-90b5-eed661e68f71")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "TH?")
 					(unit 1)
 				)
 			)
@@ -6203,6 +6695,81 @@
 		)
 	)
 	(symbol
+		(lib_id "Transistor_FET:DMN3042L")
+		(at 185.42 111.76 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "414155d1-367d-4844-81b0-68ffb550f7c4")
+		(property "Reference" "Q?"
+			(at 180.34 113.665 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DMN3042L"
+			(at 180.34 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 180.34 109.855 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.diodes.com/assets/Datasheets/DMN3042L.pdf"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "5.8A Id, 30V Vds, N-Channel MOSFET, SOT-23"
+			(at 185.42 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "3ed8a8a5-30b1-4ef5-90f8-beec8d910a57")
+		)
+		(pin "1"
+			(uuid "f23206d8-4cb7-4ce8-ae07-95f4dc8fbe3b")
+		)
+		(pin "3"
+			(uuid "133b8ab3-41eb-466a-a68f-005c34816993")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "Q?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Custom_Library:C_Custom")
 		(at 127 101.6 0)
 		(unit 1)
@@ -6348,6 +6915,82 @@
 		)
 	)
 	(symbol
+		(lib_id "Transistor_FET:DMN3042L")
+		(at 185.42 124.46 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4af3d3dc-b1f1-4f1d-8b36-bcbd7f99a1e9")
+		(property "Reference" "Q?"
+			(at 180.34 122.555 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "DMN3042L"
+			(at 180.34 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 180.34 126.365 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.diodes.com/assets/Datasheets/DMN3042L.pdf"
+			(at 180.34 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "5.8A Id, 30V Vds, N-Channel MOSFET, SOT-23"
+			(at 185.42 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "988b130c-bc88-46de-8a15-546aba5414d1")
+		)
+		(pin "1"
+			(uuid "942e816a-dd83-4ceb-aaf9-ecf36f7b47c7")
+		)
+		(pin "3"
+			(uuid "7d1c0d2c-ef2d-439c-aa08-aa28f2c5cf82")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "Q?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Custom Library:MAX8903")
 		(at 96.52 82.55 0)
 		(unit 1)
@@ -6365,7 +7008,7 @@
 				)
 			)
 		)
-		(property "Value" "MAX8903"
+		(property "Value" "MAX8903G"
 			(at 96.52 27.94 0)
 			(effects
 				(font
@@ -7430,7 +8073,7 @@
 				)
 			)
 		)
-		(property "Value" "BQ297xy"
+		(property "Value" "BQ29700"
 			(at 203.2 111.76 0)
 			(effects
 				(font
@@ -8199,7 +8842,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "L"
+		(property "Value" "4.7uH"
 			(at 64.77 73.025 0)
 			(effects
 				(font
@@ -8235,7 +8878,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "Foot"
+		(property "display_footprint" "IHLP2020"
 			(at 64.77 75.565 0)
 			(effects
 				(font
@@ -8244,7 +8887,7 @@
 				(justify right)
 			)
 		)
-		(property "Ampacity" "A"
+		(property "Ampacity" "3.2A"
 			(at 64.77 78.105 0)
 			(effects
 				(font
@@ -8253,7 +8896,7 @@
 				(justify right)
 			)
 		)
-		(property "Tolerance" "Tol"
+		(property "Tolerance" "20%"
 			(at 64.77 80.645 0)
 			(effects
 				(font
@@ -8262,7 +8905,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "541-1222-1-ND"
 			(at 63.5 74.93 0)
 			(effects
 				(font
@@ -8739,102 +9382,6 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
 					(reference "#PWR024")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Transistor_FET:BSS214NW")
-		(at 185.42 111.76 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b28fec99-7843-44bb-92fb-84f3b7fa03aa")
-		(property "Reference" "Q?"
-			(at 180.34 113.665 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "BSS214NW"
-			(at 180.34 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
-			(at 180.34 109.855 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.infineon.com/dgdl/Infineon-BSS214NW-DS-v02_02-en.pdf?fileId=db3a30431b3e89eb011b695aebc01bde"
-			(at 185.42 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 185.42 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digi-Key PN" "BSS214NWH6327XTSA1CT-ND"
-			(at 185.42 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "383e8938-d464-4ecf-979b-ab42f031b7af")
-		)
-		(pin "2"
-			(uuid "0bae5913-390f-40b3-9adc-f550b8d91c04")
-		)
-		(pin "3"
-			(uuid "7c2cb3f6-c5d3-4819-86c5-f1dec4332dce")
-		)
-		(instances
-			(project "Analog_Clock"
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
-					(reference "Q?")
-					(unit 1)
-				)
-			)
-			(project "Nixie_Clock_Core"
-				(path "/16fdce21-b570-4d81-a458-e8839d611806/0953f70f-0c64-48c1-b5cf-d1f41f95ef1f"
-					(reference "Q801")
-					(unit 1)
-				)
-			)
-			(project "Thermal_Camera"
-				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
-					(reference "Q?")
 					(unit 1)
 				)
 			)
@@ -9946,7 +10493,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "R"
+		(property "Value" "1.2k"
 			(at 142.24 137.16 90)
 			(effects
 				(font
@@ -12004,6 +12551,15 @@
 				(hide yes)
 			)
 		)
+		(property "Digi-Key PN" "1568-1488-ND"
+			(at 240.03 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d5ed34a4-dfde-4210-a88b-f57bc2c67268")
 		)
@@ -12014,103 +12570,6 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
 					(reference "BT?")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Transistor_FET:BSS214NW")
-		(at 185.42 124.46 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "fe1320b8-447f-425c-b141-5e306730202e")
-		(property "Reference" "Q?"
-			(at 180.34 122.555 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "BSS214NW"
-			(at 180.34 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
-			(at 180.34 126.365 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.infineon.com/dgdl/Infineon-BSS214NW-DS-v02_02-en.pdf?fileId=db3a30431b3e89eb011b695aebc01bde"
-			(at 185.42 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 185.42 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digi-Key PN" "BSS214NWH6327XTSA1CT-ND"
-			(at 185.42 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "26e6a42e-77ee-42f0-84d0-0bf7c2f16d4a")
-		)
-		(pin "2"
-			(uuid "080e42fb-7ed0-41e2-9b22-ce2aa694a5d5")
-		)
-		(pin "3"
-			(uuid "dd89eac7-8de7-41f1-ab9f-b9e318dfc375")
-		)
-		(instances
-			(project "Analog_Clock"
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
-					(reference "Q?")
-					(unit 1)
-				)
-			)
-			(project "Nixie_Clock_Core"
-				(path "/16fdce21-b570-4d81-a458-e8839d611806/0953f70f-0c64-48c1-b5cf-d1f41f95ef1f"
-					(reference "Q801")
-					(unit 1)
-				)
-			)
-			(project "Thermal_Camera"
-				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
-					(reference "Q?")
 					(unit 1)
 				)
 			)
