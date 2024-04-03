@@ -6335,6 +6335,112 @@
 	)
 	(symbol
 		(lib_id "Custom_Library:C_Custom")
+		(at 63.5 137.16 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3bf0125d-ef52-4721-af0a-86de207564ae")
+		(property "Reference" "C?"
+			(at 62.865 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 62.865 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitors_SMD:C_0603"
+			(at 62.5348 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 62.865 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 63.5 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "1276-1935-1-ND"
+			(at 52.705 124.46 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(hide yes)
+			)
+		)
+		(property "display_footprint" "0603"
+			(at 67.31 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Voltage" "50V"
+			(at 67.31 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Dielectric" "X7R"
+			(at 67.31 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "1"
+			(uuid "db234dba-31b4-41a8-8c53-eae99cb1138b")
+		)
+		(pin "2"
+			(uuid "3e07578f-169a-48ba-8e66-61200b5f7c5f")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "C?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom_Library:C_Custom")
 		(at 142.24 60.96 0)
 		(mirror y)
 		(unit 1)
@@ -12136,160 +12242,6 @@
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
 					(reference "R204")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Custom_Library:C_Custom")
-		(at 63.5 137.16 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f5a84900-6902-4c8a-83b8-3f777e05d90c")
-		(property "Reference" "C?"
-			(at 62.865 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "C"
-			(at 62.865 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
-			(at 62.5348 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 62.865 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 63.5 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digi-Key PN" ""
-			(at 52.705 124.46 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(hide yes)
-			)
-		)
-		(property "display_footprint" "0603"
-			(at 67.31 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Voltage" "50V"
-			(at 67.31 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Dielectric" "X7R"
-			(at 67.31 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "1"
-			(uuid "e2c71cda-a072-44d9-84de-db75882b83a5")
-		)
-		(pin "2"
-			(uuid "2f5120cc-b79b-4544-9c55-6b44125e7b70")
-		)
-		(instances
-			(project "Thermal_Camera"
-				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
-					(reference "C?")
-					(unit 1)
-				)
-			)
-			(project "LED_Panel_Controller"
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005baae1cb"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005cad2d97"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005e6af016"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005f582e50"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005baae1f3"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005cb7a8bc"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005f5829c2"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005eae4ae4"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/9a153a92-537f-48f9-b716-589877e287a5/00000000-0000-0000-0000-00005be48f98"
-					(reference "C?")
-					(unit 1)
-				)
-			)
-			(project "USB_Hub"
-				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a859"
-					(reference "C?")
-					(unit 1)
-				)
-				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7ad"
-					(reference "C202")
 					(unit 1)
 				)
 			)

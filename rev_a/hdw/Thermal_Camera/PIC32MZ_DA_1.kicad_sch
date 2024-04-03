@@ -3704,20 +3704,6 @@
 		)
 		(uuid "5e250ca6-2ad1-4866-94e9-d5610adfeef3")
 	)
-	(text "DOUBLE CHECK\nSOSC PIN"
-		(exclude_from_sim no)
-		(at 170.434 32.258 0)
-		(effects
-			(font
-				(size 5.08 5.08)
-				(thickness 1.016)
-				(bold yes)
-				(color 194 0 0 1)
-			)
-			(justify left bottom)
-		)
-		(uuid "61b25f73-9755-44cc-971e-1504f9686ea2")
-	)
 	(text "SDCK"
 		(exclude_from_sim no)
 		(at 53.34 60.96 0)
