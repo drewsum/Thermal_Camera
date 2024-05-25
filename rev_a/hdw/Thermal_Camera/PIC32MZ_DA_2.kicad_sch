@@ -4784,7 +4784,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4b41d7e1-dc3d-41a8-9123-2ccf78c448c0")
-		(property "Reference" "U1901"
+		(property "Reference" "U1701"
 			(at 134.62 34.29 0)
 			(effects
 				(font
@@ -5372,7 +5372,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/d6dd27c9-8e5b-4d17-a34a-73b51937c448"
-					(reference "U1901")
+					(reference "U1701")
 					(unit 3)
 				)
 			)
