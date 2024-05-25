@@ -3738,7 +3738,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 105.41 115.57 0)
 			(effects
 				(font
@@ -4443,7 +4443,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 140.97 115.57 0)
 			(effects
 				(font
@@ -4833,7 +4833,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-5868-1-ND"
 			(at 156.21 73.66 0)
 			(effects
 				(font
@@ -5217,7 +5217,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 116.205 135.89 0)
 			(effects
 				(font
@@ -5440,7 +5440,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 157.48 115.57 0)
 			(effects
 				(font
@@ -6053,7 +6053,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-5868-1-ND"
 			(at 177.8 73.66 0)
 			(effects
 				(font

@@ -3544,7 +3544,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "311-1439-1-ND"
 			(at 93.98 81.28 0)
 			(effects
 				(font

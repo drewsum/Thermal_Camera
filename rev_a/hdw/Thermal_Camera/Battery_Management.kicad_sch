@@ -5388,7 +5388,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 215.265 97.79 0)
 			(effects
 				(font
@@ -5656,7 +5656,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 48.26 101.6 0)
 			(effects
 				(font
@@ -6301,6 +6301,15 @@
 				(hide yes)
 			)
 		)
+		(property "Digi-Key PN" "BK-18650-PC2-ND"
+			(at 208.28 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9b7c4ade-0e7e-4e93-8555-754365281885")
 		)
@@ -6537,7 +6546,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 52.705 124.46 0)
 			(effects
 				(font
@@ -7105,7 +7114,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "311-1439-1-ND"
 			(at 127 101.6 0)
 			(effects
 				(font
@@ -8191,7 +8200,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 63.5 101.6 0)
 			(effects
 				(font
@@ -9403,7 +9412,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 52.705 44.45 0)
 			(effects
 				(font
@@ -11184,7 +11193,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "311-1439-1-ND"
 			(at 24.13 175.26 0)
 			(effects
 				(font
@@ -12292,7 +12301,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "311-1439-1-ND"
 			(at 106.68 191.77 0)
 			(effects
 				(font

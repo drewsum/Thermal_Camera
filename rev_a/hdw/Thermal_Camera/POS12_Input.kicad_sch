@@ -3779,7 +3779,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 137.795 135.89 0)
 			(effects
 				(font
@@ -4258,7 +4258,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "445-12201-1-ND"
 			(at 133.985 93.98 0)
 			(effects
 				(font

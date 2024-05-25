@@ -2,7 +2,7 @@
 	(version 20231120)
 	(generator "eeschema")
 	(generator_version "8.0")
-	(uuid "5d5d20a7-7fd5-41ef-ae9d-0153d559d5dd")
+	(uuid "d96a9d47-6bb2-4513-ac54-12b613f35679")
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
@@ -1698,7 +1698,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 146.685 41.91 0)
 			(effects
 				(font
@@ -2154,7 +2154,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "445-12201-1-ND"
 			(at 17.272 232.156 0)
 			(effects
 				(font
@@ -3269,7 +3269,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 140.335 81.28 0)
 			(effects
 				(font
@@ -4180,7 +4180,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 140.335 17.78 0)
 			(effects
 				(font
@@ -4834,7 +4834,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 97.155 77.47 0)
 			(effects
 				(font
@@ -4938,7 +4938,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "445-12201-1-ND"
 			(at 17.272 168.656 0)
 			(effects
 				(font
@@ -5276,7 +5276,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-GRM155R61A106ME11DCT-ND"
 			(at 146.685 105.41 0)
 			(effects
 				(font
@@ -5382,7 +5382,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "490-10697-1-ND"
 			(at 97.155 13.97 0)
 			(effects
 				(font
