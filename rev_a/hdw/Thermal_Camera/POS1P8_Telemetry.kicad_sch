@@ -2189,7 +2189,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitors_SMD:C_0402"
 			(at 113.9952 55.88 0)
 			(effects
 				(font
@@ -2216,7 +2216,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 109.22 50.546 0)
 			(effects
 				(font
@@ -2234,7 +2234,7 @@
 				(justify right)
 			)
 		)
-		(property "Dielectric" "X7R"
+		(property "Dielectric" "X5R"
 			(at 109.22 55.626 0)
 			(effects
 				(font
@@ -2504,7 +2504,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitors_SMD:C_0402"
 			(at 136.8552 80.01 0)
 			(effects
 				(font
@@ -2531,7 +2531,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 132.08 74.676 0)
 			(effects
 				(font
@@ -2549,7 +2549,7 @@
 				(justify right)
 			)
 		)
-		(property "Dielectric" "X7R"
+		(property "Dielectric" "X5R"
 			(at 132.08 79.756 0)
 			(effects
 				(font
@@ -2819,7 +2819,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitors_SMD:C_0402"
 			(at 136.8552 148.59 0)
 			(effects
 				(font
@@ -2846,7 +2846,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 132.08 143.256 0)
 			(effects
 				(font
@@ -2864,7 +2864,7 @@
 				(justify right)
 			)
 		)
-		(property "Dielectric" "X7R"
+		(property "Dielectric" "X5R"
 			(at 132.08 148.336 0)
 			(effects
 				(font

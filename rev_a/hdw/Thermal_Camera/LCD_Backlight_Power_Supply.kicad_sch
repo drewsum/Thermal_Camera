@@ -1632,7 +1632,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistors_SMD:R_0402"
 			(at 170.18 66.04 0)
 			(effects
 				(font
@@ -1659,7 +1659,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 167.64 66.04 90)
 			(effects
 				(font
@@ -1677,7 +1677,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" ""
+		(property "Wattage" "1/16W"
 			(at 162.56 66.04 90)
 			(effects
 				(font
@@ -1793,7 +1793,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistors_SMD:R_0402"
 			(at 139.7 93.98 0)
 			(effects
 				(font
@@ -1820,7 +1820,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 137.16 91.948 0)
 			(effects
 				(font
@@ -1838,7 +1838,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" ""
+		(property "Wattage" "1/16W"
 			(at 136.906 96.012 0)
 			(effects
 				(font
@@ -2154,7 +2154,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistors_SMD:R_0402"
 			(at 153.67 93.98 0)
 			(effects
 				(font
@@ -2181,7 +2181,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 151.13 91.948 0)
 			(effects
 				(font
@@ -2199,7 +2199,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" ""
+		(property "Wattage" "1/16W"
 			(at 150.876 96.012 0)
 			(effects
 				(font
@@ -2595,7 +2595,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistors_SMD:R_0402"
 			(at 182.88 66.04 0)
 			(effects
 				(font
@@ -2622,7 +2622,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 180.34 66.04 90)
 			(effects
 				(font
@@ -2640,7 +2640,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" ""
+		(property "Wattage" "1/16W"
 			(at 175.26 66.04 90)
 			(effects
 				(font
@@ -3350,7 +3350,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistors_SMD:R_0402"
 			(at 93.98 97.79 0)
 			(effects
 				(font
@@ -3377,7 +3377,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 91.44 99.568 0)
 			(effects
 				(font
@@ -3397,7 +3397,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" ""
+		(property "Wattage" "1/16W"
 			(at 91.44 94.488 0)
 			(effects
 				(font
@@ -3490,7 +3490,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitors_SMD:C_0402"
 			(at 94.9452 85.09 0)
 			(effects
 				(font
@@ -3517,7 +3517,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" ""
+		(property "display_footprint" "0402"
 			(at 90.17 78.74 0)
 			(effects
 				(font
@@ -3717,6 +3717,15 @@
 			)
 		)
 		(property "Description" ""
+			(at 146.05 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digi-Key PN" "1727-3882-1-ND"
 			(at 146.05 74.93 0)
 			(effects
 				(font
