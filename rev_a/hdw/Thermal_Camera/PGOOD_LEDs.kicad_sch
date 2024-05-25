@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -1731,7 +1731,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "02287828-e573-4f58-ba33-165c95440954")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 120.65 49.53 0)
 			(effects
 				(font
@@ -1781,7 +1781,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -1805,7 +1805,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02715")
+					(reference "#PWR02718")
 					(unit 1)
 				)
 			)
@@ -1820,7 +1820,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0b3e3651-2821-4ab2-a3b1-860d84af9e76")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 173.99 66.04 0)
 			(effects
 				(font
@@ -1870,7 +1870,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -1894,7 +1894,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02722")
+					(reference "#PWR02732")
 					(unit 1)
 				)
 			)
@@ -1910,7 +1910,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1a888353-85ec-449f-a90b-a79cb0c6ec4c")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 189.484 43.18 0)
 			(effects
 				(font
@@ -1927,7 +1927,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 187.96 43.18 0)
 			(effects
 				(font
@@ -1954,7 +1954,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 186.182 41.148 0)
 			(effects
 				(font
@@ -1972,7 +1972,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 186.182 44.958 0)
 			(effects
 				(font
@@ -1981,7 +1981,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 180.34 33.02 0)
 			(effects
 				(font
@@ -1999,7 +1999,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -2047,7 +2047,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2707")
 					(unit 1)
 				)
 			)
@@ -2063,7 +2063,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "24a2c2c3-d4e5-4ebe-bbab-8b50cf198422")
-		(property "Reference" "R?"
+		(property "Reference" "R2704"
 			(at 87.884 119.38 0)
 			(effects
 				(font
@@ -2080,7 +2080,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 86.36 119.38 0)
 			(effects
 				(font
@@ -2107,7 +2107,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 84.582 117.348 0)
 			(effects
 				(font
@@ -2125,7 +2125,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 84.582 121.158 0)
 			(effects
 				(font
@@ -2134,7 +2134,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 78.74 109.22 0)
 			(effects
 				(font
@@ -2152,7 +2152,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2704")
 					(unit 1)
 				)
 			)
@@ -2167,7 +2167,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "268e4c19-8797-4181-857e-16d8a91bf456")
-		(property "Reference" "U1501"
+		(property "Reference" "U?"
 			(at 73.914 91.44 0)
 			(effects
 				(font
@@ -2242,7 +2242,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "U1501")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -2254,7 +2254,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2702")
 					(unit 1)
 				)
 			)
@@ -2269,7 +2269,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "29661adf-7d8f-403c-b95a-7629a2bb0899")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 171.45 87.63 0)
 			(effects
 				(font
@@ -2319,7 +2319,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -2343,7 +2343,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02735")
+					(reference "#PWR02730")
 					(unit 1)
 				)
 			)
@@ -2358,7 +2358,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2baf45f8-91fc-4742-91a9-ed30095547ce")
-		(property "Reference" "U?"
+		(property "Reference" "U2707"
 			(at 175.514 91.44 0)
 			(effects
 				(font
@@ -2424,7 +2424,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2707")
 					(unit 1)
 				)
 			)
@@ -2440,7 +2440,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3396c3bd-3b29-4a31-9de2-4c07fbd28b71")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 138.684 81.28 0)
 			(effects
 				(font
@@ -2457,7 +2457,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 137.16 81.28 0)
 			(effects
 				(font
@@ -2484,7 +2484,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 135.382 79.248 0)
 			(effects
 				(font
@@ -2502,7 +2502,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 135.382 83.058 0)
 			(effects
 				(font
@@ -2511,7 +2511,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 129.54 71.12 0)
 			(effects
 				(font
@@ -2529,7 +2529,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -2577,7 +2577,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2706")
 					(unit 1)
 				)
 			)
@@ -2592,7 +2592,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "382e8b7d-c66e-4e44-b2ae-11e843478cd7")
-		(property "Reference" "#PWR02603"
+		(property "Reference" "#PWR02708"
 			(at 72.39 58.42 0)
 			(effects
 				(font
@@ -2642,7 +2642,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02603")
+					(reference "#PWR02708")
 					(unit 1)
 				)
 			)
@@ -2658,7 +2658,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3d40963d-bab0-43a5-930e-74cb7663a309")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 120.015 36.83 0)
 			(effects
 				(font
@@ -2676,7 +2676,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 119.6848 43.18 0)
 			(effects
 				(font
@@ -2703,7 +2703,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 109.855 26.67 0)
 			(effects
 				(font
@@ -2712,7 +2712,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 124.46 36.83 0)
 			(effects
 				(font
@@ -2748,7 +2748,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -2788,7 +2788,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2704")
 					(unit 1)
 				)
 			)
@@ -2803,7 +2803,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3e6d56ce-0bee-477a-ac8a-7d1b11d493be")
-		(property "Reference" "#PWR02741"
+		(property "Reference" "#PWR02712"
 			(at 72.39 134.62 0)
 			(effects
 				(font
@@ -2853,7 +2853,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02741")
+					(reference "#PWR02712")
 					(unit 1)
 				)
 			)
@@ -2868,7 +2868,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4389eb04-dc10-483b-9f72-4bf2e0cddd9a")
-		(property "Reference" "D?"
+		(property "Reference" "D2703"
 			(at 89.3318 126.0094 90)
 			(effects
 				(font
@@ -2886,7 +2886,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 86.36 127 0)
 			(effects
 				(font
@@ -2931,7 +2931,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2703")
 					(unit 1)
 				)
 			)
@@ -2946,7 +2946,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "48dce318-8cd2-4ff7-9257-c0666dfa5e7f")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 140.1318 87.9094 90)
 			(effects
 				(font
@@ -2964,7 +2964,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 137.16 88.9 0)
 			(effects
 				(font
@@ -2991,7 +2991,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 297.688 219.964 0)
 			(effects
 				(font
@@ -3009,7 +3009,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -3049,7 +3049,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2705")
 					(unit 1)
 				)
 			)
@@ -3064,7 +3064,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4fc82ad8-8eaf-4c1e-99ea-a4aa585a2283")
-		(property "Reference" "#PWR02740"
+		(property "Reference" "#PWR02707"
 			(at 69.85 125.73 0)
 			(effects
 				(font
@@ -3114,7 +3114,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02740")
+					(reference "#PWR02707")
 					(unit 1)
 				)
 			)
@@ -3130,7 +3130,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "519c967f-b4dd-41e3-adcc-59e5f5ff0bd6")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 87.884 81.28 0)
 			(effects
 				(font
@@ -3147,7 +3147,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 86.36 81.28 0)
 			(effects
 				(font
@@ -3174,7 +3174,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 84.582 79.248 0)
 			(effects
 				(font
@@ -3192,7 +3192,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 84.582 83.058 0)
 			(effects
 				(font
@@ -3201,7 +3201,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 78.74 71.12 0)
 			(effects
 				(font
@@ -3219,7 +3219,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -3267,7 +3267,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2703")
 					(unit 1)
 				)
 			)
@@ -3283,7 +3283,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "53a03372-99da-4fc1-8c84-a51c63ec4a37")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 120.015 74.93 0)
 			(effects
 				(font
@@ -3301,7 +3301,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 119.6848 81.28 0)
 			(effects
 				(font
@@ -3328,7 +3328,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 109.855 64.77 0)
 			(effects
 				(font
@@ -3337,7 +3337,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 124.46 74.93 0)
 			(effects
 				(font
@@ -3373,7 +3373,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -3413,7 +3413,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2705")
 					(unit 1)
 				)
 			)
@@ -3428,7 +3428,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5811637a-c5ff-48cc-9c6b-d9daba935a0e")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 190.9318 49.8094 90)
 			(effects
 				(font
@@ -3446,7 +3446,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 187.96 50.8 0)
 			(effects
 				(font
@@ -3473,7 +3473,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 348.488 181.864 0)
 			(effects
 				(font
@@ -3491,7 +3491,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -3531,7 +3531,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2706")
 					(unit 1)
 				)
 			)
@@ -3546,7 +3546,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5960ab11-37e3-4ea5-bc84-a33804512cbe")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 120.65 87.63 0)
 			(effects
 				(font
@@ -3596,7 +3596,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -3620,7 +3620,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02730")
+					(reference "#PWR02720")
 					(unit 1)
 				)
 			)
@@ -3635,7 +3635,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5a5ba641-b7d2-4be5-b0f5-3b1af60eb307")
-		(property "Reference" "#PWR02602"
+		(property "Reference" "#PWR02714"
 			(at 86.36 43.18 0)
 			(effects
 				(font
@@ -3685,7 +3685,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02602")
+					(reference "#PWR02714")
 					(unit 1)
 				)
 			)
@@ -3701,7 +3701,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5a5d285d-eece-45e9-9ba1-1a437261a1de")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 189.484 81.28 0)
 			(effects
 				(font
@@ -3718,7 +3718,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 187.96 81.28 0)
 			(effects
 				(font
@@ -3745,7 +3745,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 186.182 79.248 0)
 			(effects
 				(font
@@ -3763,7 +3763,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 186.182 83.058 0)
 			(effects
 				(font
@@ -3772,7 +3772,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 180.34 71.12 0)
 			(effects
 				(font
@@ -3790,7 +3790,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -3838,7 +3838,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2708")
 					(unit 1)
 				)
 			)
@@ -3853,7 +3853,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5c718ae4-b986-4ee0-a931-68dc5262864e")
-		(property "Reference" "#PWR02723"
+		(property "Reference" "#PWR02735"
 			(at 187.96 43.18 0)
 			(effects
 				(font
@@ -3903,7 +3903,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02723")
+					(reference "#PWR02735")
 					(unit 1)
 				)
 			)
@@ -3918,7 +3918,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "67a26f18-9d43-424a-b3aa-188f630ed3b7")
-		(property "Reference" "#PWR02716"
+		(property "Reference" "#PWR02721"
 			(at 123.19 58.42 0)
 			(effects
 				(font
@@ -3968,7 +3968,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02716")
+					(reference "#PWR02721")
 					(unit 1)
 				)
 			)
@@ -3983,7 +3983,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6913e4c0-fdef-4fc4-8cc5-c17593fbc518")
-		(property "Reference" "#PWR02734"
+		(property "Reference" "#PWR02729"
 			(at 171.45 77.47 0)
 			(effects
 				(font
@@ -4033,7 +4033,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02734")
+					(reference "#PWR02729")
 					(unit 1)
 				)
 			)
@@ -4048,7 +4048,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6a55be83-c063-4f7c-9fcd-8bd8e92f6acf")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 171.45 49.53 0)
 			(effects
 				(font
@@ -4098,7 +4098,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -4122,7 +4122,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02720")
+					(reference "#PWR02728")
 					(unit 1)
 				)
 			)
@@ -4137,7 +4137,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e3a0088-2df0-4856-8e09-a7eb8d462c4e")
-		(property "Reference" "U1501"
+		(property "Reference" "U?"
 			(at 175.514 53.34 0)
 			(effects
 				(font
@@ -4212,7 +4212,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "U1501")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -4224,7 +4224,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2706")
 					(unit 1)
 				)
 			)
@@ -4239,7 +4239,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6f9a9280-1a34-42a2-8662-b969dc9c8358")
-		(property "Reference" "#PWR02724"
+		(property "Reference" "#PWR02704"
 			(at 69.85 77.47 0)
 			(effects
 				(font
@@ -4289,7 +4289,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02724")
+					(reference "#PWR02704")
 					(unit 1)
 				)
 			)
@@ -4305,7 +4305,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "73f3eba7-80de-4dce-8da9-193a1203a081")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 170.815 74.93 0)
 			(effects
 				(font
@@ -4323,7 +4323,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 170.4848 81.28 0)
 			(effects
 				(font
@@ -4350,7 +4350,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 160.655 64.77 0)
 			(effects
 				(font
@@ -4359,7 +4359,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 175.26 74.93 0)
 			(effects
 				(font
@@ -4395,7 +4395,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -4435,7 +4435,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2707")
 					(unit 1)
 				)
 			)
@@ -4450,7 +4450,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7712ffe2-af0c-4a17-b960-e858c7c73db2")
-		(property "Reference" "#PWR02742"
+		(property "Reference" "#PWR02713"
 			(at 72.39 142.24 0)
 			(effects
 				(font
@@ -4500,7 +4500,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02742")
+					(reference "#PWR02713")
 					(unit 1)
 				)
 			)
@@ -4516,7 +4516,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7942dc10-bfed-43a5-971e-51b442ca3b37")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 138.684 43.18 0)
 			(effects
 				(font
@@ -4533,7 +4533,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 137.16 43.18 0)
 			(effects
 				(font
@@ -4560,7 +4560,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 135.382 41.148 0)
 			(effects
 				(font
@@ -4578,7 +4578,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 135.382 44.958 0)
 			(effects
 				(font
@@ -4587,7 +4587,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 129.54 33.02 0)
 			(effects
 				(font
@@ -4605,7 +4605,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -4653,7 +4653,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2705")
 					(unit 1)
 				)
 			)
@@ -4668,7 +4668,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7a6591b6-4cba-45d1-9b76-5e25c41c5635")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 190.9318 87.9094 90)
 			(effects
 				(font
@@ -4686,7 +4686,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 187.96 88.9 0)
 			(effects
 				(font
@@ -4713,7 +4713,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 348.488 219.964 0)
 			(effects
 				(font
@@ -4731,7 +4731,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -4771,7 +4771,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2707")
 					(unit 1)
 				)
 			)
@@ -4786,7 +4786,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7b21dd10-6c1d-4035-a996-9a77bb1804d2")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 69.85 87.63 0)
 			(effects
 				(font
@@ -4836,7 +4836,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -4860,7 +4860,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02725")
+					(reference "#PWR02705")
 					(unit 1)
 				)
 			)
@@ -4875,7 +4875,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "84cfa971-9280-4f6b-a66a-d7d849bdf4bd")
-		(property "Reference" "#PWR02729"
+		(property "Reference" "#PWR02719"
 			(at 120.65 77.47 0)
 			(effects
 				(font
@@ -4925,7 +4925,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02729")
+					(reference "#PWR02719")
 					(unit 1)
 				)
 			)
@@ -4940,7 +4940,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "88f3e672-cf7d-430a-8d59-7c220970bb17")
-		(property "Reference" "#PWR02738"
+		(property "Reference" "#PWR02733"
 			(at 173.99 96.52 0)
 			(effects
 				(font
@@ -4990,7 +4990,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02738")
+					(reference "#PWR02733")
 					(unit 1)
 				)
 			)
@@ -5071,7 +5071,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8de073ac-51a0-43fc-ada9-8595c6fa71ee")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 170.815 36.83 0)
 			(effects
 				(font
@@ -5089,7 +5089,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 170.4848 43.18 0)
 			(effects
 				(font
@@ -5116,7 +5116,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 160.655 26.67 0)
 			(effects
 				(font
@@ -5125,7 +5125,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 175.26 36.83 0)
 			(effects
 				(font
@@ -5161,7 +5161,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -5201,7 +5201,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2706")
 					(unit 1)
 				)
 			)
@@ -5216,7 +5216,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "91ab6b31-4734-40df-a4ac-7179b580b058")
-		(property "Reference" "#PWR02728"
+		(property "Reference" "#PWR02715"
 			(at 86.36 81.28 0)
 			(effects
 				(font
@@ -5266,7 +5266,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02728")
+					(reference "#PWR02715")
 					(unit 1)
 				)
 			)
@@ -5282,7 +5282,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9288d381-4ba3-41c4-a06d-56ac4349f0bb")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 69.215 74.93 0)
 			(effects
 				(font
@@ -5300,7 +5300,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 68.8848 81.28 0)
 			(effects
 				(font
@@ -5327,7 +5327,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 59.055 64.77 0)
 			(effects
 				(font
@@ -5336,7 +5336,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 73.66 74.93 0)
 			(effects
 				(font
@@ -5372,7 +5372,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -5412,7 +5412,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2702")
 					(unit 1)
 				)
 			)
@@ -5427,7 +5427,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "94100c1a-1829-4fd1-9bf3-949859d1e31b")
-		(property "Reference" "#PWR02731"
+		(property "Reference" "#PWR02723"
 			(at 123.19 96.52 0)
 			(effects
 				(font
@@ -5477,7 +5477,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02731")
+					(reference "#PWR02723")
 					(unit 1)
 				)
 			)
@@ -5492,7 +5492,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9606ef62-183c-4792-8638-391155d68a2b")
-		(property "Reference" "#PWR02718"
+		(property "Reference" "#PWR02725"
 			(at 137.16 43.18 0)
 			(effects
 				(font
@@ -5542,7 +5542,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02718")
+					(reference "#PWR02725")
 					(unit 1)
 				)
 			)
@@ -5557,7 +5557,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "98240abd-5434-4b29-a7d4-ce9346dd68c8")
-		(property "Reference" "#PWR02719"
+		(property "Reference" "#PWR02727"
 			(at 171.45 39.37 0)
 			(effects
 				(font
@@ -5607,7 +5607,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02719")
+					(reference "#PWR02727")
 					(unit 1)
 				)
 			)
@@ -5622,7 +5622,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a269b0ce-14ed-4318-bd5d-35e49f3f3754")
-		(property "Reference" "#PWR01508"
+		(property "Reference" "#PWR?"
 			(at 69.85 49.53 0)
 			(effects
 				(font
@@ -5672,7 +5672,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01508")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -5696,7 +5696,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02003")
+					(reference "#PWR02703")
 					(unit 1)
 				)
 			)
@@ -5711,7 +5711,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a2cd09d8-df44-4190-bee9-e7b12c9f97ea")
-		(property "Reference" "#PWR02733"
+		(property "Reference" "#PWR02726"
 			(at 137.16 81.28 0)
 			(effects
 				(font
@@ -5761,7 +5761,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02733")
+					(reference "#PWR02726")
 					(unit 1)
 				)
 			)
@@ -5776,7 +5776,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a39f2d4d-66ca-4c2b-a304-eb874c452c5d")
-		(property "Reference" "#PWR02721"
+		(property "Reference" "#PWR02731"
 			(at 173.99 58.42 0)
 			(effects
 				(font
@@ -5826,7 +5826,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02721")
+					(reference "#PWR02731")
 					(unit 1)
 				)
 			)
@@ -5841,7 +5841,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ae4a998c-da98-4f3e-ab45-e2637ee721cf")
-		(property "Reference" "#PWR02743"
+		(property "Reference" "#PWR02716"
 			(at 86.36 119.38 0)
 			(effects
 				(font
@@ -5891,7 +5891,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02743")
+					(reference "#PWR02716")
 					(unit 1)
 				)
 			)
@@ -5906,7 +5906,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b231c5ae-c44e-4a2e-8214-437d480b79c8")
-		(property "Reference" "#PWR01506"
+		(property "Reference" "#PWR?"
 			(at 26.67 66.675 0)
 			(effects
 				(font
@@ -5956,7 +5956,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01506")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -5980,7 +5980,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02001")
+					(reference "#PWR02701")
 					(unit 1)
 				)
 			)
@@ -5995,7 +5995,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ba99ed9c-fcbb-4a9f-8186-eb7a9643fdf3")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 89.3318 87.9094 90)
 			(effects
 				(font
@@ -6013,7 +6013,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 86.36 88.9 0)
 			(effects
 				(font
@@ -6040,7 +6040,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 246.888 219.964 0)
 			(effects
 				(font
@@ -6058,7 +6058,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -6098,7 +6098,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2702")
 					(unit 1)
 				)
 			)
@@ -6113,7 +6113,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bc7150ea-c332-4ecb-b4a1-d764845ade61")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 72.39 66.04 0)
 			(effects
 				(font
@@ -6163,7 +6163,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6187,7 +6187,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02007")
+					(reference "#PWR02709")
 					(unit 1)
 				)
 			)
@@ -6202,7 +6202,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bd69e3c5-979f-4b21-9b1c-a7305857357e")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 140.1318 49.8094 90)
 			(effects
 				(font
@@ -6220,7 +6220,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 137.16 50.8 0)
 			(effects
 				(font
@@ -6247,7 +6247,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 297.688 181.864 0)
 			(effects
 				(font
@@ -6265,7 +6265,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -6305,7 +6305,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2704")
 					(unit 1)
 				)
 			)
@@ -6320,7 +6320,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "be72f743-bf87-4e12-b5e1-a078ac4fb5b2")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 123.19 66.04 0)
 			(effects
 				(font
@@ -6370,7 +6370,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6394,7 +6394,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02717")
+					(reference "#PWR02722")
 					(unit 1)
 				)
 			)
@@ -6409,7 +6409,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "be958829-f4a0-43b1-b260-2f9b6c24d466")
-		(property "Reference" "#PWR02714"
+		(property "Reference" "#PWR02717"
 			(at 120.65 39.37 0)
 			(effects
 				(font
@@ -6459,7 +6459,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02714")
+					(reference "#PWR02717")
 					(unit 1)
 				)
 			)
@@ -6474,7 +6474,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "bfd74273-f317-4246-ac3c-ab85624d617f")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 173.99 104.14 0)
 			(effects
 				(font
@@ -6524,7 +6524,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6548,7 +6548,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02737")
+					(reference "#PWR02734")
 					(unit 1)
 				)
 			)
@@ -6564,7 +6564,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c1f0e6cf-0eec-4862-894d-72c8c668c975")
-		(property "Reference" "R1501"
+		(property "Reference" "R?"
 			(at 28.956 56.515 0)
 			(effects
 				(font
@@ -6582,7 +6582,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 26.67 56.515 0)
 			(effects
 				(font
@@ -6609,7 +6609,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 24.13 54.737 0)
 			(effects
 				(font
@@ -6627,7 +6627,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 24.13 59.817 0)
 			(effects
 				(font
@@ -6636,7 +6636,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 19.05 46.355 0)
 			(effects
 				(font
@@ -6654,7 +6654,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1501")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -6686,7 +6686,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2701")
 					(unit 1)
 				)
 			)
@@ -6701,7 +6701,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c75cbef1-1801-4b1e-8bfb-e9cad1156969")
-		(property "Reference" "#PWR02739"
+		(property "Reference" "#PWR02706"
 			(at 69.85 115.57 0)
 			(effects
 				(font
@@ -6751,7 +6751,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02739")
+					(reference "#PWR02706")
 					(unit 1)
 				)
 			)
@@ -6766,7 +6766,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cbc52cb7-d5fb-4bc2-b076-b1038f3971d7")
-		(property "Reference" "U1501"
+		(property "Reference" "U?"
 			(at 73.914 53.34 0)
 			(effects
 				(font
@@ -6841,7 +6841,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "U1501")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -6853,7 +6853,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2701")
 					(unit 1)
 				)
 			)
@@ -6869,7 +6869,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d20e65d5-0fe0-4135-a10f-abf485ce83be")
-		(property "Reference" "C1501"
+		(property "Reference" "C?"
 			(at 69.215 36.83 0)
 			(effects
 				(font
@@ -6887,7 +6887,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 68.8848 43.18 0)
 			(effects
 				(font
@@ -6914,7 +6914,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 59.055 26.67 0)
 			(effects
 				(font
@@ -6923,7 +6923,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 73.66 36.83 0)
 			(effects
 				(font
@@ -6959,7 +6959,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "C1501")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -6999,7 +6999,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2701")
 					(unit 1)
 				)
 			)
@@ -7014,7 +7014,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d6d6c391-e3a9-41e1-9e01-e5ed1a482fe6")
-		(property "Reference" "#PWR02726"
+		(property "Reference" "#PWR02710"
 			(at 72.39 96.52 0)
 			(effects
 				(font
@@ -7064,7 +7064,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02726")
+					(reference "#PWR02710")
 					(unit 1)
 				)
 			)
@@ -7079,7 +7079,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e0a102c0-3491-4b99-87f0-ad61c42b3d98")
-		(property "Reference" "U1501"
+		(property "Reference" "U?"
 			(at 124.714 53.34 0)
 			(effects
 				(font
@@ -7154,7 +7154,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "U1501")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -7166,7 +7166,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2704")
 					(unit 1)
 				)
 			)
@@ -7181,7 +7181,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e1acb8be-3918-4718-8b4e-b0f3ae93dcdc")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 72.39 104.14 0)
 			(effects
 				(font
@@ -7231,7 +7231,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7255,7 +7255,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02727")
+					(reference "#PWR02711")
 					(unit 1)
 				)
 			)
@@ -7270,7 +7270,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ea587b3b-d32a-4338-93ea-4365cb3acfec")
-		(property "Reference" "D1501"
+		(property "Reference" "D?"
 			(at 89.3318 49.8094 90)
 			(effects
 				(font
@@ -7288,7 +7288,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "LEDs:LED_0603"
+		(property "Footprint" ""
 			(at 86.36 50.8 0)
 			(effects
 				(font
@@ -7315,7 +7315,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "754-1121-1-ND"
+		(property "Digi-Key PN" ""
 			(at 246.888 181.864 0)
 			(effects
 				(font
@@ -7333,7 +7333,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "D1501")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -7373,7 +7373,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "D?")
+					(reference "D2701")
 					(unit 1)
 				)
 			)
@@ -7388,7 +7388,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f017b600-860a-4da1-8192-1abc03ad0702")
-		(property "Reference" "#PWR01512"
+		(property "Reference" "#PWR?"
 			(at 123.19 104.14 0)
 			(effects
 				(font
@@ -7438,7 +7438,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "#PWR01512")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7462,7 +7462,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02732")
+					(reference "#PWR02724")
 					(unit 1)
 				)
 			)
@@ -7478,7 +7478,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f1570173-2d5e-44eb-b722-6ae2f80167a5")
-		(property "Reference" "R1502"
+		(property "Reference" "R?"
 			(at 87.884 43.18 0)
 			(effects
 				(font
@@ -7495,7 +7495,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 86.36 43.18 0)
 			(effects
 				(font
@@ -7522,7 +7522,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 84.582 41.148 0)
 			(effects
 				(font
@@ -7540,7 +7540,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 84.582 44.958 0)
 			(effects
 				(font
@@ -7549,7 +7549,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-1.00KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 78.74 33.02 0)
 			(effects
 				(font
@@ -7567,7 +7567,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "R1502")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -7615,7 +7615,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "R?")
+					(reference "R2702")
 					(unit 1)
 				)
 			)
@@ -7630,7 +7630,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f2fab68e-bbc1-42fc-8b27-6a37ea990130")
-		(property "Reference" "U?"
+		(property "Reference" "U2703"
 			(at 73.914 129.54 0)
 			(effects
 				(font
@@ -7705,7 +7705,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2703")
 					(unit 1)
 				)
 			)
@@ -7721,7 +7721,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f7dee9f1-e19e-45a5-82fc-8b957be67f35")
-		(property "Reference" "C?"
+		(property "Reference" "C2703"
 			(at 69.215 113.03 0)
 			(effects
 				(font
@@ -7739,7 +7739,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 68.8848 119.38 0)
 			(effects
 				(font
@@ -7766,7 +7766,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 59.055 102.87 0)
 			(effects
 				(font
@@ -7775,7 +7775,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 73.66 113.03 0)
 			(effects
 				(font
@@ -7811,7 +7811,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "C?")
+					(reference "C2703")
 					(unit 1)
 				)
 			)
@@ -7826,7 +7826,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f904765d-586c-4da7-b567-fb6487371940")
-		(property "Reference" "U1501"
+		(property "Reference" "U?"
 			(at 124.714 91.44 0)
 			(effects
 				(font
@@ -7901,7 +7901,7 @@
 		(instances
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/2cd2cc24-63f3-4ff7-b2ec-a0dfd71a27e5"
-					(reference "U1501")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -7913,7 +7913,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "U?")
+					(reference "U2705")
 					(unit 1)
 				)
 			)
@@ -7928,7 +7928,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fb9b9626-b22d-4929-82c2-48b74abe61a7")
-		(property "Reference" "#PWR02601"
+		(property "Reference" "#PWR02702"
 			(at 69.85 39.37 0)
 			(effects
 				(font
@@ -7978,7 +7978,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c698b831-0a89-446b-a0f6-e678b516ea4f"
-					(reference "#PWR02601")
+					(reference "#PWR02702")
 					(unit 1)
 				)
 			)

@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -155,13 +155,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/598739f3-768e-44e6-92d3-e17fa168c78a"
-					(reference "H2003")
+					(reference "H?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/a61c133c-fe37-4b38-bebe-91678215771d"
-					(reference "H?")
+					(reference "H3003")
 					(unit 1)
 				)
 			)
@@ -228,13 +228,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/598739f3-768e-44e6-92d3-e17fa168c78a"
-					(reference "H2002")
+					(reference "H?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/a61c133c-fe37-4b38-bebe-91678215771d"
-					(reference "H?")
+					(reference "H3002")
 					(unit 1)
 				)
 			)
@@ -301,13 +301,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/598739f3-768e-44e6-92d3-e17fa168c78a"
-					(reference "H2001")
+					(reference "H?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/a61c133c-fe37-4b38-bebe-91678215771d"
-					(reference "H?")
+					(reference "H3001")
 					(unit 1)
 				)
 			)
@@ -374,13 +374,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/598739f3-768e-44e6-92d3-e17fa168c78a"
-					(reference "H2004")
+					(reference "H?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/a61c133c-fe37-4b38-bebe-91678215771d"
-					(reference "H?")
+					(reference "H3004")
 					(unit 1)
 				)
 			)

@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -263,6 +263,20 @@
 		)
 		(uuid "6a53baa9-1916-42de-91cf-9fcd8c367d91")
 	)
+	(text "29. Capacitive Touch"
+		(exclude_from_sim no)
+		(at 193.04 77.47 0)
+		(effects
+			(font
+				(face "Courier New")
+				(size 2.032 2.032)
+				(thickness 0.508)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "6d79bca0-76cb-4170-abb5-b6c462cab206")
+	)
 	(text "13. LCD Backlight Telemetry"
 		(exclude_from_sim no)
 		(at 15.24 158.75 0)
@@ -319,20 +333,6 @@
 		)
 		(uuid "8f2d360d-5a3e-4749-afe0-08f34ffd977d")
 	)
-	(text "Add capacitive touch"
-		(exclude_from_sim no)
-		(at 38.1 183.134 0)
-		(effects
-			(font
-				(size 5.08 5.08)
-				(thickness 1.016)
-				(bold yes)
-				(color 194 0 0 1)
-			)
-			(justify left bottom)
-		)
-		(uuid "a3206e34-fe64-4f20-926a-0f02a446e706")
-	)
 	(text "17. PIC32MZ DA Power"
 		(exclude_from_sim no)
 		(at 106.68 77.47 0)
@@ -361,9 +361,9 @@
 		)
 		(uuid "ad2c3a85-ec16-4352-b2e9-d5b0bb73180f")
 	)
-	(text "29. Mechanical"
+	(text "30. Mechanical"
 		(exclude_from_sim no)
-		(at 193.04 77.47 0)
+		(at 193.04 87.63 0)
 		(effects
 			(font
 				(face "Courier New")
@@ -850,6 +850,45 @@
 		)
 	)
 	(sheet
+		(at 234.95 73.66)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "3deecc45-48b8-4079-bb4a-d465a32dd7f7")
+		(property "Sheetname" "Capacitive Touch"
+			(at 234.95 72.9484 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Capacitive_Touch.kicad_sch"
+			(at 234.95 78.0546 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9"
+					(page "29")
+				)
+			)
+		)
+	)
+	(sheet
 		(at 72.39 83.82)
 		(size 12.7 3.81)
 		(fields_autoplaced yes)
@@ -1084,7 +1123,7 @@
 		)
 	)
 	(sheet
-		(at 234.95 73.66)
+		(at 234.95 83.82)
 		(size 12.7 3.81)
 		(fields_autoplaced yes)
 		(stroke
@@ -1096,7 +1135,7 @@
 		)
 		(uuid "a61c133c-fe37-4b38-bebe-91678215771d")
 		(property "Sheetname" "Mechanical"
-			(at 234.95 72.9484 0)
+			(at 234.95 83.1084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1105,7 +1144,7 @@
 			)
 		)
 		(property "Sheetfile" "Mechanical.kicad_sch"
-			(at 234.95 78.0546 0)
+			(at 234.95 88.2146 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1117,7 +1156,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9"
-					(page "29")
+					(page "30")
 				)
 			)
 		)
@@ -1501,6 +1540,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
 			)
 		)
 		(instances

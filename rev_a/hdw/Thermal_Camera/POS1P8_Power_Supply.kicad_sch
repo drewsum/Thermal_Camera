@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -3401,7 +3401,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0320")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -3494,7 +3494,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0325")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -3509,7 +3509,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0b012c31-d9b7-463f-a4ac-19a601194674")
-		(property "Reference" "C?"
+		(property "Reference" "C608"
 			(at 192.405 63.5 0)
 			(effects
 				(font
@@ -3599,7 +3599,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C608")
 					(unit 1)
 				)
 			)
@@ -3627,7 +3627,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C307")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -3642,7 +3642,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1ffa5505-4c66-4951-b014-69335407254b")
-		(property "Reference" "C?"
+		(property "Reference" "C602"
 			(at 74.295 55.88 0)
 			(effects
 				(font
@@ -3732,7 +3732,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C602")
 					(unit 1)
 				)
 			)
@@ -3760,7 +3760,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C302")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -3775,7 +3775,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2178f5f8-2687-41e5-b712-f139d9852efa")
-		(property "Reference" "TP?"
+		(property "Reference" "TP601"
 			(at 224.79 53.34 0)
 			(effects
 				(font
@@ -3824,7 +3824,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "TP?")
+					(reference "TP601")
 					(unit 1)
 				)
 			)
@@ -3868,7 +3868,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "TP301")
+					(reference "TP?")
 					(unit 1)
 				)
 			)
@@ -3883,7 +3883,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2aa3b805-ea17-4c7c-aa22-cd7ac712556c")
-		(property "Reference" "L?"
+		(property "Reference" "L601"
 			(at 163.83 60.96 90)
 			(effects
 				(font
@@ -3968,7 +3968,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "L?")
+					(reference "L601")
 					(unit 1)
 				)
 			)
@@ -3984,7 +3984,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "L301")
+					(reference "L?")
 					(unit 1)
 				)
 			)
@@ -3999,7 +3999,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2dd531d3-f301-4e9f-8d3a-982fa223cee5")
-		(property "Reference" "#PWR0623"
+		(property "Reference" "#PWR0622"
 			(at 224.79 113.03 0)
 			(effects
 				(font
@@ -4049,7 +4049,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0623")
+					(reference "#PWR0622")
 					(unit 1)
 				)
 			)
@@ -4077,7 +4077,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0322")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -4170,7 +4170,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0313")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -4185,7 +4185,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "387cbe94-356b-4d0b-b9e9-0c4f7cfa3a17")
-		(property "Reference" "C?"
+		(property "Reference" "C607"
 			(at 177.165 63.5 0)
 			(effects
 				(font
@@ -4275,7 +4275,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C607")
 					(unit 1)
 				)
 			)
@@ -4303,7 +4303,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C306")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -4384,7 +4384,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0310")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -4416,7 +4416,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 191.77 50.8 0)
 			(effects
 				(font
@@ -4443,7 +4443,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 189.23 50.8 90)
 			(effects
 				(font
@@ -4461,7 +4461,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 184.15 50.8 90)
 			(effects
 				(font
@@ -4470,7 +4470,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0HCT-ND"
+		(property "Digi-Key PN" ""
 			(at 191.77 50.8 0)
 			(effects
 				(font
@@ -4500,7 +4500,7 @@
 					(unit 1)
 				)
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
-					(reference "R205")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -4544,7 +4544,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R605")
 					(unit 1)
 				)
 			)
@@ -4559,7 +4559,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "467d96bf-49ed-4203-ba22-a66328f55544")
-		(property "Reference" "#PWR0602"
+		(property "Reference" "#PWR0623"
 			(at 236.22 60.96 0)
 			(effects
 				(font
@@ -4607,7 +4607,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0602")
+					(reference "#PWR0623")
 					(unit 1)
 				)
 			)
@@ -4622,7 +4622,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4b0f5dbc-81bf-4dd0-ad8b-92ce96271ff1")
-		(property "Reference" "#PWR0608"
+		(property "Reference" "#PWR0616"
 			(at 125.73 161.29 0)
 			(effects
 				(font
@@ -4670,7 +4670,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0608")
+					(reference "#PWR0616")
 					(unit 1)
 				)
 			)
@@ -4685,7 +4685,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4f6415b1-f026-4914-aa0a-dea10ece335f")
-		(property "Reference" "C?"
+		(property "Reference" "C605"
 			(at 109.855 101.6 0)
 			(effects
 				(font
@@ -4703,7 +4703,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 110.1852 107.95 0)
 			(effects
 				(font
@@ -4730,7 +4730,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 105.41 101.6 0)
 			(effects
 				(font
@@ -4757,7 +4757,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" "399-7842-1-ND"
+		(property "Digi-Key PN" ""
 			(at 109.22 104.14 0)
 			(effects
 				(font
@@ -4775,7 +4775,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C605")
 					(unit 1)
 				)
 			)
@@ -4823,7 +4823,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C304")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -4839,7 +4839,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "503ada00-d064-41aa-8342-b465c532fe7f")
-		(property "Reference" "U?"
+		(property "Reference" "U601"
 			(at 61.976 87.63 0)
 			(effects
 				(font
@@ -4914,7 +4914,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "U?")
+					(reference "U601")
 					(unit 1)
 				)
 			)
@@ -4926,7 +4926,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "U301")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -4941,7 +4941,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5194de2a-b5c6-46d0-b66a-59e1340539d1")
-		(property "Reference" "Q?"
+		(property "Reference" "Q602"
 			(at 128.27 160.655 0)
 			(effects
 				(font
@@ -5010,7 +5010,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "Q?")
+					(reference "Q602")
 					(unit 1)
 				)
 			)
@@ -5026,7 +5026,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "Q302")
+					(reference "Q?")
 					(unit 1)
 				)
 			)
@@ -5119,7 +5119,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0312")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -5134,7 +5134,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5a5be394-4572-44d3-a546-e75dda7f62ee")
-		(property "Reference" "R?"
+		(property "Reference" "R603"
 			(at 71.628 78.74 0)
 			(effects
 				(font
@@ -5151,7 +5151,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 73.66 78.74 0)
 			(effects
 				(font
@@ -5178,7 +5178,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 76.2 76.708 0)
 			(effects
 				(font
@@ -5196,7 +5196,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 76.454 80.772 0)
 			(effects
 				(font
@@ -5205,7 +5205,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 81.28 68.58 0)
 			(effects
 				(font
@@ -5223,7 +5223,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R603")
 					(unit 1)
 				)
 			)
@@ -5271,7 +5271,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R304")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -5286,7 +5286,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6122fa83-ef89-45bd-8d1e-7d9396e817e8")
-		(property "Reference" "C?"
+		(property "Reference" "C603"
 			(at 89.535 153.67 0)
 			(effects
 				(font
@@ -5304,7 +5304,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 89.8652 160.02 0)
 			(effects
 				(font
@@ -5331,7 +5331,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 85.09 153.67 0)
 			(effects
 				(font
@@ -5358,7 +5358,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" "399-8153-1-ND"
+		(property "Digi-Key PN" ""
 			(at 88.9 156.21 0)
 			(effects
 				(font
@@ -5376,7 +5376,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C603")
 					(unit 1)
 				)
 			)
@@ -5428,7 +5428,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C303")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -5521,7 +5521,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0314")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -5614,7 +5614,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0317")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -5629,7 +5629,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "804fb1bd-f2e2-438d-9aa5-dda4505d3775")
-		(property "Reference" "R?"
+		(property "Reference" "R604"
 			(at 104.648 156.21 0)
 			(effects
 				(font
@@ -5646,7 +5646,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 106.68 156.21 0)
 			(effects
 				(font
@@ -5673,7 +5673,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 109.22 154.178 0)
 			(effects
 				(font
@@ -5691,7 +5691,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 109.474 158.242 0)
 			(effects
 				(font
@@ -5700,7 +5700,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 114.3 146.05 0)
 			(effects
 				(font
@@ -5718,7 +5718,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R604")
 					(unit 1)
 				)
 			)
@@ -5770,7 +5770,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R305")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -5785,7 +5785,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8996f66e-7be8-416c-8f7a-210124afd047")
-		(property "Reference" "R?"
+		(property "Reference" "R609"
 			(at 222.758 102.87 0)
 			(effects
 				(font
@@ -5802,7 +5802,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 224.79 102.87 0)
 			(effects
 				(font
@@ -5829,7 +5829,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 227.33 100.838 0)
 			(effects
 				(font
@@ -5847,7 +5847,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 227.584 104.902 0)
 			(effects
 				(font
@@ -5883,7 +5883,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R609")
 					(unit 1)
 				)
 			)
@@ -5931,7 +5931,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R308")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -5946,7 +5946,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8b9a37c6-9494-49e9-a5f0-c9c5f9d0f68f")
-		(property "Reference" "#PWR0604"
+		(property "Reference" "#PWR0624"
 			(at 245.11 53.34 0)
 			(effects
 				(font
@@ -5994,7 +5994,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0604")
+					(reference "#PWR0624")
 					(unit 1)
 				)
 			)
@@ -6098,7 +6098,7 @@
 					(unit 1)
 				)
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
-					(reference "R206")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -6142,7 +6142,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R606")
 					(unit 1)
 				)
 			)
@@ -6157,7 +6157,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "98c37a06-8da3-4968-b860-b82794061faa")
-		(property "Reference" "#PWR0606"
+		(property "Reference" "#PWR0619"
 			(at 148.59 69.85 0)
 			(effects
 				(font
@@ -6206,7 +6206,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0606")
+					(reference "#PWR0619")
 					(unit 1)
 				)
 			)
@@ -6221,7 +6221,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9c54fc40-6d83-4ff4-916a-fc51a8c3cf0b")
-		(property "Reference" "#PWR0616"
+		(property "Reference" "#PWR0604"
 			(at 69.85 105.41 0)
 			(effects
 				(font
@@ -6271,7 +6271,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0616")
+					(reference "#PWR0604")
 					(unit 1)
 				)
 			)
@@ -6364,7 +6364,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0307")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6379,7 +6379,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a3a10880-714e-447b-a6b5-93b88dae1177")
-		(property "Reference" "C?"
+		(property "Reference" "C606"
 			(at 118.745 55.88 0)
 			(effects
 				(font
@@ -6397,7 +6397,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 119.0752 62.23 0)
 			(effects
 				(font
@@ -6424,7 +6424,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 114.3 55.88 0)
 			(effects
 				(font
@@ -6451,7 +6451,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 118.11 58.42 0)
 			(effects
 				(font
@@ -6469,7 +6469,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C606")
 					(unit 1)
 				)
 			)
@@ -6533,7 +6533,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C305")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -6614,7 +6614,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0316")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6707,7 +6707,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0305")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6800,7 +6800,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0305")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6893,7 +6893,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0319")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -6908,7 +6908,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c270494d-687f-4654-892a-18eec31858e7")
-		(property "Reference" "R?"
+		(property "Reference" "R602"
 			(at 48.768 105.41 0)
 			(effects
 				(font
@@ -6925,7 +6925,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 50.8 105.41 0)
 			(effects
 				(font
@@ -6952,7 +6952,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 53.34 103.378 0)
 			(effects
 				(font
@@ -6970,7 +6970,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 53.594 107.442 0)
 			(effects
 				(font
@@ -6979,7 +6979,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 58.42 95.25 0)
 			(effects
 				(font
@@ -6997,7 +6997,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R602")
 					(unit 1)
 				)
 			)
@@ -7045,7 +7045,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R304")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -7125,7 +7125,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cf001a06-3480-4a44-95a8-4c2f72d8976a")
-		(property "Reference" "U?"
+		(property "Reference" "U602"
 			(at 139.7 45.72 0)
 			(effects
 				(font
@@ -7231,7 +7231,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "U?")
+					(reference "U602")
 					(unit 1)
 				)
 			)
@@ -7247,7 +7247,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "U302")
+					(reference "U?")
 					(unit 1)
 				)
 			)
@@ -7262,7 +7262,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d143fd8b-71f7-47b9-b6a5-7f52a0097635")
-		(property "Reference" "Q?"
+		(property "Reference" "Q601"
 			(at 109.22 167.005 0)
 			(effects
 				(font
@@ -7331,7 +7331,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "Q?")
+					(reference "Q601")
 					(unit 1)
 				)
 			)
@@ -7347,7 +7347,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "Q301")
+					(reference "Q?")
 					(unit 1)
 				)
 			)
@@ -7363,7 +7363,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d264da45-8150-495a-aa87-cbfb3a92a23b")
-		(property "Reference" "R?"
+		(property "Reference" "R601"
 			(at 45.72 171.45 90)
 			(effects
 				(font
@@ -7379,7 +7379,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 45.72 168.91 0)
 			(effects
 				(font
@@ -7406,7 +7406,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 43.434 166.37 0)
 			(effects
 				(font
@@ -7426,7 +7426,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 48.26 166.37 0)
 			(effects
 				(font
@@ -7436,7 +7436,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "541-2982-1-ND"
+		(property "Digi-Key PN" ""
 			(at 45.72 168.91 0)
 			(effects
 				(font
@@ -7454,7 +7454,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R601")
 					(unit 1)
 				)
 			)
@@ -7478,7 +7478,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R302")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -7493,7 +7493,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d4e54f98-1586-46b7-8617-ce8519de2b87")
-		(property "Reference" "C?"
+		(property "Reference" "C604"
 			(at 93.345 55.88 0)
 			(effects
 				(font
@@ -7583,7 +7583,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C604")
 					(unit 1)
 				)
 			)
@@ -7611,7 +7611,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C308")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -7688,7 +7688,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#FLG0301")
+					(reference "#FLG?")
 					(unit 1)
 				)
 			)
@@ -7769,7 +7769,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0311")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)
@@ -7784,7 +7784,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "df5ba7c9-ba28-435a-94ef-3656263b6b5b")
-		(property "Reference" "D?"
+		(property "Reference" "D601"
 			(at 91.948 143.002 90)
 			(effects
 				(font
@@ -7847,7 +7847,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "D?")
+					(reference "D601")
 					(unit 1)
 				)
 			)
@@ -7863,7 +7863,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "D301")
+					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -7878,7 +7878,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e28786ee-700e-4a9e-9984-f2fcd3881753")
-		(property "Reference" "#PWR0622"
+		(property "Reference" "#PWR0608"
 			(at 73.66 78.74 0)
 			(effects
 				(font
@@ -7928,7 +7928,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0622")
+					(reference "#PWR0608")
 					(unit 1)
 				)
 			)
@@ -7960,7 +7960,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 204.47 50.8 0)
 			(effects
 				(font
@@ -7987,7 +7987,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 201.93 50.8 90)
 			(effects
 				(font
@@ -8005,7 +8005,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 196.85 50.8 90)
 			(effects
 				(font
@@ -8014,7 +8014,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0HCT-ND"
+		(property "Digi-Key PN" ""
 			(at 204.47 50.8 0)
 			(effects
 				(font
@@ -8044,7 +8044,7 @@
 					(unit 1)
 				)
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/033277b9-3b61-4d88-889d-97b223ca74c5"
-					(reference "R208")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -8088,7 +8088,7 @@
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R607")
 					(unit 1)
 				)
 			)
@@ -8103,7 +8103,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ecb5f169-c023-4578-be23-9a352412a569")
-		(property "Reference" "R?"
+		(property "Reference" "R608"
 			(at 222.758 78.74 0)
 			(effects
 				(font
@@ -8120,7 +8120,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 224.79 78.74 0)
 			(effects
 				(font
@@ -8147,7 +8147,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 227.33 76.708 0)
 			(effects
 				(font
@@ -8165,7 +8165,7 @@
 				(justify left)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 227.584 80.772 0)
 			(effects
 				(font
@@ -8201,7 +8201,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "R?")
+					(reference "R608")
 					(unit 1)
 				)
 			)
@@ -8257,7 +8257,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "R307")
+					(reference "R?")
 					(unit 1)
 				)
 			)
@@ -8272,7 +8272,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ef1c61cd-f49c-4c8a-919b-b6bd7512d1d1")
-		(property "Reference" "#PWR0619"
+		(property "Reference" "#PWR0602"
 			(at 63.5 92.71 0)
 			(effects
 				(font
@@ -8322,7 +8322,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR0619")
+					(reference "#PWR0602")
 					(unit 1)
 				)
 			)
@@ -8337,7 +8337,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f31b545c-692f-49df-99cd-24836ae7bbbe")
-		(property "Reference" "C?"
+		(property "Reference" "C601"
 			(at 70.485 102.87 0)
 			(effects
 				(font
@@ -8355,7 +8355,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitors_SMD:C_0603"
+		(property "Footprint" ""
 			(at 70.8152 109.22 0)
 			(effects
 				(font
@@ -8382,7 +8382,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 66.04 102.87 0)
 			(effects
 				(font
@@ -8409,7 +8409,7 @@
 				(justify right)
 			)
 		)
-		(property "Digi-Key PN" "1276-1935-1-ND"
+		(property "Digi-Key PN" ""
 			(at 69.85 105.41 0)
 			(effects
 				(font
@@ -8427,7 +8427,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "C?")
+					(reference "C601")
 					(unit 1)
 				)
 			)
@@ -8491,7 +8491,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "C301")
+					(reference "C?")
 					(unit 1)
 				)
 			)
@@ -8506,7 +8506,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f7703f96-0248-4167-a4bd-7f4c55fe1362")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR0606"
 			(at 73.66 52.07 0)
 			(effects
 				(font
@@ -8556,7 +8556,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/3fa2ed45-8dc3-4842-ae64-2bab78bff715"
-					(reference "#PWR016")
+					(reference "#PWR0606")
 					(unit 1)
 				)
 			)
@@ -8649,7 +8649,7 @@
 			)
 			(project "USB_Hub"
 				(path "/e85aac8c-404c-45dd-bda3-1057cae83baf/00000000-0000-0000-0000-00005f41a7c7"
-					(reference "#PWR0303")
+					(reference "#PWR?")
 					(unit 1)
 				)
 			)

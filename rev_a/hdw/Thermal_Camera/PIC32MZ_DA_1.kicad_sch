@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -135,22 +135,20 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U"
-				(at -35.56 49.53 0)
+			(property "Reference" "U1801"
+				(at 1.27 48.26 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
 			(property "Value" "PIC32MZ2064DAR176"
-				(at -35.56 46.99 0)
+				(at 1.27 45.72 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
 			(property "Footprint" "Custom Footprints Library:LQFP-176_20x20mm_P0.4mm_7p9x7p9mm_EP"
@@ -173,7 +171,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "32-bit Graphics Applications MCUs (up to 2 MB Live Update Flash, 640 KB SRAM, and 32 MB DDR2 SDRAM) with XLP Technology"
+			(property "Description" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -1728,7 +1726,7 @@
 							)
 						)
 					)
-					(number "168"
+					(number "169"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3561,6 +3559,58 @@
 			)
 		)
 	)
+	(no_connect
+		(at 91.44 115.57)
+		(uuid "0bd33160-345d-4aba-a126-46ac324079a3")
+	)
+	(no_connect
+		(at 91.44 57.15)
+		(uuid "17759641-0a7c-40bd-9f3c-4ffa7a365cde")
+	)
+	(no_connect
+		(at 182.88 130.81)
+		(uuid "1896c901-a1cc-439c-9cb9-f80b7608d6aa")
+	)
+	(no_connect
+		(at 182.88 57.15)
+		(uuid "3d555d52-aab2-46a9-8c76-f043e4e254fd")
+	)
+	(no_connect
+		(at 91.44 105.41)
+		(uuid "43e6a2b4-b91c-498c-acef-2245d0b49a29")
+	)
+	(no_connect
+		(at 91.44 52.07)
+		(uuid "52d77164-01fe-4fed-b0f6-679e4ad76e10")
+	)
+	(no_connect
+		(at 182.88 120.65)
+		(uuid "6aeb9787-4adc-42c9-99f0-97e2a346bd06")
+	)
+	(no_connect
+		(at 91.44 46.99)
+		(uuid "6be565dd-21b2-4d29-9198-bef971bd827a")
+	)
+	(no_connect
+		(at 91.44 110.49)
+		(uuid "774e7498-8747-43dc-be2e-69efec95cb58")
+	)
+	(no_connect
+		(at 91.44 97.79)
+		(uuid "77cdb38d-5652-4245-89d5-f5e99037483e")
+	)
+	(no_connect
+		(at 91.44 49.53)
+		(uuid "a06c6736-350b-4878-96e6-9bd5d713d957")
+	)
+	(no_connect
+		(at 182.88 62.23)
+		(uuid "a7c06b87-bba8-4e36-976d-0f3b3afc83b0")
+	)
+	(no_connect
+		(at 182.88 118.11)
+		(uuid "f17cb0cb-6362-4317-ad6c-52507623eb80")
+	)
 	(text "PGED1"
 		(exclude_from_sim no)
 		(at 53.34 78.74 0)
@@ -3648,6 +3698,17 @@
 			(justify left bottom)
 		)
 		(uuid "394f7f28-7198-4b17-9352-8702e7d9f3ca")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 53.34 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "45bb1a6e-ac22-4968-9d10-8332a3047426")
 	)
 	(text "OC5"
 		(exclude_from_sim no)
@@ -3824,6 +3885,17 @@
 			(justify right bottom)
 		)
 		(uuid "945a15a5-7be7-4ccd-b8a0-993e4aa34dc5")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 53.34 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "95882e07-de31-4ab0-8c70-10b38ab37712")
 	)
 	(text "SDI4"
 		(exclude_from_sim no)
@@ -4341,6 +4413,26 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "Cap_Touch_Shutter"
+		(shape input)
+		(at 91.44 67.31 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3ce356d5-d4d4-47cf-8628-8a4d22443404")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 91.44 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -4895,6 +4987,26 @@
 			)
 		)
 	)
+	(global_label "Cap_Touch_Power"
+		(shape input)
+		(at 91.44 64.77 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c0df8363-ac61-4bc4-afce-01c7149892f4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 91.44 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "BATT_IUSB"
 		(shape output)
 		(at 182.88 125.73 0)
@@ -5146,7 +5258,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5cbdb8dc-7619-4fc6-9ac1-eceff2554547")
-		(property "Reference" "U?"
+		(property "Reference" "U1801"
 			(at 137.16 36.83 0)
 			(effects
 				(font
@@ -5449,7 +5561,7 @@
 		(pin "168"
 			(uuid "5e1bb835-0482-4b3d-be3a-59a931b32d44")
 		)
-		(pin "168"
+		(pin "169"
 			(uuid "5e1bb835-0482-4b3d-be3a-59a931b32d45")
 		)
 		(pin "17"
@@ -5734,7 +5846,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-					(reference "U?")
+					(reference "U1801")
 					(unit 2)
 				)
 			)
@@ -5749,7 +5861,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5d225452-9e6f-41df-9003-6b0b3faeb4e0")
-		(property "Reference" "#PWR01810"
+		(property "Reference" "#PWR01813"
 			(at 60.325 172.085 0)
 			(effects
 				(font
@@ -5799,7 +5911,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-					(reference "#PWR01810")
+					(reference "#PWR01813")
 					(unit 1)
 				)
 			)
@@ -5830,7 +5942,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 53.975 172.085 0)
 			(effects
 				(font
@@ -5857,7 +5969,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 56.515 169.799 0)
 			(effects
 				(font
@@ -5877,7 +5989,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 56.769 174.117 0)
 			(effects
 				(font
@@ -5887,7 +5999,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 61.595 161.925 0)
 			(effects
 				(font
@@ -5911,13 +6023,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/4cb440c2-4356-400c-9387-edaaa635d5a5"
-					(reference "R1305")
+					(reference "R?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-					(reference "R?")
+					(reference "R1801")
 					(unit 1)
 				)
 			)
@@ -5932,7 +6044,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ceec1940-35d6-42bd-91c2-89089f4e7061")
-		(property "Reference" "#PWR01809"
+		(property "Reference" "#PWR01812"
 			(at 53.975 172.085 0)
 			(effects
 				(font
@@ -5982,7 +6094,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-					(reference "#PWR01809")
+					(reference "#PWR01812")
 					(unit 1)
 				)
 			)
@@ -6013,7 +6125,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistors_SMD:R_0603"
+		(property "Footprint" ""
 			(at 60.325 172.085 0)
 			(effects
 				(font
@@ -6040,7 +6152,7 @@
 				(hide yes)
 			)
 		)
-		(property "display_footprint" "0603"
+		(property "display_footprint" ""
 			(at 62.865 169.799 0)
 			(effects
 				(font
@@ -6060,7 +6172,7 @@
 				(hide yes)
 			)
 		)
-		(property "Wattage" "1/10W"
+		(property "Wattage" ""
 			(at 63.119 174.117 0)
 			(effects
 				(font
@@ -6070,7 +6182,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "541-10.0KHCT-ND"
+		(property "Digi-Key PN" ""
 			(at 67.945 161.925 0)
 			(effects
 				(font
@@ -6094,13 +6206,13 @@
 			)
 			(project "Nixie_Clock_Core"
 				(path "/16fdce21-b570-4d81-a458-e8839d611806/4cb440c2-4356-400c-9387-edaaa635d5a5"
-					(reference "R1305")
+					(reference "R?")
 					(unit 1)
 				)
 			)
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/1b710e3d-a955-405b-a057-cf08e93463c9"
-					(reference "R?")
+					(reference "R1802")
 					(unit 1)
 				)
 			)

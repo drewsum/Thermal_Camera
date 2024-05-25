@@ -6,7 +6,7 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2023-12-07")
+		(date "2024-05-24")
 		(rev "PRELIM")
 		(company "Drew Maatman and Michael Laffin")
 	)
@@ -3306,6 +3306,74 @@
 			)
 		)
 	)
+	(no_connect
+		(at 96.52 49.53)
+		(uuid "036bfb3b-704a-4edb-a1ad-0c9b0ba8a7d7")
+	)
+	(no_connect
+		(at 96.52 62.23)
+		(uuid "220e1f69-4a25-456b-ae77-854d0dd43bda")
+	)
+	(no_connect
+		(at 96.52 130.81)
+		(uuid "235b5b94-1de2-4eb9-a463-98d3355c8ffb")
+	)
+	(no_connect
+		(at 96.52 57.15)
+		(uuid "3a1c12d3-e538-4585-a5d0-48ac60cf2308")
+	)
+	(no_connect
+		(at 96.52 123.19)
+		(uuid "3d105fe7-abf9-4215-a80b-d8e297ad10f1")
+	)
+	(no_connect
+		(at 96.52 46.99)
+		(uuid "3e672ece-0987-4303-8ead-fe202d83fdb1")
+	)
+	(no_connect
+		(at 172.72 46.99)
+		(uuid "42c158d4-adbf-42a6-a1aa-d60a60f1e142")
+	)
+	(no_connect
+		(at 172.72 80.01)
+		(uuid "4bb7037e-9b58-4f8b-94d5-6dde4aac8938")
+	)
+	(no_connect
+		(at 96.52 102.87)
+		(uuid "57d3231a-613a-482e-8e27-3bfb33c71bbb")
+	)
+	(no_connect
+		(at 96.52 105.41)
+		(uuid "5b5ad870-7c62-4c89-902e-5993f7c637c7")
+	)
+	(no_connect
+		(at 172.72 87.63)
+		(uuid "5c6712bb-0143-4ccd-b3f7-138901cd968e")
+	)
+	(no_connect
+		(at 96.52 97.79)
+		(uuid "673625c5-1007-4ce3-86fe-a65d44ba2555")
+	)
+	(no_connect
+		(at 96.52 95.25)
+		(uuid "6abdfc07-b2d1-4f86-900b-156a2e3ecce7")
+	)
+	(no_connect
+		(at 172.72 90.17)
+		(uuid "6d6af1b5-9096-4edc-a92c-f549b3ea14c2")
+	)
+	(no_connect
+		(at 96.52 59.69)
+		(uuid "b57b3268-71c9-4504-914e-4905376e3e60")
+	)
+	(no_connect
+		(at 172.72 41.91)
+		(uuid "d826ceeb-8a89-4e0f-9748-0e9f98b2215b")
+	)
+	(no_connect
+		(at 172.72 44.45)
+		(uuid "dc309994-6ff0-41d5-9e0d-90a57fcb0d13")
+	)
 	(text "GLCD_G7"
 		(exclude_from_sim no)
 		(at 210.82 101.6 0)
@@ -4716,7 +4784,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4b41d7e1-dc3d-41a8-9123-2ccf78c448c0")
-		(property "Reference" "U?"
+		(property "Reference" "U1901"
 			(at 134.62 34.29 0)
 			(effects
 				(font
@@ -5304,7 +5372,7 @@
 		(instances
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/d6dd27c9-8e5b-4d17-a34a-73b51937c448"
-					(reference "U?")
+					(reference "U1901")
 					(unit 3)
 				)
 			)
