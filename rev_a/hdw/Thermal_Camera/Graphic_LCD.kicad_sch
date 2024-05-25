@@ -5485,7 +5485,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10K0CT-ND"
 			(at 223.52 60.96 0)
 			(effects
 				(font
@@ -6840,7 +6840,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10K0CT-ND"
 			(at 218.44 60.96 0)
 			(effects
 				(font

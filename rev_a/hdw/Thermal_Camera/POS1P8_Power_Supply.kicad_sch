@@ -4470,7 +4470,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10R0CT-ND"
 			(at 191.77 50.8 0)
 			(effects
 				(font
@@ -5205,7 +5205,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10K0CT-ND"
 			(at 81.28 68.58 0)
 			(effects
 				(font
@@ -5700,7 +5700,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10K0CT-ND"
 			(at 114.3 146.05 0)
 			(effects
 				(font
@@ -5865,7 +5865,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT1K50CT-ND"
 			(at 224.79 102.87 0)
 			(effects
 				(font
@@ -6979,7 +6979,7 @@
 				(justify left)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10K0CT-ND"
 			(at 58.42 95.25 0)
 			(effects
 				(font
@@ -7436,7 +7436,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10R0CT-ND"
 			(at 45.72 168.91 0)
 			(effects
 				(font
@@ -8014,7 +8014,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT10R0CT-ND"
 			(at 204.47 50.8 0)
 			(effects
 				(font
@@ -8183,7 +8183,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" ""
+		(property "Digi-Key PN" "RMCF0402FT1K87CT-ND"
 			(at 224.79 78.74 0)
 			(effects
 				(font
