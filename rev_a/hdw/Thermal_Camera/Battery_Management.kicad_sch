@@ -4457,16 +4457,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 52.07) (xy 165.1 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "db24204a-890c-41cc-8a93-b892e87241d7")
-	)
-	(wire
-		(pts
 			(xy 96.52 138.43) (xy 95.25 138.43)
 		)
 		(stroke
@@ -4829,28 +4819,6 @@
 			)
 		)
 	)
-	(global_label "BATT_SNS+"
-		(shape passive)
-		(at 165.1 52.07 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7ca218b9-85c1-4f9b-93b3-17702d67d4b0")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 165.1 39.6922 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "BATT_SNS-"
 		(shape passive)
 		(at 60.96 180.34 180)
@@ -4886,28 +4854,6 @@
 		(uuid "b3d95db1-b210-4044-b2ac-6e088832f8ca")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 18.5633 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "BATT_SNS+"
-		(shape passive)
-		(at 60.96 182.88 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "dc0ae9e4-2cf9-485a-94f2-f918cf70e0c2")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 48.5822 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11652,6 +11598,73 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
 					(reference "#PWR01403")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Custom Library:VBAT")
+		(at 60.96 182.88 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "da2cf7a4-04f3-445b-b82b-e4a4eaaeed03")
+		(property "Reference" "#PWR01437"
+			(at 64.77 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VBAT"
+			(at 57.15 182.8799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 60.96 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 60.96 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 60.96 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "457f5297-f8d8-458d-be49-a78d2eacb316")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/079d68a7-d67d-4f5f-9c02-dfffe75c3c82"
+					(reference "#PWR01437")
 					(unit 1)
 				)
 			)

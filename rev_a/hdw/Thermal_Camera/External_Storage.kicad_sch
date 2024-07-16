@@ -1695,6 +1695,12 @@
 		(uuid "030270b6-990f-4997-8c10-b3fe073157a8")
 	)
 	(junction
+		(at 173.99 33.02)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "078e69c8-c3b8-4621-9c33-d51e366b7bb9")
+	)
+	(junction
 		(at 52.07 63.5)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1863,12 +1869,6 @@
 		(uuid "c097ae70-46ba-4b59-a838-289244a0756c")
 	)
 	(junction
-		(at 173.99 31.75)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "caac3283-4ea6-4247-b1e0-2bfcdc6a5510")
-	)
-	(junction
 		(at 92.71 144.78)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1914,7 +1914,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.37 31.75) (xy 173.99 31.75)
+			(xy 166.37 33.02) (xy 173.99 33.02)
 		)
 		(stroke
 			(width 0)
@@ -1994,7 +1994,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 31.75) (xy 182.88 31.75)
+			(xy 173.99 33.02) (xy 182.88 33.02)
 		)
 		(stroke
 			(width 0)
@@ -2124,6 +2124,16 @@
 	)
 	(wire
 		(pts
+			(xy 166.37 33.02) (xy 166.37 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e60da7c-a7ac-436d-b651-32c069eb8be7")
+	)
+	(wire
+		(pts
 			(xy 49.53 60.96) (xy 57.15 60.96)
 		)
 		(stroke
@@ -2211,16 +2221,6 @@
 			(type default)
 		)
 		(uuid "3b4b5f50-988a-4ecb-9136-b345596523e8")
-	)
-	(wire
-		(pts
-			(xy 72.39 48.26) (xy 72.39 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3b4ee673-3bd6-4b4c-9e14-b7ebef5b71d1")
 	)
 	(wire
 		(pts
@@ -2331,16 +2331,6 @@
 			(type default)
 		)
 		(uuid "463f83b2-2410-4dbe-9423-92c8942f7a4c")
-	)
-	(wire
-		(pts
-			(xy 77.47 45.72) (xy 77.47 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4a79a1af-db70-4afe-841d-2d5897742d08")
 	)
 	(wire
 		(pts
@@ -2754,6 +2744,16 @@
 	)
 	(wire
 		(pts
+			(xy 182.88 33.02) (xy 182.88 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "98d75ab8-4bed-48c3-8ff6-ed08284e4739")
+	)
+	(wire
+		(pts
 			(xy 182.88 140.97) (xy 190.5 140.97)
 		)
 		(stroke
@@ -2964,7 +2964,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 31.75) (xy 173.99 33.02)
+			(xy 173.99 33.02) (xy 173.99 34.29)
 		)
 		(stroke
 			(width 0)
@@ -3051,6 +3051,16 @@
 			(type default)
 		)
 		(uuid "c7e58a61-3786-41de-bda4-f0d1174dc862")
+	)
+	(wire
+		(pts
+			(xy 77.47 45.72) (xy 77.47 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c7f87408-f3d4-46d1-acec-ff9157cdf8b9")
 	)
 	(wire
 		(pts
@@ -3301,6 +3311,16 @@
 			(type default)
 		)
 		(uuid "f8799d41-fed9-4427-8cda-33459d44217d")
+	)
+	(wire
+		(pts
+			(xy 72.39 48.26) (xy 72.39 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f9dc31e6-50fc-4b52-9c81-7f01a7f46e52")
 	)
 	(wire
 		(pts
@@ -4994,7 +5014,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:PESD3V3L4UF")
-		(at 72.39 71.12 270)
+		(at 77.47 71.12 270)
 		(unit 2)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5002,7 +5022,7 @@
 		(dnp no)
 		(uuid "2baf7908-db5e-42a3-a1ed-6c4acad94af0")
 		(property "Reference" "D2002"
-			(at 74.93 71.12 0)
+			(at 80.01 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5010,7 +5030,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L4UF"
-			(at 69.85 71.12 0)
+			(at 74.93 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5019,7 +5039,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-886"
-			(at 72.39 71.12 0)
+			(at 77.47 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5028,7 +5048,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf"
-			(at 72.39 71.12 0)
+			(at 77.47 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5037,7 +5057,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 72.39 71.12 0)
+			(at 77.47 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6358,7 +6378,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:PESD3V3L4UF")
-		(at 62.23 71.12 270)
+		(at 67.31 71.12 270)
 		(unit 3)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6366,7 +6386,7 @@
 		(dnp no)
 		(uuid "6dd65228-d926-4532-aa6c-21dc5aacf60b")
 		(property "Reference" "D2001"
-			(at 64.77 71.12 0)
+			(at 69.85 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6374,7 +6394,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L4UF"
-			(at 59.69 71.12 0)
+			(at 64.77 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6383,7 +6403,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-886"
-			(at 62.23 71.12 0)
+			(at 67.31 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6392,7 +6412,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf"
-			(at 62.23 71.12 0)
+			(at 67.31 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6401,7 +6421,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 62.23 71.12 0)
+			(at 67.31 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7379,7 +7399,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:PESD3V3L4UF")
-		(at 77.47 71.12 270)
+		(at 72.39 71.12 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7387,7 +7407,7 @@
 		(dnp no)
 		(uuid "8e37d1ea-de0e-4a7a-a084-40febb18c082")
 		(property "Reference" "D2002"
-			(at 80.01 71.12 0)
+			(at 74.93 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7395,7 +7415,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L4UF"
-			(at 67.31 76.2 90)
+			(at 82.042 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7403,7 +7423,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-886"
-			(at 77.47 71.12 0)
+			(at 72.39 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7412,7 +7432,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf"
-			(at 77.47 71.12 0)
+			(at 72.39 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7421,7 +7441,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 77.47 71.12 0)
+			(at 72.39 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9187,7 +9207,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 77.47 73.66 0)
+		(at 72.39 73.66 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9196,7 +9216,7 @@
 		(dnp no)
 		(uuid "c217135d-44f9-4d8a-b97f-cf3324a06f57")
 		(property "Reference" "#PWR?"
-			(at 77.47 80.01 0)
+			(at 72.39 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9205,7 +9225,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 77.47 77.47 0)
+			(at 72.39 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9213,7 +9233,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 77.47 73.66 0)
+			(at 72.39 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9222,7 +9242,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 77.47 73.66 0)
+			(at 72.39 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9231,7 +9251,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 77.47 73.66 0)
+			(at 72.39 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9382,7 +9402,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 173.99 33.02 0)
+		(at 173.99 34.29 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9390,7 +9410,7 @@
 		(dnp no)
 		(uuid "c596a5ab-7cea-44c5-ad66-152e197cc81d")
 		(property "Reference" "#PWR?"
-			(at 173.99 39.37 0)
+			(at 173.99 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9399,7 +9419,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 173.99 36.83 0)
+			(at 173.99 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9407,7 +9427,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 33.02 0)
+			(at 173.99 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9415,7 +9435,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 33.02 0)
+			(at 173.99 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9423,7 +9443,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 173.99 33.02 0)
+			(at 173.99 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9457,7 +9477,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:PESD3V3L4UF")
-		(at 67.31 71.12 270)
+		(at 52.07 71.12 270)
 		(unit 4)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9465,7 +9485,7 @@
 		(dnp no)
 		(uuid "c8cb754c-2dac-4a19-971d-a32095e4bbd0")
 		(property "Reference" "D2001"
-			(at 69.85 71.12 0)
+			(at 54.61 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9473,7 +9493,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L4UF"
-			(at 64.77 71.12 0)
+			(at 49.53 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9482,7 +9502,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-886"
-			(at 67.31 71.12 0)
+			(at 52.07 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9491,7 +9511,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf"
-			(at 67.31 71.12 0)
+			(at 52.07 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9500,7 +9520,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 67.31 71.12 0)
+			(at 52.07 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10633,7 +10653,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:PESD3V3L4UF")
-		(at 52.07 71.12 270)
+		(at 62.23 71.12 270)
 		(unit 2)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10641,7 +10661,7 @@
 		(dnp no)
 		(uuid "eec623ba-fd5e-4edd-adb7-f2a6e564b983")
 		(property "Reference" "D2001"
-			(at 54.61 71.12 0)
+			(at 64.77 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10649,7 +10669,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L4UF"
-			(at 49.53 71.12 0)
+			(at 59.69 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10658,7 +10678,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-886"
-			(at 52.07 71.12 0)
+			(at 62.23 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10667,7 +10687,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PESDXL4UF_G_W.pdf"
-			(at 52.07 71.12 0)
+			(at 62.23 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10676,7 +10696,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 52.07 71.12 0)
+			(at 62.23 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
