@@ -8,8 +8,14 @@
 	)
 	(paper "A4")
 	(layers
-		(0 "F.Cu" signal)
-		(31 "B.Cu" signal)
+		(0 "F.Cu" mixed)
+		(1 "In1.Cu" power)
+		(2 "In2.Cu" signal)
+		(3 "In3.Cu" power)
+		(4 "In4.Cu" power)
+		(5 "In5.Cu" signal)
+		(6 "In6.Cu" power)
+		(31 "B.Cu" mixed)
 		(32 "B.Adhes" user "B.Adhesive")
 		(33 "F.Adhes" user "F.Adhesive")
 		(34 "B.Paste" user)
@@ -39,6 +45,111 @@
 		(58 "User.9" user)
 	)
 	(setup
+		(stackup
+			(layer "F.SilkS"
+				(type "Top Silk Screen")
+			)
+			(layer "F.Paste"
+				(type "Top Solder Paste")
+			)
+			(layer "F.Mask"
+				(type "Top Solder Mask")
+				(thickness 0.01)
+			)
+			(layer "F.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 1"
+				(type "prepreg")
+				(thickness 0.1)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In1.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 2"
+				(type "core")
+				(thickness 0.3)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In2.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 3"
+				(type "prepreg")
+				(thickness 0.1)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In3.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 4"
+				(type "core")
+				(thickness 0.3)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In4.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 5"
+				(type "prepreg")
+				(thickness 0.1)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In5.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 6"
+				(type "core")
+				(thickness 0.3)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "In6.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 7"
+				(type "prepreg")
+				(thickness 0.1)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "B.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "B.Mask"
+				(type "Bottom Solder Mask")
+				(thickness 0.01)
+			)
+			(layer "B.Paste"
+				(type "Bottom Solder Paste")
+			)
+			(layer "B.SilkS"
+				(type "Bottom Silk Screen")
+			)
+			(copper_finish "None")
+			(dielectric_constraints no)
+		)
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
 		(pcbplotparams
@@ -8169,7 +8280,7 @@
 	(footprint "Custom Footprints Library:Test_Point"
 		(layer "F.Cu")
 		(uuid "1d852768-aaa7-4e8f-8a23-99fc7426c767")
-		(at 78.486 71.9582 -90)
+		(at 78.0796 71.9328 -90)
 		(descr "Mesurement Point, Round, SMD Pad, DM 1.5mm,")
 		(tags "Mesurement Point Round SMD Pad 1.5mm")
 		(property "Reference" "TP203"
@@ -154320,7 +154431,7 @@
 		)
 	)
 	(gr_text "+12V"
-		(at 76.0476 70.5358 -90)
+		(at 75.6412 70.5104 -90)
 		(layer "F.SilkS")
 		(uuid "74154b17-c2b3-4af8-8928-eb38bd52ef3f")
 		(effects
@@ -154484,6 +154595,18 @@
 				(thickness 0.15)
 			)
 			(justify bottom)
+		)
+	)
+	(gr_text "To Do:\n* Project title\n* Project date\n* Your name\n* Serial port settings?\n* CTP Connector\n* Layer Legend"
+		(at 187.3504 75.2856 0)
+		(layer "Cmts.User")
+		(uuid "06095e16-be8d-4570-84fc-a939e7e5e2ae")
+		(effects
+			(font
+				(size 3 3)
+				(thickness 0.25)
+			)
+			(justify left bottom)
 		)
 	)
 	(zone
