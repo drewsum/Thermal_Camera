@@ -6690,7 +6690,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Custom Footprints Library:GLT035320240IS1-CTP"
 			(at 214.63 29.21 0)
 			(effects
 				(font

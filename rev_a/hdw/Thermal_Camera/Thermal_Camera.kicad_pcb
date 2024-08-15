@@ -23232,9 +23232,10 @@
 		)
 	)
 	(footprint "MountingHole:MountingHole_3mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "413026eb-683e-4196-80a0-58c1525f9dc3")
-		(at 61.1632 50.9016)
+		(at 168.0974 135.0138)
 		(descr "Mounting Hole 3mm, no annular")
 		(tags "mounting hole 3mm no annular")
 		(property "Reference" "H3002"
@@ -29556,9 +29557,10 @@
 		)
 	)
 	(footprint "MountingHole:MountingHole_3mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "4c13f782-15a0-46ee-b0d5-a4f958bb2888")
-		(at 61.1632 58.4516)
+		(at 80.7974 47.7138)
 		(descr "Mounting Hole 3mm, no annular")
 		(tags "mounting hole 3mm no annular")
 		(property "Reference" "H3003"
@@ -37816,9 +37818,10 @@
 		)
 	)
 	(footprint "MountingHole:MountingHole_3mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "67f91049-ba60-4a9c-9ef2-a011566a6f0a")
-		(at 61.1632 43.3516)
+		(at 80.7974 135.0138)
 		(descr "Mounting Hole 3mm, no annular")
 		(tags "mounting hole 3mm no annular")
 		(property "Reference" "H3001"
@@ -50549,9 +50552,10 @@
 		)
 	)
 	(footprint "MountingHole:MountingHole_3mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "88129a0b-3db3-4419-8387-ae988a2b6455")
-		(at 61.1632 66.0016)
+		(at 168.0974 47.7138)
 		(descr "Mounting Hole 3mm, no annular")
 		(tags "mounting hole 3mm no annular")
 		(property "Reference" "H3004"
@@ -95571,6 +95575,128 @@
 			)
 		)
 	)
+	(footprint "Custom Footprints Library:GLT035320240IS1-CTP"
+		(locked yes)
+		(layer "F.Cu")
+		(uuid "ee16b276-68ae-445a-a529-659f56d21902")
+		(at 124.4474 91.3638)
+		(property "Reference" "N2101"
+			(at 0 -33.45 0)
+			(unlocked yes)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "b0122601-a898-4f83-a8f5-82adf81fa4aa")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "LCD Module"
+			(at 0 -31.95 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(uuid "b65fd92a-d5f6-4301-b436-cdd9c40eb681")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" "Custom Footprints Library:GLT035320240IS1-CTP"
+			(at 0 -32.95 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6121562c-2ae4-44e4-8a1f-b03040451c12")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 -32.95 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3db716c8-d41a-4fa3-b932-0cdc870e95d4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 -32.95 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a0e533c4-86ea-4877-9f72-5c1c06925a78")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key PN" "GLT035320240IS1-CTP"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e0809915-58ba-45e9-a3bf-69a41dccd199")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Enclosure* Housing*")
+		(path "/c2d59ecd-441a-4d58-9156-a852d244de52/2d7f3fb1-f8b6-4839-8b5d-8d40663c9e55")
+		(sheetname "Graphic LCD")
+		(sheetfile "Graphic_LCD.kicad_sch")
+		(attr smd)
+		(fp_rect
+			(start -38.45 -31.95)
+			(end 38.45 31.95)
+			(stroke
+				(width 0.12)
+				(type default)
+			)
+			(fill none)
+			(layer "F.SilkS")
+			(uuid "1fd5d849-5329-42c0-a7a4-0d4edfaaeda4")
+		)
+		(fp_rect
+			(start -38.45 -31.95)
+			(end 38.45 31.95)
+			(stroke
+				(width 0.12)
+				(type default)
+			)
+			(fill none)
+			(layer "F.CrtYd")
+			(uuid "e1c9c4e9-78ed-4eb8-8234-dd3b64b2bec9")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 -30.45 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(uuid "f4716a68-a341-4a50-8db9-0dd86a78a94f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+	)
 	(footprint "Button_Switch_THT:SW_PUSH_6mm"
 		(layer "F.Cu")
 		(uuid "ee71a013-9ff7-454c-af0c-421cece9edd9")
@@ -97382,7 +97508,7 @@
 			(size 0.5 0.84)
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 4 "GND")
-			(pinfunction "G20")
+			(pinfunction "G25")
 			(pintype "power_in")
 			(solder_mask_margin 0.0762)
 			(uuid "fefad0a8-f696-46f0-b373-52507dd27de1")
@@ -115973,7 +116099,7 @@
 		(descr "Chip Resistor Network, ROHM MNR18 (see mnr_g.pdf)")
 		(tags "resistor array")
 		(property "Reference" "RN2103"
-			(at 0 3 270)
+			(at 0 3 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "b475a2a2-5e15-4e2e-bf7e-424ee7a5563b")
@@ -115986,7 +116112,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -3 270)
+			(at 0 -3 -90)
 			(layer "B.Fab")
 			(uuid "e3f37619-b929-4deb-8215-b49951fd3399")
 			(effects
@@ -116170,7 +116296,7 @@
 			(uuid "2b82c6e9-9e15-4025-b1ac-c7896275021e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(uuid "0f1e8775-a4ba-45e7-be1b-abdacf9bef97")
 			(effects
@@ -130864,7 +130990,7 @@
 		(descr "Chip Resistor Network, ROHM MNR18 (see mnr_g.pdf)")
 		(tags "resistor array")
 		(property "Reference" "RN2104"
-			(at 0 3 270)
+			(at 0 3 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "15722ff8-d0c6-4f11-872d-4b0ddc10cae4")
@@ -130877,7 +131003,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -3 270)
+			(at 0 -3 -90)
 			(layer "B.Fab")
 			(uuid "27a24b41-7d4a-444c-a324-9bd528fa3acb")
 			(effects
@@ -131061,7 +131187,7 @@
 			(uuid "6f4dc204-6708-48bb-8f7a-33a566ee6a51")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(uuid "eff61c0f-3861-4479-b852-b6ccf5566769")
 			(effects
@@ -150138,7 +150264,7 @@
 		(descr "Chip Resistor Network, ROHM MNR18 (see mnr_g.pdf)")
 		(tags "resistor array")
 		(property "Reference" "RN2102"
-			(at 0 3 270)
+			(at 0 3 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "fc94853c-c06c-49e5-882e-9deda393f3bf")
@@ -150151,7 +150277,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -3 270)
+			(at 0 -3 -90)
 			(layer "B.Fab")
 			(uuid "160406d0-092c-46f3-8092-e315101517fa")
 			(effects
@@ -150335,7 +150461,7 @@
 			(uuid "ba93ddaf-dcda-4111-8d18-3d5ba6f9b051")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(uuid "20b45b61-a4a9-4938-bc53-d4fb039f6bca")
 			(effects
@@ -153251,7 +153377,7 @@
 		(descr "Chip Resistor Network, ROHM MNR18 (see mnr_g.pdf)")
 		(tags "resistor array")
 		(property "Reference" "RN2101"
-			(at 0 3 270)
+			(at 0 3 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "f84b872a-b256-4890-8da1-d6143e273456")
@@ -153264,7 +153390,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -3 270)
+			(at 0 -3 -90)
 			(layer "B.Fab")
 			(uuid "2e403965-c6f8-4b26-a401-565c74ad93a3")
 			(effects
@@ -153614,6 +153740,18 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(gr_rect
+		(start 74.4474 41.3638)
+		(end 174.4474 141.3638)
+		(locked yes)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "Edge.Cuts")
+		(uuid "033bb529-8693-41e7-a036-dfe7647e2662")
 	)
 	(gr_text "+5V_USB"
 		(at 330.454 156.7434 0)
