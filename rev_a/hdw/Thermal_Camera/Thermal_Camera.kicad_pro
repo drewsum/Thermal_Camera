@@ -48,7 +48,7 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": false,
         "zones": {
-          "min_clearance": 0.5
+          "min_clearance": 0.127
         }
       },
       "diff_pair_dimensions": [
@@ -462,6 +462,23 @@
         "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.127,
+        "via_diameter": 0.4,
+        "via_drill": 0.15,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.0889,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "LCD",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.254,
         "via_diameter": 0.4,
         "via_drill": 0.15,
@@ -493,7 +510,24 @@
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
-        "name": "Signal",
+        "name": "Signal_S",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.254,
+        "via_diameter": 0.4,
+        "via_drill": 0.15,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.0889,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "USB",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.254,
@@ -507,7 +541,64 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "Power",
+        "pattern": "+*"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VBAT"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VCOM"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*ANODE"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*CATHODE"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "LCD",
+        "pattern": "*LCD*"
+      },
+      {
+        "netclass": "USB",
+        "pattern": "*D+"
+      },
+      {
+        "netclass": "USB",
+        "pattern": "*D-"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*SPI*"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*UART_R*"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*UART_T*"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*UART_C*"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*PGOOD"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
