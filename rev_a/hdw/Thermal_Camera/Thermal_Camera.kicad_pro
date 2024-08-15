@@ -597,6 +597,10 @@
       {
         "netclass": "Signal_S",
         "pattern": "*PGOOD"
+      },
+      {
+        "netclass": "Signal_S",
+        "pattern": "*SDHC*"
       }
     ]
   },
