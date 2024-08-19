@@ -4384,7 +4384,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1755"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "ab45c87d-99ca-4ef7-85f3-4eeeadd08c32")
@@ -4396,7 +4396,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "eaf95c8b-59f7-4feb-b411-f9ab7aa2aab1")
 			(effects
@@ -4600,7 +4600,7 @@
 			(uuid "25570d9b-0dd8-4f46-8f4b-c7c210739624")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "bf4cc0c9-011a-4e83-a0f9-2736fe4eaca5")
 			(effects
@@ -7748,7 +7748,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1741"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "6ff3138b-356c-445c-992f-41fedec9aeef")
@@ -7760,7 +7760,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "c13e8ad4-1d87-4d2a-9eda-7516934626d2")
 			(effects
@@ -7964,7 +7964,7 @@
 			(uuid "32ba9713-a4e5-451c-b90d-cfb36628adb3")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "2590d9b9-5cc8-489c-9e63-97474ed69e1f")
 			(effects
@@ -9192,7 +9192,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1742"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "045f8236-ac72-41c7-892f-2fed21902a85")
@@ -9204,7 +9204,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "de1193d0-9e6e-4abb-83bf-4322fce928d0")
 			(effects
@@ -9408,7 +9408,7 @@
 			(uuid "778f1a22-96e9-426e-958e-6a02ef7a1921")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "a08e4f6c-81b1-4abc-9039-36af98c25724")
 			(effects
@@ -9453,7 +9453,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1764"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "3b039796-e229-41d1-aad7-26a2e3e8271f")
@@ -9465,7 +9465,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "95ab73f7-f041-4be7-b148-2f1d791fad04")
 			(effects
@@ -9669,7 +9669,7 @@
 			(uuid "1d1ff3b8-5cc5-45e2-9887-94eb52143434")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "4f774e5b-1821-445e-8365-2b984cece52e")
 			(effects
@@ -11407,7 +11407,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1754"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "ba7c1099-9a56-47c8-9c2f-05eee937a9e4")
@@ -11419,7 +11419,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "11e1791c-ca3f-49ce-8871-7126695ade4b")
 			(effects
@@ -11623,7 +11623,7 @@
 			(uuid "03bbb7a6-9783-48ee-90ae-757bf7655f94")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "0db883c4-8038-4eb1-b8df-b42a96c9d2a2")
 			(effects
@@ -11931,7 +11931,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1761"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "6704457c-9fea-4026-8285-6f737df449c8")
@@ -11943,7 +11943,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "744bb4a7-da6c-4f8b-b647-d8f83469dabd")
 			(effects
@@ -12147,7 +12147,7 @@
 			(uuid "0ab653db-bb74-47b6-98e1-39944de9d2fd")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "603096bc-25b3-439c-b40e-885e09ba1d65")
 			(effects
@@ -15423,7 +15423,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "L1501"
-			(at 0 -1.8 360)
+			(at 0 -1.8 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "91a57487-15ad-4c87-bcf8-89beb1364610")
@@ -15435,7 +15435,7 @@
 			)
 		)
 		(property "Value" "600R 0.5A"
-			(at 0 1.8 360)
+			(at 0 1.8 0)
 			(layer "F.Fab")
 			(uuid "bc87b7d8-b4e2-4380-91ba-aed979d1d448")
 			(effects
@@ -15600,7 +15600,7 @@
 			(uuid "3de6473e-1a37-4776-af81-3e243af82489")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "105e479b-3551-47da-8f32-1963baeabd58")
 			(effects
@@ -15645,7 +15645,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1732"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "4350af90-edb6-414b-817f-8453ffbd3959")
@@ -15657,7 +15657,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "a55d509c-87b6-479b-96a4-901ac972988f")
 			(effects
@@ -15861,7 +15861,7 @@
 			(uuid "8f8688c5-35e4-46e3-aa6c-0c4824e43043")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "ada2f2b0-ac2e-4f70-8815-0661108f0535")
 			(effects
@@ -15906,7 +15906,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1703"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "d0ad4660-524e-43e6-8af1-15bb236bdb37")
@@ -15918,7 +15918,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "F.Fab")
 			(uuid "23066130-2de4-460e-81dd-56d2621a1e9e")
 			(effects
@@ -16122,7 +16122,7 @@
 			(uuid "ee8859d1-dd34-4fb1-9474-ae292f904662")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.Fab")
 			(uuid "385f0ce4-1ed2-4beb-8e45-9195b14e39cc")
 			(effects
@@ -17688,7 +17688,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1718"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "638156c5-4dd0-4b31-8ad1-293d72b7592d")
@@ -17700,7 +17700,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "e90dc8a3-e957-46e7-a0e4-79464741f0fd")
 			(effects
@@ -17904,7 +17904,7 @@
 			(uuid "9bcfb643-b417-42a0-9840-686885d052e4")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "625123ab-a4e2-400e-9e23-839e29535df0")
 			(effects
@@ -19984,7 +19984,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1713"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "dc10c4af-1a8b-45ec-b2e5-ec6fdbafac31")
@@ -19996,7 +19996,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "F.Fab")
 			(uuid "c6a786a2-0d86-40d4-84b5-2d33bb81c703")
 			(effects
@@ -20200,7 +20200,7 @@
 			(uuid "d7e467b4-b05f-473e-ae17-1b44a866ac30")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.Fab")
 			(uuid "ff178ef4-77f3-4965-b94d-8d01b1d1d6a9")
 			(effects
@@ -20767,7 +20767,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R2021"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "891d7517-8f54-49db-8906-c11e881103f9")
@@ -20779,7 +20779,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.45 270)
+			(at 0 1.45 -90)
 			(layer "F.Fab")
 			(uuid "6e4f9826-9d2b-4fb6-9cee-3f12ef11b25a")
 			(effects
@@ -20982,7 +20982,7 @@
 			(uuid "ad65c271-3e84-4c05-9224-7a349cf6ed94")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.Fab")
 			(uuid "ed87f833-bc3c-45d1-b77b-f2395b3990a4")
 			(effects
@@ -21949,7 +21949,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1601"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "4516f3e7-e8fa-4efe-861e-60bd5b2f8000")
@@ -21961,7 +21961,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "F.Fab")
 			(uuid "872be89a-108d-4aba-bbcd-0fc2e9488321")
 			(effects
@@ -22165,7 +22165,7 @@
 			(uuid "41478c69-abe2-4724-949f-bff0dee413cc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.Fab")
 			(uuid "88bccaa2-5b36-4196-b4ae-48d5b37d7d97")
 			(effects
@@ -24554,7 +24554,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1753"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "3b8cf1cd-7f90-4bd5-9268-2ea27e6f6e17")
@@ -24566,7 +24566,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "b1e07379-277e-4dc1-86fb-7e44e8e4dcf0")
 			(effects
@@ -24770,7 +24770,7 @@
 			(uuid "f3aa10b6-f0e3-49f3-a3c7-be78e5668efc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "5742217f-e5d7-4a7b-b094-42dc949238b5")
 			(effects
@@ -25498,7 +25498,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1730"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "ebbde8a7-a1d7-461e-a444-a901a355dee2")
@@ -25510,7 +25510,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "7b5d8880-288a-41d2-b501-b4a22f284545")
 			(effects
@@ -25714,7 +25714,7 @@
 			(uuid "23373291-6c8a-48fc-ab83-ab5c9d814fda")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "a3315fc9-1cfa-411d-bd76-a38b1ead1d26")
 			(effects
@@ -28252,7 +28252,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1743"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "399a767b-3107-445b-b32f-085df6c88e08")
@@ -28264,7 +28264,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "7a3c553c-8b36-47bb-a504-f6fb39bb8923")
 			(effects
@@ -28468,7 +28468,7 @@
 			(uuid "38b77547-b4d3-4eca-9088-73622bc23000")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "a85a8342-9526-49c3-88a1-4359632e2da8")
 			(effects
@@ -28782,7 +28782,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1727"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "5d58ebff-96fc-476e-a009-e7f789437000")
@@ -28794,7 +28794,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "71182300-b27a-4928-905c-e3b537dbf0f4")
 			(effects
@@ -28998,7 +28998,7 @@
 			(uuid "576f1592-7516-4c62-a500-a821c07abc09")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "e26b42bb-7ba8-4e3c-943a-e4b88b58649d")
 			(effects
@@ -36358,7 +36358,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1716"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "6f3d74f0-78e9-49da-9f49-12798e397164")
@@ -36370,7 +36370,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "70e3a7ed-6539-4479-a4f7-84c38aa8fa17")
 			(effects
@@ -36574,7 +36574,7 @@
 			(uuid "738bf3f1-e172-420b-8e9b-ef75a343fa7a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "d90a5c1c-0298-4676-9474-082d53f30c5f")
 			(effects
@@ -36619,7 +36619,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R2020"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "bb3b8673-6735-4a8a-8bd1-3d8adac6f644")
@@ -36631,7 +36631,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.45 270)
+			(at 0 1.45 -90)
 			(layer "F.Fab")
 			(uuid "e3949600-4316-444f-a6ba-cc8d2de28e3d")
 			(effects
@@ -36834,7 +36834,7 @@
 			(uuid "92a0a111-4696-400b-ab2c-c82505196d24")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.Fab")
 			(uuid "009a4675-5beb-4a11-b5cd-5c2aa704d3da")
 			(effects
@@ -41111,7 +41111,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1602"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "f38711e9-a3c5-463b-bf70-4d3a9d77532d")
@@ -41123,7 +41123,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.45 270)
+			(at 0 1.45 -90)
 			(layer "F.Fab")
 			(uuid "8024fc7c-864c-40eb-8d44-9a45148611d1")
 			(effects
@@ -41326,7 +41326,7 @@
 			(uuid "ec302fbf-27a9-4ad2-8edf-01776734102a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.Fab")
 			(uuid "c4cd5541-04d1-4867-811e-902d93119253")
 			(effects
@@ -43352,7 +43352,7 @@
 		(descr "Through hole angled pin header, 1x08, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x08 2.54mm single row")
 		(property "Reference" "J1501"
-			(at -0.0508 2.54 360)
+			(at -0.0508 2.54 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "66da93ea-8b85-4ab0-8f90-2b8f0b032d78")
@@ -43364,7 +43364,7 @@
 			)
 		)
 		(property "Value" "PICKIT4"
-			(at 4.385 2.27 360)
+			(at 4.385 2.27 0)
 			(layer "F.Fab")
 			(uuid "bb720fcf-a619-4b41-b134-b819a05a6816")
 			(effects
@@ -49718,7 +49718,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R2024"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "e9d076b4-a851-4750-8946-3ce88ecda848")
@@ -49730,7 +49730,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.45 270)
+			(at 0 1.45 -90)
 			(layer "F.Fab")
 			(uuid "23e8a188-0599-47e7-a264-83ee6ae99750")
 			(effects
@@ -49933,7 +49933,7 @@
 			(uuid "d8fa7a0b-9b21-4a9a-8166-272ecee55ca6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.35 270)
+			(at 0 -1.35 -90)
 			(layer "F.Fab")
 			(uuid "5eca5c6b-78d0-4662-b53a-78fd9e4109ef")
 			(effects
@@ -51105,7 +51105,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1704"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "d3acc899-7f27-4ff9-9510-c76c0343dd96")
@@ -51117,7 +51117,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "6fc42912-a655-4ed7-9557-8c5f76269ef3")
 			(effects
@@ -51321,7 +51321,7 @@
 			(uuid "09097462-567e-4764-94fa-8a24f52e0452")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "26c28a67-e5a2-4fd6-999b-5e368c8c4d03")
 			(effects
@@ -52450,7 +52450,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1706"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "e6ea8140-2c16-4686-a130-a219cb276c44")
@@ -52462,7 +52462,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "dc6d6816-6d2f-4ff0-bb8d-be666df866fb")
 			(effects
@@ -52666,7 +52666,7 @@
 			(uuid "9a215770-b1d0-4efa-b650-4699ad1e05a1")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "59141238-4944-41a8-afb9-1c9fcafb241a")
 			(effects
@@ -53507,7 +53507,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1715"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "179cd6b7-3740-4523-b34f-808494476541")
@@ -53519,7 +53519,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "F.Fab")
 			(uuid "c87ee02b-a756-4227-9e7e-8cb9903da7fe")
 			(effects
@@ -53723,7 +53723,7 @@
 			(uuid "6af7b170-d1db-418c-a831-95821581c0a2")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.Fab")
 			(uuid "44b30b0e-fc1e-4772-859f-4217db68e072")
 			(effects
@@ -55309,7 +55309,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1729"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "8fa84b4d-3ef9-42be-95f1-9897a3b4ae8b")
@@ -55321,7 +55321,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "c00b5059-3ea6-4f6d-a30e-b8b9587f3589")
 			(effects
@@ -55525,7 +55525,7 @@
 			(uuid "8f2e7509-a95c-4c21-81fe-e2a355979413")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "79a2bf93-1fac-456e-bd43-baa3d38fc26e")
 			(effects
@@ -56369,7 +56369,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1717"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "e0ae24a3-bf81-48e1-97ab-5fc09c58ce99")
@@ -56381,7 +56381,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "a0986d8c-08e5-4b1e-8b77-e865cd7bb828")
 			(effects
@@ -56585,7 +56585,7 @@
 			(uuid "b32c27b7-8607-4237-94f4-dca370750ff4")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "434ade1a-a16e-4b9f-bed8-43e1b2c12fef")
 			(effects
@@ -63532,7 +63532,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1705"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "fbe10296-20c9-4de5-83a0-e0bc45e94ce2")
@@ -63544,7 +63544,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "ae170910-d697-475a-a580-4f9c4b4381bb")
 			(effects
@@ -63748,7 +63748,7 @@
 			(uuid "97865c9d-acb3-4c03-b296-62291d6ec47c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "42e7e549-489e-40b7-be0b-4afbc1462b4a")
 			(effects
@@ -64662,7 +64662,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1744"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "4efaf40d-db05-47a1-bf3b-fc49b30aa84b")
@@ -64674,7 +64674,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "F.Fab")
 			(uuid "36025f72-d83e-44c4-8df1-74137af1213d")
 			(effects
@@ -64878,7 +64878,7 @@
 			(uuid "0fbc5f56-c302-4581-8d90-33bd431eb063")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "F.Fab")
 			(uuid "f3dfad32-9dc9-440e-b728-568e9106a74e")
 			(effects
@@ -65198,7 +65198,7 @@
 		(descr "8-Lead Plastic Dual Flat, No Lead Package (8MA2) - 2x3x0.6 mm Body [UDFN] (see Atmel-8815-SEEPROM-AT24CS01-02-Datasheet.pdf)")
 		(tags "DFN 0.5")
 		(property "Reference" "U2302"
-			(at 0 -2.05 360)
+			(at 0 -2.05 0)
 			(layer "F.SilkS")
 			(uuid "37431451-834b-400e-b45b-c96f109ba503")
 			(effects
@@ -65209,7 +65209,7 @@
 			)
 		)
 		(property "Value" "MCP9804"
-			(at 0 2.05 360)
+			(at 0 2.05 0)
 			(layer "F.Fab")
 			(uuid "9e8cf6aa-93ea-46fc-b06c-38941bea11e3")
 			(effects
@@ -65409,7 +65409,7 @@
 			(uuid "1ed9e505-c3b1-4c42-8849-37368e9da085")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "b8c786de-c071-404b-ada2-612c577dcbe1")
 			(effects
@@ -65805,7 +65805,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1701"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "2236a52a-bc04-4d4b-9aea-893a02b0885b")
@@ -65817,7 +65817,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "F.Fab")
 			(uuid "c57b0f2b-d883-431c-bacd-22fd28828cb5")
 			(effects
@@ -66021,7 +66021,7 @@
 			(uuid "9ba04dd6-0879-4aa9-aa46-2f61d066dead")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "F.Fab")
 			(uuid "f17d8d31-8cc7-4f35-8a5f-bcf85d6e074d")
 			(effects
@@ -67254,7 +67254,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1605"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "4596ee04-37f6-4f57-8242-5e3c8876ebed")
@@ -67267,7 +67267,7 @@
 			)
 		)
 		(property "Value" "10"
-			(at 0 -1.45 360)
+			(at 0 -1.45 0)
 			(layer "B.Fab")
 			(uuid "7f2b4a6f-0798-42a8-b462-2dcf6fd7f88d")
 			(effects
@@ -67478,7 +67478,7 @@
 			(uuid "a9e88a7b-0a33-4eef-a98f-b3d8e210697b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.Fab")
 			(uuid "69a3c405-fc61-4fa3-bb57-cd094b998ea8")
 			(effects
@@ -69441,7 +69441,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1710"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "511d8aaa-b150-4928-859b-7a6b966a2cfc")
@@ -69454,7 +69454,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "93326b09-4e37-46e3-b990-33d5c5f5d17a")
 			(effects
@@ -69666,7 +69666,7 @@
 			(uuid "80d10b6e-69c0-4e5d-9d1a-23c7a41176bc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "f3d814cf-bdab-4769-a5fd-2cea8c24b098")
 			(effects
@@ -71539,7 +71539,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1736"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "f01dde29-c0eb-49a5-bec8-6760244a36e4")
@@ -71552,7 +71552,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "e557daea-e30f-422e-98b9-d57df35db7fd")
 			(effects
@@ -71764,7 +71764,7 @@
 			(uuid "917ea7a4-42f6-42ff-95e6-de99e76a96d7")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "a88890be-f0be-498b-b827-31da289c1c93")
 			(effects
@@ -74463,7 +74463,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1707"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "a4a72c6d-db65-4623-bb0d-7c3fed67bc06")
@@ -74476,7 +74476,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "85b1e523-8a01-4188-8192-c73513898173")
 			(effects
@@ -74688,7 +74688,7 @@
 			(uuid "bd3ccc63-ca66-4217-bca3-fafd186aef23")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "4ba89330-f1a1-43cc-b374-92b5e94e49f0")
 			(effects
@@ -74734,7 +74734,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R2025"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "985aaaa3-d8fd-4a1c-9582-8ba87db86901")
@@ -74747,7 +74747,7 @@
 			)
 		)
 		(property "Value" "10"
-			(at 0 -1.45 270)
+			(at 0 -1.45 -90)
 			(layer "B.Fab")
 			(uuid "050d7acc-479c-4b8d-8ebd-9b5df71ab928")
 			(effects
@@ -74958,7 +74958,7 @@
 			(uuid "c3d0efd8-7128-437e-8c90-cff7b38a553d")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.Fab")
 			(uuid "ead7d37e-a8aa-4dea-b14b-15bc116a56cc")
 			(effects
@@ -76735,7 +76735,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1712"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "5b71a54a-e66c-4e6b-bb46-51af79674c62")
@@ -76748,7 +76748,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "5c4aaa8c-424e-40ba-b7a3-ca6fed69860a")
 			(effects
@@ -76960,7 +76960,7 @@
 			(uuid "16971b53-59e9-436e-96d2-983db15bc32f")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "9767ebc4-066d-402f-a90f-7e34e374c6ca")
 			(effects
@@ -81379,7 +81379,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "L1701"
-			(at 0 1.8 270)
+			(at 0 1.8 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "5eb18365-6fc9-4ec1-843d-dc9d620dabdc")
@@ -81392,7 +81392,7 @@
 			)
 		)
 		(property "Value" "600R 0.5A"
-			(at 0 -1.8 270)
+			(at 0 -1.8 -90)
 			(layer "B.Fab")
 			(uuid "0ea6f29f-35a8-4e39-aa14-f65cc314f629")
 			(effects
@@ -81562,7 +81562,7 @@
 			(uuid "2654958a-0594-462a-8d11-0b9ff4fb00f2")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "B.Fab")
 			(uuid "d7ba0aeb-7c67-46c4-86ea-0ebb6eb40df7")
 			(effects
@@ -82151,7 +82151,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R2028"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "cb6e3d1c-3fa9-4a5e-827e-e2d949d3e6d8")
@@ -82164,7 +82164,7 @@
 			)
 		)
 		(property "Value" "10"
-			(at 0 -1.45 270)
+			(at 0 -1.45 -90)
 			(layer "B.Fab")
 			(uuid "6db1f2c7-482a-4013-a808-6b192d7ac1de")
 			(effects
@@ -82375,7 +82375,7 @@
 			(uuid "35fa5a7d-bdba-44a9-8353-2ec30f9cbd97")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.Fab")
 			(uuid "cf4ab271-e1fd-4cea-ae34-a62bea31a19f")
 			(effects
@@ -85987,7 +85987,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1802"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "fd559015-2a07-4542-814d-3c915f89af3a")
@@ -86000,7 +86000,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -1.45 270)
+			(at 0 -1.45 -90)
 			(layer "B.Fab")
 			(uuid "44b2ae33-e09c-43e9-9515-8a327f17f385")
 			(effects
@@ -86211,7 +86211,7 @@
 			(uuid "f4e4501c-7a8b-47e1-9dfe-946cbf9f995d")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.Fab")
 			(uuid "bce194ad-173a-428c-87b7-8eb07fbb1741")
 			(effects
@@ -88456,7 +88456,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1502"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "85f13e0c-d51a-4986-b126-8b5331463be7")
@@ -88469,7 +88469,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -1.45 360)
+			(at 0 -1.45 0)
 			(layer "B.Fab")
 			(uuid "60635cae-9abd-43c1-8ea8-55681a69c388")
 			(effects
@@ -88680,7 +88680,7 @@
 			(uuid "a6d3e9d6-e5fa-41d7-89b0-6f183aae62cf")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.Fab")
 			(uuid "6fc27180-93dd-4c69-9040-9658943b35d9")
 			(effects
@@ -91955,7 +91955,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C2302"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "2812d20a-b323-4f28-ad9a-71a482d27161")
@@ -91968,7 +91968,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "1e9beec3-4abc-4a46-a3cd-421a6785babd")
 			(effects
@@ -92194,7 +92194,7 @@
 			(uuid "7b728787-79c0-4a7b-b42c-632e902acf99")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "9ad5beae-83df-4eb7-b3b4-e9e37b0b7ddd")
 			(effects
@@ -92511,7 +92511,7 @@
 		(descr "SOD-323")
 		(tags "SOD-323")
 		(property "Reference" "D2301"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "2dec162e-ce17-4b93-968a-2ec8d1030a5c")
@@ -92524,7 +92524,7 @@
 			)
 		)
 		(property "Value" "BAT48JFILM"
-			(at 0.1 -1.9 360)
+			(at 0.1 -1.9 0)
 			(layer "B.Fab")
 			(uuid "0facfbdb-46c6-4f47-a427-54a078b8dc8f")
 			(effects
@@ -92778,7 +92778,7 @@
 			(uuid "379daffe-8f09-449e-bd4c-525041245e6b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.85 360)
+			(at 0 1.85 0)
 			(layer "B.Fab")
 			(uuid "fdf2a00f-648d-4ef4-96d4-27805c8501ed")
 			(effects
@@ -92828,7 +92828,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C2301"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "f313768c-ba9f-46a4-b5b2-f28128a05d7a")
@@ -92841,7 +92841,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "8a22addd-5bd1-4e51-9966-275b348051f4")
 			(effects
@@ -93067,7 +93067,7 @@
 			(uuid "3f6dedc6-8fe2-4f75-9276-090903ef5195")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "446a83f6-a6ad-45e0-9ac5-7212b7b87588")
 			(effects
@@ -94470,7 +94470,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1603"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "189e7070-6a00-4f4a-a182-fafc2a85b498")
@@ -94483,7 +94483,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "4a6d95dd-1212-471b-a0b1-3667a4cc9f7a")
 			(effects
@@ -94695,7 +94695,7 @@
 			(uuid "3130884b-fae0-4d74-b1d6-c020e9f610bc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "30555b4b-08e0-4226-a97d-fc8b5b40ef94")
 			(effects
@@ -95883,7 +95883,7 @@
 		(descr "Capacitor SMD 1206, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 1206")
 		(property "Reference" "C1765"
-			(at 0 1.75 360)
+			(at 0 1.75 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "18ea7d81-a03b-4d27-8cac-bab0aaa62893")
@@ -95896,7 +95896,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -2 360)
+			(at 0 -2 0)
 			(layer "B.Fab")
 			(uuid "f8bf51b5-9615-4442-b166-830450607546")
 			(effects
@@ -96108,7 +96108,7 @@
 			(uuid "2aec2286-11bd-4d19-8538-7ed1b7c26364")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.75 360)
+			(at 0 1.75 0)
 			(layer "B.Fab")
 			(uuid "7c3b91db-8d7a-4cd2-ba6e-cde767ea092b")
 			(effects
@@ -97255,7 +97255,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1747"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "57118781-4a75-44b9-b58d-9399c32cabe6")
@@ -97268,7 +97268,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "9006e970-e649-4a0f-b871-7615083addd0")
 			(effects
@@ -97480,7 +97480,7 @@
 			(uuid "650f07a5-7d3a-4145-97f9-eba87dfd6898")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "8ff0f405-bf10-4a59-8df2-0b576e210dad")
 			(effects
@@ -98898,7 +98898,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1724"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "e458cb4b-82d9-42c7-87f1-47175b5b2c7e")
@@ -98911,7 +98911,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "405454bf-bdc9-4c0b-80cf-32f7b409e695")
 			(effects
@@ -99123,7 +99123,7 @@
 			(uuid "359cad21-fdd7-4449-a180-b6188c507b13")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "ff6619cb-eecc-41ca-8447-6ef522cc3fdc")
 			(effects
@@ -104126,7 +104126,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1763"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "8d2cee4c-1c43-4f74-9735-0659b5a3d549")
@@ -104139,7 +104139,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "1a117161-5eda-4026-9009-58678bceb3e0")
 			(effects
@@ -104351,7 +104351,7 @@
 			(uuid "9218d22e-d1a2-412a-8988-8edc9da39580")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "fdf33119-5295-45ef-a0a6-0764338ffeec")
 			(effects
@@ -106419,7 +106419,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1733"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "3c082eb0-fb37-4858-bcd5-3c7ff7a2b27f")
@@ -106432,7 +106432,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "ef692ae6-ac33-499d-8f43-811721788a06")
 			(effects
@@ -106644,7 +106644,7 @@
 			(uuid "9cfbba4a-6af0-40e5-bc9d-065fb19d20a6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "e7c030f9-632a-4f96-b168-b321521cd399")
 			(effects
@@ -108922,7 +108922,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1603"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "cb89cdb4-056d-40bc-b2ee-1609fd24db6c")
@@ -108935,7 +108935,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -1.45 270)
+			(at 0 -1.45 -90)
 			(layer "B.Fab")
 			(uuid "2039afc9-d2a3-45ee-8e03-b2730d71788a")
 			(effects
@@ -109146,7 +109146,7 @@
 			(uuid "cba16fc4-81a6-4026-8b2e-45ccdb17fc88")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.Fab")
 			(uuid "3b90c439-5cf6-4685-b16d-b15d1c5c9928")
 			(effects
@@ -109466,7 +109466,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1720"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "804eb879-1396-4f84-91ba-67489b7a76b1")
@@ -109479,7 +109479,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "d3ea2ba2-56c2-4dcd-9bf7-90662b061e5e")
 			(effects
@@ -109691,7 +109691,7 @@
 			(uuid "fb69175b-e301-4eb7-88e9-9e03a72337f3")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "e8fa7e0a-17c9-40a8-8e93-76f427f4db9c")
 			(effects
@@ -111343,7 +111343,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1725"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "887a3545-315e-44bd-8e9a-b89e47a765bc")
@@ -111356,7 +111356,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "8dd611c2-63b5-47f9-b9a6-e2a67149d0ca")
 			(effects
@@ -111568,7 +111568,7 @@
 			(uuid "c002b451-d65d-4aaf-abc2-3627c1eb4a9e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "6e678625-f544-47c4-8cca-8a27ff018c7f")
 			(effects
@@ -112983,7 +112983,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1709"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "ed24f7c4-123e-48c8-90b7-41b87d11ed36")
@@ -112996,7 +112996,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "54a216a3-0976-4f9d-8d7a-6d1bf048aa50")
 			(effects
@@ -113208,7 +113208,7 @@
 			(uuid "118a1da8-8e95-4bd7-99aa-e486ee802146")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "92b1e6c9-0638-4a51-9689-122cee72d4f3")
 			(effects
@@ -115558,7 +115558,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1606"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "ce0ea190-8849-4ff1-92d5-520bdd4215c2")
@@ -115571,7 +115571,7 @@
 			)
 		)
 		(property "Value" "10"
-			(at 0 -1.45 360)
+			(at 0 -1.45 0)
 			(layer "B.Fab")
 			(uuid "8fd5981e-2a36-45e6-84d8-884269ee61dd")
 			(effects
@@ -115782,7 +115782,7 @@
 			(uuid "ad200231-eb15-4e8a-aefa-17d1ac9be48b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.Fab")
 			(uuid "72070146-9f9a-4d8f-8625-6edd40666883")
 			(effects
@@ -116116,7 +116116,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1501"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "39101f94-cfd8-4496-9472-d458d9139d54")
@@ -116129,7 +116129,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "bd53ee9f-1a08-401f-9aab-5f612b9f7422")
 			(effects
@@ -116341,7 +116341,7 @@
 			(uuid "c7972e80-9b90-451b-a820-a9e7598e92c6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "79f973ea-ef23-49be-a59c-374c12ee55ad")
 			(effects
@@ -116930,7 +116930,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1801"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "7960baba-2a6e-462c-a20c-65310832ed3b")
@@ -116943,7 +116943,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 -1.45 270)
+			(at 0 -1.45 -90)
 			(layer "B.Fab")
 			(uuid "c21cbc0a-fda0-4e41-bc4a-c8f65e216236")
 			(effects
@@ -117154,7 +117154,7 @@
 			(uuid "59e63211-f982-445c-bb03-343b017027c7")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 270)
+			(at 0 1.35 -90)
 			(layer "B.Fab")
 			(uuid "a4bd1f8d-e69d-4565-afc3-e19b1a7fa63e")
 			(effects
@@ -119684,7 +119684,7 @@
 		(descr "Capacitor SMD 1206, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 1206")
 		(property "Reference" "C1766"
-			(at 0 1.75 360)
+			(at 0 1.75 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "7fa7d4e6-ee94-4001-9e25-24cbbf6a231a")
@@ -119697,7 +119697,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -2 360)
+			(at 0 -2 0)
 			(layer "B.Fab")
 			(uuid "bb7cb2fb-8099-499a-a8f2-41b803f95a51")
 			(effects
@@ -119909,7 +119909,7 @@
 			(uuid "95255410-9135-4608-9fd2-2fb7dc18c65e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.75 360)
+			(at 0 1.75 0)
 			(layer "B.Fab")
 			(uuid "5c38362f-a295-40a2-bd82-499042821d5f")
 			(effects
@@ -121327,7 +121327,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C2304"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "e85069a9-d303-443c-b665-6d2610d2f013")
@@ -121340,7 +121340,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "4137c76e-a0db-4cc9-b5c8-6bf73e24cc0a")
 			(effects
@@ -121566,7 +121566,7 @@
 			(uuid "a28f57c4-11b2-4492-a242-7dbe18b5c93e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "89d78c95-dee4-400a-b2fc-ee5668be7133")
 			(effects
@@ -122983,7 +122983,7 @@
 		(uuid "b171d18e-95aa-4e3a-ba43-c4790ef553c3")
 		(at 127.5588 111.4806 90)
 		(property "Reference" "X1602"
-			(at 0 2.8448 270)
+			(at 0 2.8448 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "f4d7ae25-41a4-48f6-a225-2fb8db5a028d")
@@ -122996,7 +122996,7 @@
 			)
 		)
 		(property "Value" "ECS-327KE"
-			(at 0 -2.8956 270)
+			(at 0 -2.8956 -90)
 			(layer "B.Fab")
 			(uuid "97a6f49d-d6ac-412f-91de-2805df786627")
 			(effects
@@ -123702,7 +123702,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1758"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "835b2cfd-8ddd-4e50-b1b4-5df7f48e2b8a")
@@ -123715,7 +123715,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "a030b0b9-cbfb-4ead-aa47-2e727b25d46b")
 			(effects
@@ -123927,7 +123927,7 @@
 			(uuid "b6550637-d40f-49a5-9d99-76efdac320f6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "82e44017-51bc-4f35-8d81-0f40b778180f")
 			(effects
@@ -124521,7 +124521,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C2303"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "f8b47a31-11f3-4872-be75-610246ed4314")
@@ -124534,7 +124534,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "f784f6ae-14ba-4184-90e4-e676ef0986e4")
 			(effects
@@ -124760,7 +124760,7 @@
 			(uuid "0a373f06-22ab-46ae-8f8e-5df38d5266aa")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "c87322be-5b0b-46ac-b72b-44001cfcc61a")
 			(effects
@@ -124806,7 +124806,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1748"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "735eba33-e8a1-4a15-898e-33df5cf41f3c")
@@ -124819,7 +124819,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "f5e380c4-dd89-4716-87bb-044f6c5359c1")
 			(effects
@@ -125031,7 +125031,7 @@
 			(uuid "928bce6d-2a53-47d5-a06a-9f8d38f84303")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "1ab2df28-c173-4f22-b311-1e284d612bfd")
 			(effects
@@ -126110,7 +126110,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1735"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "6fcf60d9-6df8-4266-b1c9-64aa135ec20a")
@@ -126123,7 +126123,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "14da5c66-64aa-4de0-8793-fcd48f144f8a")
 			(effects
@@ -126335,7 +126335,7 @@
 			(uuid "268e0dca-4751-4706-9c7d-b817111db79e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "e39eda6f-cfdb-4eec-9922-1e624bd344f7")
 			(effects
@@ -128091,7 +128091,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "L1702"
-			(at 0 1.8 270)
+			(at 0 1.8 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "9f82dff5-b351-4caa-b005-865f53d5eab5")
@@ -128104,7 +128104,7 @@
 			)
 		)
 		(property "Value" "600R 0.5A"
-			(at 0 -1.8 270)
+			(at 0 -1.8 -90)
 			(layer "B.Fab")
 			(uuid "3c99ef5c-8d1c-44c6-ba74-683c63c883e0")
 			(effects
@@ -128274,7 +128274,7 @@
 			(uuid "b91db90d-500d-4356-801a-6624477b3b44")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "B.Fab")
 			(uuid "e9ea8e6a-2ceb-4ca8-b9aa-cc3bbc008a65")
 			(effects
@@ -128320,7 +128320,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1760"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "4de81ac0-46a1-4fcb-9ca1-f94520db22d1")
@@ -128333,7 +128333,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "0098aa05-2866-4377-9193-cde3fff4f7db")
 			(effects
@@ -128545,7 +128545,7 @@
 			(uuid "59edd181-30f7-4dd5-a224-4978054cfbaa")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "114f6333-eb74-4bcf-8034-4e30b9e4ef83")
 			(effects
@@ -128862,7 +128862,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1711"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "ccedfac0-af56-4c88-b5ca-fa1937c1754e")
@@ -128875,7 +128875,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "2d3be8f4-acc7-424b-9fb7-f5eecfa8e5f1")
 			(effects
@@ -129087,7 +129087,7 @@
 			(uuid "0c3d2574-99df-4a06-8530-cf5b053835e9")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "d9f547a1-03fc-4f6e-9fc7-74bda677dbee")
 			(effects
@@ -129133,7 +129133,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1738"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "199aabe0-9208-42df-97f9-673692c0fdc0")
@@ -129146,7 +129146,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "9b0e5389-cbf0-44ef-8169-e24e8d6e38a1")
 			(effects
@@ -129358,7 +129358,7 @@
 			(uuid "5ad080a7-f637-4132-a58a-9564157ada3f")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "b5ee69cb-8773-419a-b709-d0c8c9726e95")
 			(effects
@@ -139605,7 +139605,7 @@
 		(descr "Through hole angled pin header, 1x01, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x01 2.54mm single row")
 		(property "Reference" "TP201"
-			(at 4.385 2.27 270)
+			(at 4.385 2.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "e5665813-0252-407f-82c6-988070e3b87d")
@@ -139618,7 +139618,7 @@
 			)
 		)
 		(property "Value" "TP"
-			(at 4.385 -2.27 270)
+			(at 4.385 -2.27 -90)
 			(layer "B.Fab")
 			(uuid "055f1c4b-0189-45cd-a1b1-04565991cd6c")
 			(effects
@@ -140007,7 +140007,7 @@
 			(uuid "587e0922-20cc-4f3f-9fd7-09600c264198")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 2.77 0 360)
+			(at 2.77 0 0)
 			(layer "B.Fab")
 			(uuid "98214a98-256d-4f80-88da-e9c31fdc5fa8")
 			(effects
@@ -140333,7 +140333,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1722"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "e6dee656-b92d-449c-984d-42a1c39cec8c")
@@ -140346,7 +140346,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "f5ffe36f-2b89-41f8-b047-5d5d9d7ad5bd")
 			(effects
@@ -140558,7 +140558,7 @@
 			(uuid "2c1b17eb-b823-4bb8-859d-ce42df6828a1")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "2d74b0a0-43a8-4ebf-8020-69d268ef40b7")
 			(effects
@@ -140710,7 +140710,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1759"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "1f83b36a-f206-41cc-a189-b1685229f35d")
@@ -140723,7 +140723,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "e0486947-bb54-4157-b32a-2e03a99a39b5")
 			(effects
@@ -140935,7 +140935,7 @@
 			(uuid "f1684299-6c6f-4160-8d67-4ae739eff315")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "034f114a-5441-4dda-b525-94ee1bf106fa")
 			(effects
@@ -141816,7 +141816,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1762"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "7b2fed4d-4b2f-4e2d-b701-0a89be5f5b62")
@@ -141829,7 +141829,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "7be7e0a0-ede7-49a8-8a53-4dd856152f30")
 			(effects
@@ -142041,7 +142041,7 @@
 			(uuid "7e48bd71-2922-49b5-9301-e187e8342e15")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "28c78e79-1865-4643-9531-db747785c393")
 			(effects
@@ -142391,7 +142391,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1749"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "08425c26-ba1e-4cd6-994c-f37e9f86773c")
@@ -142404,7 +142404,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "ff7e50c8-c0c3-46ff-8e3b-822a9c23d5d4")
 			(effects
@@ -142616,7 +142616,7 @@
 			(uuid "7c93d09c-2c1e-4d61-bf42-0d6487fed859")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "943c4520-9024-4bbd-a1ac-815293bb4e17")
 			(effects
@@ -143204,7 +143204,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "R1505"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "9cdd71c7-b023-4e36-9495-db99709abfc3")
@@ -143217,7 +143217,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 0 -1.45 360)
+			(at 0 -1.45 0)
 			(layer "B.Fab")
 			(uuid "d026c443-77fa-4cf7-afd9-f374473faa41")
 			(effects
@@ -143428,7 +143428,7 @@
 			(uuid "85ea92c5-5396-4bc2-ad96-e6d7306907ca")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.35 360)
+			(at 0 1.35 0)
 			(layer "B.Fab")
 			(uuid "15836d79-5812-4cad-96ed-bd3a48ea1691")
 			(effects
@@ -143476,7 +143476,7 @@
 		(descr "Resistor SMD 0402, reflow soldering, Vishay (see dcrcw.pdf)")
 		(tags "resistor 0402")
 		(property "Reference" "L1601"
-			(at 0 1.8 270)
+			(at 0 1.8 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "71f21e2c-49f5-4df6-92ba-d660523c2f17")
@@ -143489,7 +143489,7 @@
 			)
 		)
 		(property "Value" "600R 0.5A"
-			(at 0 -1.8 270)
+			(at 0 -1.8 -90)
 			(layer "B.Fab")
 			(uuid "41c28e4f-978f-4380-b1c4-f5517966c8e7")
 			(effects
@@ -143659,7 +143659,7 @@
 			(uuid "74034872-271d-414a-bfba-45768b3afed5")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "B.Fab")
 			(uuid "a6e20cbf-3a77-4474-bc6d-bf3a5fa271aa")
 			(effects
@@ -144262,7 +144262,7 @@
 		(descr "SOT-363, SC-70-6")
 		(tags "SOT-363 SC-70-6")
 		(property "Reference" "D1501"
-			(at 0 2.25 270)
+			(at 0 2.25 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "915f364b-f841-48fc-828d-63ae9cf759ea")
@@ -144275,7 +144275,7 @@
 			)
 		)
 		(property "Value" "PESD3V3L5UY"
-			(at 0 -2 270)
+			(at 0 -2 -90)
 			(layer "B.Fab")
 			(uuid "1d4a361d-824b-49c7-b764-314893942871")
 			(effects
@@ -144467,7 +144467,7 @@
 			(uuid "dc90c6f6-f074-4940-a477-4ddb7b4a57a2")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(uuid "d55177dc-10d4-45e2-b515-5837b09b51a2")
 			(effects
@@ -144557,7 +144557,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1602"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "401f1fdb-1d8b-4cfb-907d-3ce89513ee10")
@@ -144570,7 +144570,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "c0fc0d7b-f872-41e6-a800-1f4f0f21f550")
 			(effects
@@ -144782,7 +144782,7 @@
 			(uuid "18ca6067-6f80-4a05-aa88-1b76e3a532c4")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "d350ef76-7077-48a1-9b5e-f1c2cde731b7")
 			(effects
@@ -145390,7 +145390,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1604"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "6c954cda-cf4a-4c1c-8fa0-e90bac7cb210")
@@ -145403,7 +145403,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "b05ca3b9-6b48-4328-898c-915cfa662e02")
 			(effects
@@ -145615,7 +145615,7 @@
 			(uuid "6e640c32-97e6-47b7-b4b4-cf80910a4895")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "ed3a03f7-91d7-41f3-9d35-92ce2c773393")
 			(effects
@@ -147060,7 +147060,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1723"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "caca5e25-4fd8-4317-b345-2c71b24debf1")
@@ -147073,7 +147073,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "93968a8e-2bdc-417b-b4b8-53629cf53191")
 			(effects
@@ -147285,7 +147285,7 @@
 			(uuid "5cb657ca-1640-40d2-8ebb-6d0ef6ae5529")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "f8bfe40a-445a-4698-90e6-643110649611")
 			(effects
@@ -148242,7 +148242,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1750"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "d27d3734-b645-4562-b6e7-6a1461a86d58")
@@ -148255,7 +148255,7 @@
 			)
 		)
 		(property "Value" "10nF"
-			(at 0 -1.27 360)
+			(at 0 -1.27 0)
 			(layer "B.Fab")
 			(uuid "995b9d35-6901-41b6-854f-340730489995")
 			(effects
@@ -148467,7 +148467,7 @@
 			(uuid "3f81cda6-3d64-40b4-b074-87ac65e986a9")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 360)
+			(at 0 1.27 0)
 			(layer "B.Fab")
 			(uuid "7a957f36-6f35-4da9-a956-1a2e0e7063ec")
 			(effects
@@ -153829,7 +153829,7 @@
 		(descr "Capacitor SMD 0402, reflow soldering, AVX (see smccp.pdf)")
 		(tags "capacitor 0402")
 		(property "Reference" "C1605"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "ee1c54f6-9015-4eba-95d4-c7e1257fc3e5")
@@ -153842,7 +153842,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 0 -1.27 270)
+			(at 0 -1.27 -90)
 			(layer "B.Fab")
 			(uuid "fd629498-cbdd-42b4-b0f3-1406b7311288")
 			(effects
@@ -154054,7 +154054,7 @@
 			(uuid "a5aabad2-ebeb-47ac-a1f7-b735572686c5")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 1.27 270)
+			(at 0 1.27 -90)
 			(layer "B.Fab")
 			(uuid "40c7bd21-ef08-436b-9eba-9b6bf5b3a6d6")
 			(effects
@@ -154597,7 +154597,7 @@
 			(justify bottom)
 		)
 	)
-	(gr_text "To Do:\n* Figure out stackup\n* Project title\n* Project date\n* Your name\n* Serial port settings?\n* CTP Connector\n* Layer Legend"
+	(gr_text "To Do:\n* Figure out stackup\n* Project title\n* Project date\n* Your name\n* Serial port settings?\n* CTP Connector\n* Layer Legend\n* JLC text somewhere"
 		(at 206.1464 77.8002 0)
 		(layer "Cmts.User")
 		(uuid "06095e16-be8d-4570-84fc-a939e7e5e2ae")
@@ -154747,24 +154747,24 @@
 	)
 	(via
 		(at 102.5906 102.5866)
-		(size 0.4)
-		(drill 0.15)
+		(size 0.3)
+		(drill 0.1)
 		(layers "F.Cu" "B.Cu")
 		(net 4)
 		(uuid "40f7b64f-b8bb-48da-8ceb-0cdb5c64b6cd")
 	)
 	(via
 		(at 102.5906 85.598)
-		(size 0.4)
-		(drill 0.15)
+		(size 0.3)
+		(drill 0.1)
 		(layers "F.Cu" "B.Cu")
 		(net 4)
 		(uuid "5fe5cc15-780a-4b1a-9795-8781cc641b73")
 	)
 	(via
 		(at 97.3328 68.072)
-		(size 0.4)
-		(drill 0.15)
+		(size 0.3)
+		(drill 0.1)
 		(layers "F.Cu" "B.Cu")
 		(net 4)
 		(uuid "94f057c1-fc57-431a-8c4a-d6c188bf21a1")
