@@ -1993,7 +1993,7 @@
 			)
 		)
 	)
-	(global_label "POS12_SNS+"
+	(global_label "POS1P2_SNS+"
 		(shape passive)
 		(at 106.68 60.96 90)
 		(fields_autoplaced yes)
@@ -2005,7 +2005,7 @@
 		)
 		(uuid "731524b3-8d9d-4cba-afb5-1688c0af05f3")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 106.68 46.5676 90)
+			(at 106.68 45.2976 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2037,7 +2037,7 @@
 			)
 		)
 	)
-	(global_label "POS12_SNS-"
+	(global_label "POS1P2_SNS-"
 		(shape passive)
 		(at 119.38 60.96 90)
 		(fields_autoplaced yes)
@@ -2049,7 +2049,7 @@
 		)
 		(uuid "b7b1e702-ce25-4c21-8f10-9d56f9996986")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 119.38 46.5676 90)
+			(at 119.38 45.2976 90)
 			(effects
 				(font
 					(size 1.27 1.27)
