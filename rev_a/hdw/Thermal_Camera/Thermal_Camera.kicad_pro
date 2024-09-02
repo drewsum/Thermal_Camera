@@ -504,13 +504,13 @@
       {
         "bus_width": 12,
         "clearance": 0.0889,
-        "diff_pair_gap": 0.25,
+        "diff_pair_gap": 0.142748,
         "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
+        "diff_pair_width": 0.127,
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
-        "name": "Signal_S",
+        "name": "USB_d90_outer",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.254,
@@ -527,10 +527,10 @@
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
-        "name": "USB",
+        "name": "s50_layer_6",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.254,
+        "track_width": 0.16891,
         "via_diameter": 0.3,
         "via_drill": 0.2,
         "wire_width": 6
@@ -571,36 +571,44 @@
         "pattern": "*LCD*"
       },
       {
-        "netclass": "USB",
+        "netclass": "USB_d90_outer",
         "pattern": "*D+"
       },
       {
-        "netclass": "USB",
+        "netclass": "USB_d90_outer",
         "pattern": "*D-"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*SPI*"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*UART_R*"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*UART_T*"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*UART_C*"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*PGOOD"
       },
       {
-        "netclass": "Signal_S",
+        "netclass": "s50_layer_6",
         "pattern": "*SDHC*"
+      },
+      {
+        "netclass": "USB_d90_outer",
+        "pattern": "*USB+"
+      },
+      {
+        "netclass": "USB_d90_outer",
+        "pattern": "*USB-"
       }
     ]
   },
