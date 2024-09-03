@@ -609,6 +609,10 @@
       {
         "netclass": "USB_d90_outer",
         "pattern": "*USB-"
+      },
+      {
+        "netclass": "s50_layer_6",
+        "pattern": "*SDHC*"
       }
     ]
   },
