@@ -479,7 +479,7 @@
         "name": "LCD",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.254,
+        "track_width": 0.16891,
         "via_diameter": 0.3,
         "via_drill": 0.2,
         "wire_width": 6
