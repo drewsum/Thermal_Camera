@@ -3560,7 +3560,7 @@
 		)
 	)
 	(no_connect
-		(at 91.44 115.57)
+		(at 182.88 82.55)
 		(uuid "0bd33160-345d-4aba-a126-46ac324079a3")
 	)
 	(no_connect
@@ -3576,12 +3576,12 @@
 		(uuid "3d555d52-aab2-46a9-8c76-f043e4e254fd")
 	)
 	(no_connect
-		(at 91.44 105.41)
-		(uuid "43e6a2b4-b91c-498c-acef-2245d0b49a29")
-	)
-	(no_connect
 		(at 91.44 52.07)
 		(uuid "52d77164-01fe-4fed-b0f6-679e4ad76e10")
+	)
+	(no_connect
+		(at 182.88 100.33)
+		(uuid "629ee3a6-78b6-4a52-9009-d30ab8c2d9f6")
 	)
 	(no_connect
 		(at 182.88 120.65)
@@ -3592,12 +3592,12 @@
 		(uuid "6be565dd-21b2-4d29-9198-bef971bd827a")
 	)
 	(no_connect
-		(at 91.44 110.49)
-		(uuid "774e7498-8747-43dc-be2e-69efec95cb58")
-	)
-	(no_connect
 		(at 91.44 97.79)
 		(uuid "77cdb38d-5652-4245-89d5-f5e99037483e")
+	)
+	(no_connect
+		(at 91.44 115.57)
+		(uuid "85670a66-3630-4622-b041-811c367c9da6")
 	)
 	(no_connect
 		(at 91.44 49.53)
@@ -3622,6 +3622,17 @@
 		)
 		(uuid "032d9fe3-b631-4bfd-a39a-9c5f0dbc9327")
 	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 53.34 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "088ad023-dea7-4521-b30f-32f711b309c5")
+	)
 	(text "POSC"
 		(exclude_from_sim no)
 		(at 220.98 55.88 0)
@@ -3632,17 +3643,6 @@
 			(justify left bottom)
 		)
 		(uuid "094aa8a9-8dde-43f1-ab96-04e6ab74c377")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 83.82 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1baac3f9-8256-499f-b879-f70e45e1458c")
 	)
 	(text "U5TX"
 		(exclude_from_sim no)
@@ -3786,17 +3786,6 @@
 			(justify right bottom)
 		)
 		(uuid "6b36db40-90fc-4b9e-bd46-253aadf3a88d")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 101.6 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "774e942b-7e9a-4889-b281-7a3f71acf0a5")
 	)
 	(text "OC3"
 		(exclude_from_sim no)
@@ -4072,6 +4061,17 @@
 			(justify right bottom)
 		)
 		(uuid "d4f383a1-883c-4d9a-9ac1-a76464d200fa")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 53.34 106.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "e39638ee-fd4d-4662-8551-19ae1be9805d")
 	)
 	(text "SCK3"
 		(exclude_from_sim no)
@@ -4681,22 +4681,22 @@
 	)
 	(global_label "~{FLIR_PWR_DWN}"
 		(shape output)
-		(at 182.88 82.55 0)
+		(at 91.44 110.49 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "7045d869-206f-4d4c-95a8-3ff5627f57a4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 199.8352 82.55 0)
+			(at 74.4848 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -4901,22 +4901,22 @@
 	)
 	(global_label "FLIR_CLK_EN"
 		(shape output)
-		(at 182.88 100.33 0)
+		(at 91.44 105.41 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "a276dd93-5928-492b-9668-e684bc4b7d3d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 197.8395 100.33 0)
+			(at 76.4805 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)

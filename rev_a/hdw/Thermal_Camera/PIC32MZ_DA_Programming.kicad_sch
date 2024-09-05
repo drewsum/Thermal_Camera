@@ -2876,15 +2876,11 @@
 		)
 		(instances
 			(project "Analog_Clock"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cad2d97"
+					(reference "L?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb25152"
-					(reference "L?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2f02"
-					(reference "L?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
 					(reference "L?")
 					(unit 1)
 				)
@@ -2892,11 +2888,15 @@
 					(reference "L?")
 					(unit 1)
 				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cad2d97"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
 					(reference "L?")
 					(unit 1)
 				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939ec2"
+					(reference "L?")
+					(unit 1)
+				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2f02"
 					(reference "L?")
 					(unit 1)
 				)
@@ -3175,19 +3175,11 @@
 		)
 		(instances
 			(project "Analog_Clock"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae16c"
+					(reference "R?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae1dc"
-					(reference "R?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005bb844fd"
-					(reference "R?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb0bc26"
-					(reference "R?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2ef2"
 					(reference "R?")
 					(unit 1)
 				)
@@ -3195,11 +3187,15 @@
 					(reference "R?")
 					(unit 1)
 				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005bb844fd"
+					(reference "R?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005c1d5cb6"
 					(reference "R?")
 					(unit 1)
 				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb0bc26"
 					(reference "R?")
 					(unit 1)
 				)
@@ -3207,7 +3203,11 @@
 					(reference "R?")
 					(unit 1)
 				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae16c"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
+					(reference "R?")
+					(unit 1)
+				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2ef2"
 					(reference "R?")
 					(unit 1)
 				)
@@ -4177,11 +4177,23 @@
 		)
 		(instances
 			(project "Analog_Clock"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae16c"
+					(reference "R?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae1dc"
 					(reference "R?")
 					(unit 1)
 				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae1f3"
+					(reference "R?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005c1d5cb6"
+					(reference "R?")
+					(unit 1)
+				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb0bc26"
 					(reference "R?")
 					(unit 1)
 				)
@@ -4193,19 +4205,7 @@
 					(reference "R?")
 					(unit 1)
 				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae16c"
-					(reference "R?")
-					(unit 1)
-				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2ef2"
-					(reference "R?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb0bc26"
-					(reference "R?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005baae1f3"
 					(reference "R?")
 					(unit 1)
 				)
@@ -4886,15 +4886,11 @@
 		)
 		(instances
 			(project "Analog_Clock"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cad2d97"
+					(reference "L?")
+					(unit 1)
+				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cb25152"
-					(reference "L?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2f02"
-					(reference "L?")
-					(unit 1)
-				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
 					(reference "L?")
 					(unit 1)
 				)
@@ -4902,11 +4898,15 @@
 					(reference "L?")
 					(unit 1)
 				)
-				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005cad2d97"
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939eaf"
 					(reference "L?")
 					(unit 1)
 				)
 				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005e939ec2"
+					(reference "L?")
+					(unit 1)
+				)
+				(path "/0dc9b974-a945-4291-bc55-04b8e342b0e5/00000000-0000-0000-0000-00005eae2f02"
 					(reference "L?")
 					(unit 1)
 				)
