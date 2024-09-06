@@ -3576,6 +3576,14 @@
 		(uuid "3d555d52-aab2-46a9-8c76-f043e4e254fd")
 	)
 	(no_connect
+		(at 182.88 113.03)
+		(uuid "4831b2af-4645-4820-bf74-f84d9ecc5047")
+	)
+	(no_connect
+		(at 182.88 44.45)
+		(uuid "51701e48-2c27-4e38-91d7-18d24a8dadd0")
+	)
+	(no_connect
 		(at 91.44 52.07)
 		(uuid "52d77164-01fe-4fed-b0f6-679e4ad76e10")
 	)
@@ -3608,8 +3616,8 @@
 		(uuid "a7c06b87-bba8-4e36-976d-0f3b3afc83b0")
 	)
 	(no_connect
-		(at 182.88 118.11)
-		(uuid "f17cb0cb-6362-4317-ad6c-52507623eb80")
+		(at 182.88 115.57)
+		(uuid "ac8fc167-17ab-4eab-a82e-551f412c662b")
 	)
 	(text "PGED1"
 		(exclude_from_sim no)
@@ -3665,6 +3673,17 @@
 			(justify right bottom)
 		)
 		(uuid "1fbe6a71-ea52-4cda-9e61-204f69fd5d99")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 220.98 119.38 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "28242824-5237-423e-b363-9425800daac7")
 	)
 	(text "GPIO"
 		(exclude_from_sim no)
@@ -3787,6 +3806,17 @@
 		)
 		(uuid "6b36db40-90fc-4b9e-bd46-253aadf3a88d")
 	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 220.98 48.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6f93ea7a-b1f0-47a8-aed5-b905b9cd4b33")
+	)
 	(text "OC3"
 		(exclude_from_sim no)
 		(at 53.34 91.44 0)
@@ -3908,17 +3938,6 @@
 		)
 		(uuid "a76c8d46-4cc0-4620-95c5-35a436d20bda")
 	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 45.72 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a88f33ab-2bf0-437f-a9e3-a7ed89a86844")
-	)
 	(text "INT1"
 		(exclude_from_sim no)
 		(at 220.98 68.58 0)
@@ -3954,14 +3973,14 @@
 	)
 	(text "GPIO"
 		(exclude_from_sim no)
-		(at 220.98 114.3 0)
+		(at 220.98 50.8 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "ba38462a-fe48-4738-98b3-65eaa4a311dd")
+		(uuid "bc9f07d8-e802-48e5-838f-f50f8eb4e6cf")
 	)
 	(text "PDEC1"
 		(exclude_from_sim no)
@@ -3995,17 +4014,6 @@
 			(justify left bottom)
 		)
 		(uuid "c03acf1b-a923-4301-af6b-575d3123bbfe")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 48.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c21cf878-a081-49ec-a7a9-02157b54e905")
 	)
 	(text "GLCD_R7"
 		(exclude_from_sim no)
@@ -4106,17 +4114,6 @@
 		)
 		(uuid "eb48280c-c6bb-4a88-9a26-4ff99581e32a")
 	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 50.8 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f5845be2-19e5-444c-b06a-c42426f55c25")
-	)
 	(text "SDA1"
 		(exclude_from_sim no)
 		(at 53.34 73.66 0)
@@ -4127,17 +4124,6 @@
 			(justify right bottom)
 		)
 		(uuid "f64929ff-cde1-43c2-96f8-73074db9e323")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 220.98 116.84 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fb2b3abd-b01a-4ced-8b3b-7f8f47ac07c5")
 	)
 	(text "See TABLE 36-1:RGB COLOR MAPPING for Graphic LCD Pin Mapping"
 		(exclude_from_sim no)
@@ -4285,28 +4271,6 @@
 			)
 		)
 	)
-	(global_label "CPU_Trap_LED"
-		(shape output)
-		(at 182.88 49.53 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "174f2e24-2d53-43e5-9f66-0d9997985d8a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 199.1698 49.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "BACKLIGHT_PWM"
 		(shape output)
 		(at 91.44 90.17 180)
@@ -4342,28 +4306,6 @@
 		(uuid "1caf74dd-8c3a-4e2e-99ba-7d1eb0508ffd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 194.9782 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "~{BATT_DOK}"
-		(shape input)
-		(at 182.88 113.03 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "1edd2f45-b90a-4d9f-8c8f-fa5e0f3eb3b8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 194.9177 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4419,7 +4361,7 @@
 	)
 	(global_label "Cap_Touch_Shutter"
 		(shape input)
-		(at 91.44 67.31 180)
+		(at 91.44 64.77 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4428,7 +4370,7 @@
 		)
 		(uuid "3ce356d5-d4d4-47cf-8628-8a4d22443404")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 91.44 67.31 0)
+			(at 91.44 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4560,6 +4502,28 @@
 		(uuid "53e99e0b-1766-43db-a523-5a4b0eb37cfa")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 201.8915 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "~{BATT_DOK}"
+		(shape input)
+		(at 182.88 49.53 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "55cdc402-c5c8-459d-b2dc-ba68a8b90d08")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 194.9177 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4789,28 +4753,6 @@
 			)
 		)
 	)
-	(global_label "~{BATT_CHG}"
-		(shape input)
-		(at 182.88 115.57 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "892337ce-3c8d-4067-9d5f-b87c919bc59b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 194.9177 115.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "I2C_SCL"
 		(shape output)
 		(at 91.44 69.85 180)
@@ -4989,7 +4931,7 @@
 	)
 	(global_label "Cap_Touch_Power"
 		(shape input)
-		(at 91.44 64.77 180)
+		(at 91.44 67.31 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4998,7 +4940,7 @@
 		)
 		(uuid "c0df8363-ac61-4bc4-afce-01c7149892f4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 91.44 64.77 0)
+			(at 91.44 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5020,28 +4962,6 @@
 		(uuid "c1bbbbd3-f813-4d28-96e4-85428ec08d67")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 195.462 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "Error_LED"
-		(shape output)
-		(at 182.88 44.45 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "c1f6b988-e727-47df-8e5e-c062b60466f3")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 194.9365 44.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5097,7 +5017,7 @@
 	)
 	(global_label "Reset_LED"
 		(shape output)
-		(at 182.88 46.99 0)
+		(at 182.88 118.11 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5107,7 +5027,7 @@
 		)
 		(uuid "e10f73b2-b373-4c88-8cfe-4ec35e47ae39")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 195.4809 46.99 0)
+			(at 195.4809 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5223,6 +5143,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "~{BATT_CHG}"
+		(shape input)
+		(at 182.88 46.99 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ff0fc65a-ef95-468b-a41e-69a631270073")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 194.9177 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
