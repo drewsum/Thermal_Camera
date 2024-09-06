@@ -3568,20 +3568,12 @@
 		(uuid "17759641-0a7c-40bd-9f3c-4ffa7a365cde")
 	)
 	(no_connect
-		(at 182.88 130.81)
-		(uuid "1896c901-a1cc-439c-9cb9-f80b7608d6aa")
-	)
-	(no_connect
 		(at 182.88 57.15)
 		(uuid "3d555d52-aab2-46a9-8c76-f043e4e254fd")
 	)
 	(no_connect
 		(at 182.88 113.03)
 		(uuid "4831b2af-4645-4820-bf74-f84d9ecc5047")
-	)
-	(no_connect
-		(at 182.88 44.45)
-		(uuid "51701e48-2c27-4e38-91d7-18d24a8dadd0")
 	)
 	(no_connect
 		(at 91.44 52.07)
@@ -3976,6 +3968,17 @@
 	)
 	(text "GPIO"
 		(exclude_from_sim no)
+		(at 220.98 132.08 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b0126172-8a47-4634-9556-b2c8e0059d71")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
 		(at 220.98 50.8 0)
 		(effects
 			(font
@@ -4072,6 +4075,17 @@
 			(justify right bottom)
 		)
 		(uuid "d4f383a1-883c-4d9a-9ac1-a76464d200fa")
+	)
+	(text "GPIO"
+		(exclude_from_sim no)
+		(at 220.98 45.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d6bc8b19-f08f-4d67-b951-99d16c6bd024")
 	)
 	(text "GPIO"
 		(exclude_from_sim no)
@@ -4364,6 +4378,28 @@
 		(uuid "2a65a1ae-8fbb-4f52-9c1f-f2527bd9cde6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 203.5241 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "POS12_PGOOD"
+		(shape input)
+		(at 182.88 44.45 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "30827878-5584-49f7-8dd4-ddeb06718809")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 199.5328 44.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4829,6 +4865,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "PGOOD_LED_SHDN"
+		(shape output)
+		(at 182.88 130.81 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9a84d8dc-ff87-4564-bba0-6536e8dc488e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 202.859 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)

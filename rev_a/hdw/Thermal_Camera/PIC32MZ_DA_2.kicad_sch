@@ -3499,17 +3499,6 @@
 	)
 	(text "GPIO"
 		(exclude_from_sim no)
-		(at 58.42 121.92 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3979a6c6-f9b1-4f10-8419-039e7d84feee")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
 		(at 58.42 81.28 0)
 		(effects
 			(font
@@ -3595,17 +3584,6 @@
 			(justify right bottom)
 		)
 		(uuid "8af32ba3-39b0-4b5a-9623-6fecccd7312a")
-	)
-	(text "GPIO"
-		(exclude_from_sim no)
-		(at 58.42 109.22 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "916f04a7-322c-4395-8fb9-f20e5562b453")
 	)
 	(text "SDI2"
 		(exclude_from_sim no)
@@ -4468,28 +4446,6 @@
 			)
 		)
 	)
-	(global_label "PGOOD_LED_SHDN"
-		(shape output)
-		(at 96.52 120.65 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "aa200b6d-ddfb-4e53-8f80-9ccd7c9e7554")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 77.6523 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "SDHC_SDDATA2"
 		(shape bidirectional)
 		(at 96.52 87.63 180)
@@ -4728,28 +4684,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "POS12_PGOOD"
-		(shape input)
-		(at 96.52 107.95 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "f47c1d99-941c-4138-af43-284c3132d336")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 79.8672 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
