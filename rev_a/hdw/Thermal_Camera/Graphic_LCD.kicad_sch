@@ -17,7 +17,7 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "J"
+			(property "Reference" "J2102"
 				(at 0 7.62 0)
 				(effects
 					(font
@@ -25,7 +25,7 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x06"
+			(property "Value" "LCD CTP Data"
 				(at 0 -10.16 0)
 				(effects
 					(font
@@ -33,7 +33,7 @@
 					)
 				)
 			)
-			(property "Footprint" ""
+			(property "Footprint" "Custom Footprints Library:GCT_FFC2B35-06-G_REVA2"
 				(at 0 0 0)
 				(effects
 					(font
@@ -51,7 +51,16 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Digi-Key PN" "2073-FFC2B35-06-GCT-ND"
 				(at 0 0 0)
 				(effects
 					(font
@@ -257,6 +266,42 @@
 						)
 					)
 					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -5.08 180)
+					(length 3.81)
+					(name "S1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "S1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -7.62 180)
+					(length 3.81)
+					(name "S2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "S2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4889,19 +4934,6 @@
 		)
 		(uuid "fdf0d5a9-8384-40c3-8270-3f75f57dcc38")
 	)
-	(text "CTP connector TBD"
-		(exclude_from_sim no)
-		(at 223.774 59.436 0)
-		(effects
-			(font
-				(size 5.08 5.08)
-				(thickness 1.016)
-				(bold yes)
-				(color 255 0 0 1)
-			)
-		)
-		(uuid "2a6243ba-a361-40fe-bed1-d170b908abc9")
-	)
 	(text "GLT035320240IS1-CTP"
 		(exclude_from_sim no)
 		(at 209.55 22.86 0)
@@ -6591,6 +6623,73 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c2d59ecd-441a-4d58-9156-a852d244de52"
 					(reference "#PWR02103")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 238.76 62.23 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2774ec08-83a8-4b19-8d80-9c9dfe7c7ec2")
+		(property "Reference" "#PWR01"
+			(at 245.11 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 242.57 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 238.76 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 238.76 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 238.76 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "95494cd6-0f81-47f9-9463-c52e67ed0791")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c2d59ecd-441a-4d58-9156-a852d244de52"
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -8593,7 +8692,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digi-Key PN" "26-FH12-40S-0.5SH(55)CT-ND"
+		(property "Digi-Key PN" "2073-FFC2B35-54-GCT-ND"
 			(at 152.4 85.09 0)
 			(effects
 				(font
@@ -9200,7 +9299,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Custom Footprints Library:GCT_FFC2B35-06-G_REVA2"
 			(at 233.68 57.15 0)
 			(effects
 				(font
@@ -9227,6 +9326,15 @@
 				(hide yes)
 			)
 		)
+		(property "Digi-Key PN" "2073-FFC2B35-06-GCT-ND"
+			(at 233.68 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5110c422-9adc-4f88-8261-6d086612897c")
 		)
@@ -9244,6 +9352,12 @@
 		)
 		(pin "6"
 			(uuid "2bf24152-f029-436f-afd8-713430901b0b")
+		)
+		(pin "S2"
+			(uuid "435cacec-4b86-4060-bb6e-9bee149972e6")
+		)
+		(pin "S1"
+			(uuid "d7a1b2bb-5bf9-4739-bca2-f7109f3131c1")
 		)
 		(instances
 			(project "Thermal_Camera"
@@ -9522,6 +9636,73 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c2d59ecd-441a-4d58-9156-a852d244de52"
 					(reference "DOC2101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 238.76 64.77 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c69ca501-2996-4d40-bb94-098959869bbf")
+		(property "Reference" "#PWR02"
+			(at 245.11 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 242.57 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 238.76 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 238.76 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 238.76 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e1b10a98-c292-4d08-a3c7-ace70ce5f2fd")
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9/c2d59ecd-441a-4d58-9156-a852d244de52"
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
