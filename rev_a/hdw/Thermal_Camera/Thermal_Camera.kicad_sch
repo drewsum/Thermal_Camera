@@ -6,8 +6,8 @@
 	(paper "A")
 	(title_block
 		(title "Thermal Camera")
-		(date "2024-05-24")
-		(rev "PRELIM")
+		(date "2024-09-20")
+		(rev "A")
 		(company "Drew Maatman and Michael Laffin")
 	)
 	(lib_symbols)
@@ -444,6 +444,20 @@
 			(justify left bottom)
 		)
 		(uuid "dcfd4c72-000f-4f54-983a-144684f60f52")
+	)
+	(text "31. Stitching Caps"
+		(exclude_from_sim no)
+		(at 193.04 97.79 0)
+		(effects
+			(font
+				(face "Courier New")
+				(size 2.032 2.032)
+				(thickness 0.508)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "e50c0d44-1b66-46a5-a2fd-99e44de3f77c")
 	)
 	(text "21. Graphic LCD"
 		(exclude_from_sim no)
@@ -1469,6 +1483,45 @@
 			(project "Thermal_Camera"
 				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9"
 					(page "12")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 234.95 93.98)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "d2adc643-e7a2-448c-bbf4-162404c056a4")
+		(property "Sheetname" "Stitching Caps"
+			(at 234.95 93.2684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stitching_caps.kicad_sch"
+			(at 234.95 98.3746 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "Thermal_Camera"
+				(path "/4bd21e0b-5408-4b93-866e-c82ac5b31fa9"
+					(page "31")
 				)
 			)
 		)

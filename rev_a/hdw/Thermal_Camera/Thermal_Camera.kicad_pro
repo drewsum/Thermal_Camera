@@ -68,7 +68,7 @@
         "connection_width": "warning",
         "copper_edge_clearance": "error",
         "copper_sliver": "warning",
-        "courtyards_overlap": "error",
+        "courtyards_overlap": "warning",
         "diff_pair_gap_out_of_range": "error",
         "diff_pair_uncoupled_length_too_long": "error",
         "drill_out_of_range": "error",
@@ -100,7 +100,7 @@
         "silk_over_copper": "warning",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
-        "solder_mask_bridge": "error",
+        "solder_mask_bridge": "warning",
         "starved_thermal": "error",
         "text_height": "warning",
         "text_thickness": "warning",
@@ -960,6 +960,10 @@
     [
       "a61c133c-fe37-4b38-bebe-91678215771d",
       "Mechanical"
+    ],
+    [
+      "d2adc643-e7a2-448c-bbf4-162404c056a4",
+      "Stitching Caps"
     ]
   ],
   "text_variables": {}
