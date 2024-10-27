@@ -59,8 +59,850 @@ void setInterruptEnable(interrupt_source_t input_interrupt, uint8_t input_state)
     // is being enabled or disabled
     switch (input_interrupt) {
 
+        case core_timer_interrupt:
 
+            break;
 
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
+            
         default:
             break;
             
@@ -76,8 +918,850 @@ uint8_t getInterruptEnable(interrupt_source_t input_interrupt) {
     // Decide which interrupt control bits to manipulate based on which interrupt
     // is being enabled or disabled
     switch (input_interrupt) {
-        
 
+        case core_timer_interrupt:
+
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
             
         default:
             break;
@@ -96,6 +1780,849 @@ uint8_t getInterruptFlag(interrupt_source_t input_interrupt) {
     switch (input_interrupt) {
         
 
+        case core_timer_interrupt:
+
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
             
         default:
             return 0;
@@ -120,7 +2647,850 @@ void setInterruptPriority(interrupt_source_t input_interrupt, uint8_t input_prio
     switch (input_interrupt) {
 
 
+        case core_timer_interrupt:
 
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
+            
         default:
             break;
             
@@ -143,7 +3513,850 @@ void setInterruptSubpriority(interrupt_source_t input_interrupt, uint8_t input_s
     switch (input_interrupt) {
 
 
+        case core_timer_interrupt:
 
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
+            
         default:
             break;
             
@@ -161,7 +4374,850 @@ uint8_t getInterruptPriority(interrupt_source_t input_interrupt) {
     switch (input_interrupt) {
 
 
+        case core_timer_interrupt:
 
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
+            
         default:
             return 0;
             break;
@@ -179,7 +5235,850 @@ uint8_t getInterruptSubriority(interrupt_source_t input_interrupt) {
     switch (input_interrupt) {
 
 
+        case core_timer_interrupt:
 
+            break;
+
+        case core_software_interrupt_0:
+
+            break;
+
+        case core_software_interrupt_1:
+
+            break;
+
+        case external_interrupt_0:
+
+            break;
+
+        case timer1:
+
+            break;
+
+        case input_capture_1_error:
+
+            break;
+
+        case input_capture_1:
+
+            break;
+
+        case output_compare_1:
+
+            break;
+
+        case external_interrupt_1:
+
+            break;
+
+        case timer2:
+
+            break;
+
+        case input_capture_2_error:
+
+            break;
+
+        case input_capture_2:
+
+            break;
+
+        case output_compare_2:
+
+            break;
+
+        case external_interrupt_2:
+
+            break;
+
+        case timer3:
+
+            break;
+
+        case input_capture_3_error:
+
+            break;
+
+        case input_capture_3:
+
+            break;
+
+        case output_compare_3:
+
+            break;
+
+        case external_interrupt_3:
+
+            break;
+
+        case timer4:
+
+            break;
+
+        case input_capture_4_error:
+
+            break;
+
+        case input_capture_4:
+
+            break;
+
+        case output_compare_4:
+
+            break;
+
+        case external_interrupt_4:
+
+            break;
+
+        case timer5:
+
+            break;
+
+        case input_capture_5_error:
+
+            break;
+
+        case input_capture_5:
+
+            break;
+
+        case output_compare_5:
+
+            break;
+
+        case timer6:
+
+            break;
+
+        case input_capture_6_error:
+
+            break;
+
+        case input_capture_6:
+
+            break;
+
+        case output_compare_6:
+
+            break;
+
+        case timer7:
+
+            break;
+
+        case input_capture_7_error:
+
+            break;
+
+        case input_capture_7:
+
+            break;
+
+        case output_compare_7:
+
+            break;
+
+        case timer8:
+
+            break;
+
+        case input_capture_8_error:
+
+            break;
+
+        case input_capture_8:
+
+            break;
+
+        case output_compare_8:
+
+            break;
+
+        case timer9:
+
+            break;
+
+        case input_capture_9_error:
+
+            break;
+
+        case input_capture_9:
+
+            break;
+
+        case output_compare_9:
+
+            break;
+
+        case adc_global_interrupt:
+
+            break;
+
+        case adc_fifo_interrupt:
+
+            break;
+
+        case adc_digital_comparator_1:
+
+            break;
+
+        case adc_digital_comparator_2:
+
+            break;
+
+        case adc_digital_comparator_3:
+
+            break;
+
+        case adc_digital_comparator_4:
+
+            break;
+
+        case adc_digital_comparator_5:
+
+            break;
+
+        case adc_digital_comparator_6:
+
+            break;
+
+        case adc_digital_filter_1:
+
+            break;
+
+        case adc_digital_filter_2:
+
+            break;
+
+        case adc_digital_filter_3:
+
+            break;
+
+        case adc_digital_filter_4:
+
+            break;
+
+        case adc_digital_filter_5:
+
+            break;
+
+        case adc_digital_filter_6:
+
+            break;
+
+        case adc_fault:
+
+            break;
+
+        case adc_data_0:
+
+            break;
+
+        case adc_data_1:
+
+            break;
+
+        case adc_data_2:
+
+            break;
+
+        case adc_data_3:
+
+            break;
+
+        case adc_data_4:
+
+            break;
+
+        case adc_data_5:
+
+            break;
+
+        case adc_data_6:
+
+            break;
+
+        case adc_data_7:
+
+            break;
+
+        case adc_data_8:
+
+            break;
+
+        case adc_data_9:
+
+            break;
+
+        case adc_data_10:
+
+            break;
+
+        case adc_data_11:
+
+            break;
+
+        case adc_data_12:
+
+            break;
+
+        case adc_data_13:
+
+            break;
+
+        case adc_data_14:
+
+            break;
+
+        case adc_data_15:
+
+            break;
+
+        case adc_data_16:
+
+            break;
+
+        case adc_data_17:
+
+            break;
+
+        case adc_data_18:
+
+            break;
+
+        case adc_data_19:
+
+            break;
+
+        case adc_data_20:
+
+            break;
+
+        case adc_data_21:
+
+            break;
+
+        case adc_data_22:
+
+            break;
+
+        case adc_data_23:
+
+            break;
+
+        case adc_data_24:
+
+            break;
+
+        case adc_data_25:
+
+            break;
+
+        case adc_data_26:
+
+            break;
+
+        case adc_data_27:
+
+            break;
+
+        case adc_data_28:
+
+            break;
+
+        case adc_data_29:
+
+            break;
+
+        case adc_data_30:
+
+            break;
+
+        case adc_data_31:
+
+            break;
+
+        case adc_data_32:
+
+            break;
+
+        case adc_data_33:
+
+            break;
+
+        case adc_data_34:
+
+            break;
+
+        case adc_data_35:
+
+            break;
+
+        case adc_data_36:
+
+            break;
+
+        case adc_data_37:
+
+            break;
+
+        case adc_data_38:
+
+            break;
+
+        case adc_data_39:
+
+            break;
+
+        case adc_data_40:
+
+            break;
+
+        case adc_data_41:
+
+            break;
+
+        case adc_data_42:
+
+            break;
+
+        case adc_data_43:
+
+            break;
+
+        case usb_suspend_resume_event:
+
+            break;
+
+        case core_performance_counter_interrupt:
+
+            break;
+
+        case core_fast_debug_channel_interrupt:
+
+            break;
+
+        case system_bus_protection_violation:
+
+            break;
+
+        case crypto_engine_event:
+
+            break;
+
+        case spi1_fault:
+
+            break;
+
+        case spi1_receive_done:
+
+            break;
+
+        case spi1_transfer_done:
+
+            break;
+
+        case uart1_fault:
+
+            break;
+
+        case uart1_receive_done:
+
+            break;
+
+        case uart1_transfer_done:
+
+            break;
+
+        case i2c1_bus_collision_event:
+
+            break;
+
+        case i2c1_client_event:
+
+            break;
+
+        case i2c1_host_event:
+
+            break;
+
+        case porta_input_change_interrupt:
+
+            break;
+
+        case portb_input_change_interrupt:
+
+            break;
+
+        case portc_input_change_interrupt:
+
+            break;
+
+        case portd_input_change_interrupt:
+
+            break;
+
+        case porte_input_change_interrupt:
+
+            break;
+
+        case portf_input_change_interrupt:
+
+            break;
+
+        case portg_input_change_interrupt:
+
+            break;
+
+        case porth_input_change_interrupt:
+
+            break;
+
+        case portj_input_change_interrupt:
+
+            break;
+
+        case portk_input_change_interrupt:
+
+            break;
+
+        case pmp:
+
+            break;
+
+        case pmp_error:
+
+            break;
+
+        case comparator_1_interrupt:
+
+            break;
+
+        case comparator_2_interrupt:
+
+            break;
+
+        case usb_general_event:
+
+            break;
+
+        case usb_dma_event:
+
+            break;
+
+        case dma_channel_0:
+
+            break;
+
+        case dma_channel_1:
+
+            break;
+
+        case dma_channel_2:
+
+            break;
+
+        case dma_channel_3:
+
+            break;
+
+        case dma_channel_4:
+
+            break;
+
+        case dma_channel_5:
+
+            break;
+
+        case dma_channel_6:
+
+            break;
+
+        case dma_channel_7:
+
+            break;
+
+        case spi2_fault:
+
+            break;
+
+        case spi2_receive_done:
+
+            break;
+
+        case spi2_transfer_done:
+
+            break;
+
+        case uart2_fault:
+
+            break;
+
+        case uart2_receive_done:
+
+            break;
+
+        case uart2_transfer_done:
+
+            break;
+
+        case i2c2_bus_collision_event:
+
+            break;
+
+        case i2c2_client_event:
+
+            break;
+
+        case i2c2_host_event:
+
+            break;
+
+        case control_area_network_1:
+
+            break;
+
+        case control_area_network_2:
+
+            break;
+
+        case ethernet_interrupt:
+
+            break;
+
+        case spi3_fault:
+
+            break;
+
+        case spi3_receive_done:
+
+            break;
+
+        case spi3_transfer_done:
+
+            break;
+
+        case uart3_fault:
+
+            break;
+
+        case uart3_receive_done:
+
+            break;
+
+        case uart3_transfer_done:
+
+            break;
+
+        case i2c3_bus_collision_event:
+
+            break;
+
+        case i2c3_client_event:
+
+            break;
+
+        case i2c3_host_event:
+
+            break;
+
+        case spi4_fault:
+
+            break;
+
+        case spi4_receive_done:
+
+            break;
+
+        case spi4_transfer_done:
+
+            break;
+
+        case real_time_clock:
+
+            break;
+
+        case flash_control_event:
+
+            break;
+
+        case prefetch_module_sec_event:
+
+            break;
+
+        case sqi1_event:
+
+            break;
+
+        case uart4_fault:
+
+            break;
+
+        case uart4_receive_done:
+
+            break;
+
+        case uart4_transfer_done:
+
+            break;
+
+        case i2c4_bus_collision_event:
+
+            break;
+
+        case i2c4_client_event:
+
+            break;
+
+        case i2c4_host_event:
+
+            break;
+
+        case spi5_fault:
+
+            break;
+
+        case spi5_receive_done:
+
+            break;
+
+        case spi5_transfer_done:
+
+            break;
+
+        case uart5_fault:
+
+            break;
+
+        case uart5_receive_done:
+
+            break;
+
+        case uart5_transfer_done:
+
+            break;
+
+        case i2c5_bus_collision_event:
+
+            break;
+
+        case i2c5_client_event:
+
+            break;
+
+        case i2c5_host_event:
+
+            break;
+
+        case spi6_fault:
+
+            break;
+
+        case spi6_receive_done:
+
+            break;
+
+        case spi6_transfer_done:
+
+            break;
+
+        case uart6_fault:
+
+            break;
+
+        case uart6_receive_done:
+
+            break;
+
+        case uart6_transfer_done:
+
+            break;
+
+        case sdhc_interrupt:
+
+            break;
+
+        case glcd_interrupt:
+
+            break;
+
+        case gpu_interrupt:
+
+            break;
+
+        case ctmu_interrupt:
+
+            break;
+
+        case adc_end_of_scan:
+
+            break;
+
+        case adc_analog_circuit_ready:
+
+            break;
+
+        case adc_update_ready:
+
+            break;
+
+        case adc0_early_interrupt:
+
+            break;
+
+        case adc1_early_interrupt:
+
+            break;
+
+        case adc2_early_interrupt:
+
+            break;
+
+        case adc3_early_interrupt:
+
+            break;
+
+        case adc4_early_interrupt:
+
+            break;
+
+        case adc_group_early_interrupt_request:
+
+            break;
+
+        case adc7_early_interrupt:
+
+            break;
+
+        case adc0_warm_interrupt:
+
+            break;
+
+        case adc1_warm_interrupt:
+
+            break;
+
+        case adc2_warm_interrupt:
+
+            break;
+
+        case adc3_warm_interrupt:
+
+            break;
+
+        case adc4_warm_interrupt:
+
+            break;
+
+        case adc7_warm_interrupt:
+
+            break;
+
+        case mpll_fault_interrupt:
+
+            break;
+            
         default:
             return 0;
             break;
