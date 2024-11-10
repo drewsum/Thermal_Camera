@@ -13,7 +13,7 @@
 // #include "main.h"
 
 // Core Drivers
-#include "configuration.h"
+#include "pic32mzda_configuration.h"
 //#include "device_control.h"
 //#include "32mz_interrupt_control.h"
 //#include "heartbeat_timer.h"
@@ -26,7 +26,7 @@
 
 // GPIO
 #include "pin_macros.h"
-//#include "gpio_setup.h"
+#include "pic32mzda_gpio_setup.h"
 
 
 //
