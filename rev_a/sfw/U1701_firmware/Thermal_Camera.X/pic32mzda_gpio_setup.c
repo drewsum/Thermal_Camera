@@ -6,51 +6,181 @@
 // initializes port A GPIO pins
 void portAGPIOInitialize (void) {
     
-    gpioPinSetup(gpio_port_a, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 0, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 6, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 9, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 10, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 14, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_a, 15, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     
 }
 
 // initializes port B GPIO pins
 void portBGPIOInitialize (void) {
 
+    gpioPinSetup(gpio_port_b, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 3, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 4, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 6, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 7, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 9, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 10, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 12, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 14, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+
 }
 
 // initializes port C GPIO pins
 void portCGPIOInitialize (void) {
 
+    gpioPinSetup(gpio_port_c, 1, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 3, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 12, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 14, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_c, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     
 }
 
 // initializes port D GPIO pins
 void portDGPIOInitialize (void) {
     
-    
+    gpioPinSetup(gpio_port_d, 0, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 1, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 4, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 6, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 10, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 14, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_d, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+
 }
 
 // initializes port E GPIO pins
 void portEGPIOInitialize (void) {
+
+        gpioPinSetup(gpio_port_e, 0, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 1, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 4, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 6, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 7, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_e, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     
 }
 
 // initializes port F GPIO pins
 void portFGPIOInitialize (void) {
-    
-    
+
+        gpioPinSetup(gpio_port_f, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 8, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        gpioPinSetup(gpio_port_f, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+        
 }
 
 // initializes port G GPIO pins
 void portGGPIOInitialize (void) {
+
+    gpioPinSetup(gpio_port_g, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 6, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 8, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 9, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 12, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 13, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 14, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_g, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     
 }
 
 // initializes port G GPIO pins
 void portHGPIOInitialize (void) {
+
+    gpioPinSetup(gpio_port_h, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 3, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 4, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 6, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 8, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 10, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 14, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_h, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     
 }
 
-// initializes port G GPIO pins
+// initializes port J GPIO pins
 void portJGPIOInitialize (void) {
     
+    gpioPinSetup(gpio_port_j, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 6, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 7, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 10, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 14, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_j, 15, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+
+}
+
+// initializes port K GPIO pins
+void portKGPIOInitialize (void) {
+    
+    gpioPinSetup(gpio_port_k, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 6, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_k, 7, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+
 }
 
 
@@ -260,6 +390,7 @@ void gpioInitialize (void) {
     
     // Unlock peripheral pin select
     // PPSUnlock();
+    #warning "UnLock PPS"
     
     portAGPIOInitialize();
     portBGPIOInitialize();
@@ -270,8 +401,10 @@ void gpioInitialize (void) {
     portGGPIOInitialize();
     portHGPIOInitialize();
     portJGPIOInitialize();
+    portKGPIOInitialize();
     
     // Lock PPS
     // PPSLock();
+    #warning "Re Lock PPS"
     
 }

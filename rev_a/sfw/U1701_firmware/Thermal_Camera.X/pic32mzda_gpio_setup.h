@@ -193,6 +193,9 @@ void portHGPIOInitialize (void);
 // initializes port J GPIO pins
 void portJGPIOInitialize (void);
 
+// initializes port K GPIO pins
+void portKGPIOInitialize (void);
+
 #endif /* _GPIO_SETUP_H */
 
 /* *****************************************************************************

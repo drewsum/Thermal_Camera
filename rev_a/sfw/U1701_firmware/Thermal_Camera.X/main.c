@@ -2,7 +2,6 @@
  * File:   main.c
  * Author: drewm
  *
- * Created on August 13, 2023, 7:25 PM
  */
 
 #include <xc.h>
@@ -58,11 +57,14 @@
 
 void main(void) {
 
-    
+    gpioInitialize();
+
+    RESET_LED_PIN = LOW;
     
     while(true) {
         
-  
+        Nop();
+        
     }
 
 }
