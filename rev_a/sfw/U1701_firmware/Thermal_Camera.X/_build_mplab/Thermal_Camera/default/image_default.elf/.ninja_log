@@ -1,0 +1,5 @@
+# ninja log v5
+19	364	7529725790662691	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	61e500429a0793a7
+365	1050	7529725796875662	default.elf	ff2f39c708c3aaa9
+1050	1084	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
+1050	1084	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb

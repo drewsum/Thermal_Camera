@@ -1,0 +1,266 @@
+{
+    "importedFrom": "file:///c:/Users/drewm/OneDrive/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X",
+    "version": "1.1",
+    "configurations": [
+        {
+            "name": "default",
+            "id": "conf1",
+            "targetDevice": "PIC32MZ2064DAR176",
+            "imageType": "application",
+            "platformTool": "default-pk4hybrid",
+            "packs": [
+                {
+                    "name": "PIC32MZ-DA_DFP",
+                    "vendor": "Microchip",
+                    "version": "1.5.231"
+                }
+            ],
+            "fileSet": "MPLAB X Virtual Filesystem",
+            "outputFiles": [
+                {
+                    "name": "build",
+                    "toolchain": "default-XC32",
+                    "imagePath": "./out/Thermal_Camera/default.elf"
+                }
+            ]
+        }
+    ],
+    "propertyGroups": [
+        {
+            "name": "default-XC32",
+            "type": "toolchain",
+            "provider": "microchip.toolchains:xc32-toolchain@4.45",
+            "properties": {
+                "compiler": "default-C32",
+                "compiler++": "default-C32CPP",
+                "assembler": "default-C32-AS",
+                "archiver": "default-C32-AR",
+                "linker": "default-C32-LD",
+                "coverage": "default-C32-CO",
+                "global": "default-C32Global"
+            }
+        },
+        {
+            "name": "default-C32",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-compiler@4.45",
+            "properties": {
+                "additional-warnings": false,
+                "addresss-attribute-use": false,
+                "enable-app-io": false,
+                "enable-omit-frame-pointer": false,
+                "enable-symbols": true,
+                "enable-unroll-loops": false,
+                "exclude-floating-point": false,
+                "extra-include-directories": "",
+                "generate-16-bit-code": false,
+                "generate-micro-compressed-code": false,
+                "isolate-each-function": false,
+                "make-warnings-into-errors": false,
+                "optimization-level": "",
+                "place-data-into-section": false,
+                "post-instruction-scheduling": "default",
+                "pre-instruction-scheduling": "default",
+                "preprocessor-macros": "",
+                "strict-ansi": false,
+                "support-ansi": false,
+                "tentative-definitions": "-fno-common",
+                "toplevel-reordering": "",
+                "unaligned-access": "",
+                "use-cci": false,
+                "use-iar": false,
+                "use-indirect-calls": false
+            }
+        },
+        {
+            "name": "default-C32CPP",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-compiler++@4.45",
+            "properties": {
+                "additional-warnings": false,
+                "addresss-attribute-use": false,
+                "check-new": false,
+                "eh-specs": true,
+                "enable-app-io": false,
+                "enable-omit-frame-pointer": false,
+                "enable-symbols": true,
+                "enable-unroll-loops": false,
+                "exceptions": true,
+                "exclude-floating-point": false,
+                "extra-include-directories": "",
+                "generate-16-bit-code": false,
+                "generate-micro-compressed-code": false,
+                "isolate-each-function": false,
+                "make-warnings-into-errors": false,
+                "optimization-level": "",
+                "place-data-into-section": false,
+                "post-instruction-scheduling": "default",
+                "pre-instruction-scheduling": "default",
+                "preprocessor-macros": "",
+                "rtti": true,
+                "strict-ansi": false,
+                "toplevel-reordering": "",
+                "unaligned-access": "",
+                "use-cci": false,
+                "use-iar": false,
+                "use-indirect-calls": false
+            }
+        },
+        {
+            "name": "default-C32-AS",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-assembler@4.45",
+            "properties": {
+                "assembler-symbols": "",
+                "enable-symbols": true,
+                "exclude-floating-point-library": false,
+                "expand-macros": false,
+                "extra-include-directories-for-assembler": "",
+                "extra-include-directories-for-preprocessor": "",
+                "false-conditionals": false,
+                "generate-16-bit-code": false,
+                "generate-micro-compressed-code": false,
+                "keep-locals": false,
+                "list-assembly": false,
+                "list-source": false,
+                "list-symbols": false,
+                "oXC32asm-list-to-file": false,
+                "omit-debug-dirs": false,
+                "omit-forms": false,
+                "preprocessor-macros": "",
+                "warning-level": ""
+            }
+        },
+        {
+            "name": "default-C32-AR",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-archiver@4.45",
+            "properties": {
+                "additional-options-chop-files": false
+            }
+        },
+        {
+            "name": "default-C32-LD",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-linker@4.45",
+            "properties": {
+                "additional-options-use-response-files": false,
+                "additional-options-write-sla": false,
+                "allocate-dinit": false,
+                "code-dinit": false,
+                "ebase-addr": "",
+                "enable-check-sections": false,
+                "exclude-floating-point-library": false,
+                "exclude-standard-libraries": false,
+                "extra-lib-directories": "",
+                "fill-flash-options-addr": "",
+                "fill-flash-options-const": "",
+                "fill-flash-options-how": "0",
+                "fill-flash-options-inc-const": "1",
+                "fill-flash-options-increment": "",
+                "fill-flash-options-seq": "",
+                "fill-flash-options-what": "0",
+                "generate-16-bit-code": false,
+                "generate-cross-reference-file": false,
+                "generate-micro-compressed-code": false,
+                "heap-size": "",
+                "input-libraries": "",
+                "kseg-length": "",
+                "kseg-origin": "",
+                "linker-symbols": "",
+                "map-file": "",
+                "no-device-startup-code": false,
+                "no-startup-files": false,
+                "oXC32ld-extra-opts": "",
+                "optimization-level": "",
+                "preprocessor-macros": "",
+                "remove-unused-sections": false,
+                "report-memory-usage": false,
+                "serial-length": "",
+                "serial-origin": "",
+                "stack-size": "",
+                "symbol-stripping": "",
+                "trace-symbols": "",
+                "warn-section-align": false
+            }
+        },
+        {
+            "name": "default-C32-CO",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-coverage@4.45",
+            "properties": {
+                "coverage-enable": "",
+                "stack-guidance": false
+            }
+        },
+        {
+            "name": "default-C32Global",
+            "type": "translator",
+            "provider": "microchip.toolchains:xc32-global@4.45",
+            "properties": {
+                "common-include-directories": "",
+                "gp-relative-option": "",
+                "legacy-libc": true,
+                "mdtcm": "",
+                "mitcm": "",
+                "mstacktcm": false,
+                "omit-pack-options": "1",
+                "relaxed-math": false,
+                "save-temps": false,
+                "stack-smashing": "",
+                "wpo-lto": false
+            }
+        }
+    ],
+    "fileSets": [
+        {
+            "name": "MPLAB X Virtual Filesystem",
+            "contains": [
+                "Header Files",
+                "Linker Files",
+                "Source Files",
+                "Important Files"
+            ]
+        },
+        {
+            "name": "Header Files",
+            "contains": [
+                "Core",
+                "GPIO"
+            ]
+        },
+        {
+            "name": "Core",
+            "files": [
+                "configuration.h"
+            ],
+            "encoding": "ISO-8859-1"
+        },
+        {
+            "name": "GPIO",
+            "files": [
+                "pin_macros.h"
+            ],
+            "encoding": "ISO-8859-1"
+        },
+        {
+            "name": "Linker Files",
+            "translator": "toolchain:linker"
+        },
+        {
+            "name": "Source Files",
+            "files": [
+                "main.c"
+            ],
+            "encoding": "ISO-8859-1",
+            "translator": "toolchain:compiler"
+        },
+        {
+            "name": "Important Files",
+            "files": [
+                "Makefile"
+            ],
+            "encoding": "ISO-8859-1"
+        }
+    ]
+}

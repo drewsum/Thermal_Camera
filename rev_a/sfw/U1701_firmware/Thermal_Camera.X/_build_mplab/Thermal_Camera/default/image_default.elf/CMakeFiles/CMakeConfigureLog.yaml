@@ -1,0 +1,166 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineSystem.cmake:206 (message)"
+      - "CMakeLists.txt:22 (project)"
+    message: |
+      The target system is: Generic -  - 
+      The host system is: Windows - 10.0.19045 - 
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:22 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: c:/Program Files/Microchip/xc32/v4.45/bin/xc32-gcc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Warning: dinit optimization threshholds not set; dinit may not function
+      c:\\program files\\microchip\\xc32\\v4.45\\bin\\bin\\gcc\\pic32mx\\8.3.1\\..\\..\\..\\..\\bin/pic32m-ld.exe: warning: cannot find entry symbol _reset; defaulting to 000000009d000000
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is GNU, found in:
+        C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/3.27.1/CompilerIdC/a.out
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:22 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: C:/Program Files/Microchip/xc32/v4.45/bin/xc32-c++.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Warning: dinit optimization threshholds not set; dinit may not function
+      c:\\program files\\microchip\\xc32\\v4.45\\bin\\bin\\gcc\\pic32mx\\8.3.1\\..\\..\\..\\..\\bin/pic32m-ld.exe: warning: cannot find entry symbol _reset; defaulting to 000000009d000000
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is GNU, found in:
+        C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/3.27.1/CompilerIdCXX/a.out
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:1107 (message)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineASMCompiler.cmake:127 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "CMakeLists.txt:22 (project)"
+    message: |
+      Checking whether the ASM compiler is GNU using "--version" matched "(GNU assembler)|(GCC)|(Free Software Foundation)":
+      pic32m-gcc.exe (Microchip XC32 Compiler v4.45) 8.3.1 Build date: Jun 13 2024
+      Copyright (C) 2018 Free Software Foundation, Inc.
+      This is free software; see the source for copying conditions.  There is NO
+      warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:22 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-fxtqk6"
+      binary: "C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-fxtqk6"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-fxtqk6'
+        
+        Run Build Command(s): C:/Users/drewm/.mplab/app-finder/apps/ninja/v1.11.1/ninja.exe -v cmTC_910d2
+        [1/2] c:\\PROGRA~1\\MICROC~1\\xc32\\v4.45\\bin\\xc32-gcc.exe   -v -o CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj -c C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeCCompilerABI.c
+        FAILED: CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj 
+        c:\\PROGRA~1\\MICROC~1\\xc32\\v4.45\\bin\\xc32-gcc.exe   -v -o CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj -c C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        Reading specs from c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib/pic32m.musl.specs
+        rename spec link to old_link
+        COLLECT_GCC=c:\\PROGRA~1\\MICROC~1\\xc32\\v4.45\\bin\\bin/pic32m-gcc.exe
+        Target: pic32mx
+        Configured with: /home/svcjenkins/workspace/XC32/release-XC32_4.45__2/src/xc32-gcc/gcc/configure --target=pic32mx --prefix=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt --program-prefix=pic32m- --with-sysroot=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/pic32mx --with-bugurl=http://www.microchip.com/support --with-pkgversion='Microchip XC32 Compiler v4.45' --host=x86_64-w64-mingw32 --build=x86_64-linux-gnu --bindir=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/bin/bin --infodir=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/share/doc/xc32-pic32m-gcc/info --mandir=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/share/doc/xc32-pic32m-gcc/man --libdir=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/lib --libexecdir=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/bin/bin --with-build-sysroot=/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/pic32mx --enable-stage1-languages=c --enable-languages=c,c++ --enable-target-optspace --disable-comdat --disable-libstdcxx-pch --disable-libstdcxx-verbose --disable-libssp --disable-libmudflap --disable-libffi --disable-libfortran --disable-bootstrap --disable-shared --disable-nls --disable-gdb --disable-libgomp --disable-threads --disable-tls --disable-sim --disable-decimal-float --disable-libquadmath --disable-shared --disable-checking --disable-maintainer-mode --enable-lto --enable-fixed-point --enable-gofast --enable-static --enable-sgxx-sde-multilibs --enable-sjlj-exceptions --enable-poison-system-directories --enable-obsolete --without-isl --without-cloog --without-headers --with-musl --with-dwarf2 --with-gnu-as --with-gnu-ld  CC_FOR_TARGET=pic32m-gcc CXX_FOR_TARGET=pic32m-g++ AS_FOR_TARGET=pic32m-as AR_FOR_TARGET=pic32m-ar LD_FOR_TARGET=pic32m-ld NM_FOR_TARGET=pic32m-nm OBJCOPY_FOR_TARGET=pic32m-objcopy OBJDUMP_FOR_TARGET=pic32m-objdump RANLIB_FOR_TARGET=pic32m-ranlib READELF_FOR_TARGET=pic32m-readelf STRIP_FOR_TARGET=pic32m-strip 'XGCC_FLAGS_FOR_TARGET=-fno-enforce-eh-specs -mno-smart-io' 'CFLAGS_FOR_TARGET=-O2 -mno-smart-io -fomit-frame-pointer -mchp-stack-usage' 'CXXFLAGS_FOR_TARGET=-O2 -mno-smart-io -fomit-frame-pointer -mchp-stack-usage -frtti -fexceptions -fno-enforce-eh-specs' LDFLAGS_FOR_TARGET=-Wl,--defsym=_min_heap_size=1024 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc CPPFLAGS='-I/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/pic32m-build/opt/include -imacros host-defs.h' CXXFLAGS='-g -O2 -fpermissive' LDFLAGS=-L/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/pic32m-build/opt/lib
+        Thread model: single
+        gcc version 8.3.1 (Microchip XC32 Compiler v4.45) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj' '-c' '-mips32r2' '-mabi=32' '-mno-default-isr-vectors' '-msoft-float'
+         c:/progra~1/microc~1/xc32/v4.45/bin/bin/gcc/pic32mx/8.3.1/cc1.exe -quiet -v -iprefix c:\\progra~1\\microc~1\\xc32\\v4.45\\bin\\bin\\../../lib/gcc/pic32mx/8.3.1/ -isysroot c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../pic32mx C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeCCompilerABI.c -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -mconfig-data-dir=c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib/./proc/32MXGENERIC -quiet -dumpbase CMakeCCompilerABI.c -mips32r2 -mabi=32 -mno-default-isr-vectors -msoft-float -auxbase-strip CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj -version -o C:\\Users\\drewm\\AppData\\Local\\Temp\\ccWCH6Bu.s
+        GNU C17 (Microchip XC32 Compiler v4.45) version 8.3.1 (pic32mx)
+        	compiled by GNU C version 7.3-win32 20180312, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../pic32mx/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/lib/gcc/pic32mx/8.3.1/../../../../include"
+        ignoring nonexistent directory "/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/pic32mx/include"
+        ignoring nonexistent directory "/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/pic32mx//include/musl"
+        ignoring nonexistent directory "/home/svcjenkins/workspace/XC32/release-XC32_4.45__2/build/opt/lib/gcc/pic32mx/8.3.1/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         c:\\progra~1\\microc~1\\xc32\\v4.45\\bin\\bin\\../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/include
+         c:\\progra~1\\microc~1\\xc32\\v4.45\\bin\\bin\\../../lib/gcc/pic32mx/8.3.1/include/../../../../../pic32mx//include/musl
+         c:\\progra~1\\microc~1\\xc32\\v4.45\\bin\\bin\\../../lib/gcc/pic32mx/8.3.1/include
+         c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../pic32mx/include/pic32m-libs
+        End of search list.
+        GNU C17 (Microchip XC32 Compiler v4.45) version 8.3.1 (pic32mx)
+        	compiled by GNU C version 7.3-win32 20180312, GMP version 6.1.0, MPFR version 3.1.4, MPC version 1.0.3, isl version none
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        Compiler executable checksum: 28faeae3483c1d38e56bc03ecca145f7
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj' '-c' '-mips32r2' '-mabi=32' '-mno-default-isr-vectors' '-msoft-float'
+         c:/progra~1/microc~1/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/bin/as.exe -v -v -mno-pdr -msoft-float --trap -o CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj C:\\Users\\drewm\\AppData\\Local\\Temp\\ccWCH6Bu.s
+        GNU assembler version 2.32.0 (pic32mx) using BFD version (Microchip XC32 Compiler v4.45) 2.32.0.20190703
+        Assembler messages:
+        Fatal error: can't create CMakeFiles/cmTC_910d2.dir/CMakeCCompilerABI.c.obj: No such file or directory
+        Microchip Language Tool Shell Version 4.45 (Build date: Jun 13 2024).\x0d
+        Copyright (c) 2012-2017 Microchip Technology Inc. All rights reserved\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:22 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-e69huy"
+      binary: "C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-e69huy"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/CMakeScratch/TryCompile-e69huy'
+        
+        Run Build Command(s): C:/Users/drewm/.mplab/app-finder/apps/ninja/v1.11.1/ninja.exe -v cmTC_9a92c
+        [1/2] C:\\PROGRA~1\\MICROC~1\\xc32\\v4.45\\bin\\XC32-C~1.EXE   -v -o CMakeFiles/cmTC_9a92c.dir/CMakeCXXCompilerABI.cpp.obj -c C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp
+        FAILED: CMakeFiles/cmTC_9a92c.dir/CMakeCXXCompilerABI.cpp.obj 
+        C:\\PROGRA~1\\MICROC~1\\xc32\\v4.45\\bin\\XC32-C~1.EXE   -v -o CMakeFiles/cmTC_9a92c.dir/CMakeCXXCompilerABI.cpp.obj -c C:/Users/drewm/.mplab/app-finder/apps/cmake/v3.27.1/cmake-3.27.1-windows-x86_64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp
+        Microchip Language Tool Shell Version 4.45 (Build date: Jun 13 2024).\x0d
+        Copyright (c) 2012-2017 Microchip Technology Inc. All rights reserved\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+...
