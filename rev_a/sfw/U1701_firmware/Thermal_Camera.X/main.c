@@ -13,7 +13,7 @@
 // #include "main.h"
 
 // Core Drivers
-//#include "configuration.h"
+#include "configuration.h"
 //#include "device_control.h"
 //#include "32mz_interrupt_control.h"
 //#include "heartbeat_timer.h"
@@ -23,6 +23,12 @@
 //#include "cause_of_reset.h"
 //#include "rtcc.h"
 //
+
+// GPIO
+#include "pin_macros.h"
+//#include "gpio_setup.h"
+
+
 //
 //// Application
 //#include "heartbeat_services.h"
@@ -30,14 +36,8 @@
 //#include "telemetry.h"
 //#include "carrier_spd.h"
 //#include "pgood_monitor.h"
-//#include "pin_macros.h"
-//#include "gpio_setup.h"
-//
-//// display board specific code
-//#include "in12_carrier.h"
-//#include "generic_multiplexing_timers.h"
-//#include "carrier_spd.h"
-//
+
+
 ////// I2C
 //#include "plib_i2c.h"
 //#include "plib_i2c_master.h"
