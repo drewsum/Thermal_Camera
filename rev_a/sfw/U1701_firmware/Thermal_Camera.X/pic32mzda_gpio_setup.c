@@ -71,6 +71,7 @@ void portDGPIOInitialize (void) {
     gpioPinSetup(gpio_port_d, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 10, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPD11Rbits.RPD11R = REFCLKO1_PPS_OUTPUT;                                                // Assign RPD11 to REFCLKO1
     gpioPinSetup(gpio_port_d, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 14, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
@@ -389,8 +390,7 @@ void gpioPinSetup(port_name_t port_name,
 void gpioInitialize (void) {
     
     // Unlock peripheral pin select
-    // PPSUnlock();
-    #warning "UnLock PPS"
+    PPSUnlock();
     
     portAGPIOInitialize();
     portBGPIOInitialize();
@@ -404,7 +404,6 @@ void gpioInitialize (void) {
     portKGPIOInitialize();
     
     // Lock PPS
-    // PPSLock();
-    #warning "Re Lock PPS"
+    PPSLock();
     
 }

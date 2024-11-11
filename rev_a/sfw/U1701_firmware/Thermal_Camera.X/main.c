@@ -13,8 +13,8 @@
 
 // Core Drivers
 #include "pic32mzda_configuration.h"
-//#include "device_control.h"
-//#include "32mz_interrupt_control.h"
+#include "device_control.h"
+#include "32mzda_interrupt_control.h"
 //#include "heartbeat_timer.h"
 //#include "watchdog_timer.h"
 //#include "error_handler.h"
@@ -57,8 +57,29 @@
 
 void main(void) {
 
+     // setup GPIO pins
     gpioInitialize();
+    printf("    GPIO Pins Initialized\n\r");
 
+    // block on POS3P0 and POS1P8 power stability
+    while(POS3P0_PGOOD_PIN == LOW);
+    while(POS1P8_PGOOD_PIN == LOW);
+    printf("    Input power is stable\r\n");
+    
+    // Disable global interrupts so clocks can be initialized properly
+    disableGlobalInterrupts();
+    
+    // Initialize system clocks
+    clockInitialize();
+    printf("    Oscillators, Phase-Locked Loop, and System Clocks Initialized\n\r");
+    
+    // Configure interrupt controller
+    interruptControllerInitialize();
+    
+    // Enable Global Interrupts
+    enableGlobalInterrupts();
+    printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
+    
     RESET_LED_PIN = LOW;
     
     while(true) {

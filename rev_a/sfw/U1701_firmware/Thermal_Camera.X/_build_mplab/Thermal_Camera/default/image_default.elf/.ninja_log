@@ -1,18 +1,5 @@
 # ninja log v5
-21	443	7529746680578184	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	37eea19f0f9ccbe5
-443	1310	7529746688508967	default.elf	3e906f15cdef3101
-1310	1358	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-1310	1358	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-11	352	7529759024944252	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	37eea19f0f9ccbe5
-352	1089	7529759031588530	default.elf	3e906f15cdef3101
-1089	1130	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-1089	1130	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-3	349	7529765000006253	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	37eea19f0f9ccbe5
-349	1047	7529765006414307	default.elf	3e906f15cdef3101
-1047	1081	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-1047	1081	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-3	351	7529779207174807	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	37eea19f0f9ccbe5
-351	1061	7529779213693044	default.elf	3e906f15cdef3101
-1062	1095	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
-1062	1095	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
 7	312	7529780026414158	CMakeFiles/compile.dir/8d0982ec30826ca506b23d25f7791eb6/main.c.obj	37eea19f0f9ccbe5
+351	1061	7529779213693044	default.elf	3e906f15cdef3101
+1062	1095	0	C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
+1062	1095	0	CMakeFiles/Bin2Hex	ad0d1f70478a3ccb
