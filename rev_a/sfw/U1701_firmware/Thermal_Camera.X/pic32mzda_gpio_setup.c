@@ -27,14 +27,21 @@ void portBGPIOInitialize (void) {
     gpioPinSetup(gpio_port_b, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPB2Rbits.RPB2R = U5RTS_PPS_OUTPUT;                                                 // Assign RPB2 as U5RTS
     gpioPinSetup(gpio_port_b, 3, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    RPB3Rbits.RPB3R = U5TX_PPS_OUTPUT;                                                  // Assign RPB3 as U5TX
     gpioPinSetup(gpio_port_b, 4, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPB5Rbits.RPB5R = OC3_PPS_OUTPUT;                                                   // Assign RPB5 as OC3
     gpioPinSetup(gpio_port_b, 6, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    U5RXRbits.U5RXR = RPB6_PPS_INPUT;                                                   // Assign RPB6 as U5RX
     gpioPinSetup(gpio_port_b, 7, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    U5CTSRbits.U5CTSR = RPB7_PPS_INPUT;                                                 // Assign RPB7 as U5CTS
     gpioPinSetup(gpio_port_b, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 9, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
+    RPB9Rbits.RPB9R = SDO3_PPS_OUTPUT;                                                  // Assign RPB9 as SDO3
     gpioPinSetup(gpio_port_b, 10, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    SDI3Rbits.SDI3R = RPB10_PPS_INPUT;                                                  // Assign RPB10 as SDI3
     gpioPinSetup(gpio_port_b, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 12, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
@@ -50,6 +57,7 @@ void portCGPIOInitialize (void) {
     gpioPinSetup(gpio_port_c, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 3, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPC4Rbits.RPC4R = OC5_PPS_OUTPUT;                                                   // Assign RPC4 as OC5
     gpioPinSetup(gpio_port_c, 12, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 14, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
@@ -61,17 +69,20 @@ void portCGPIOInitialize (void) {
 void portDGPIOInitialize (void) {
     
     gpioPinSetup(gpio_port_d, 0, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    INT1Rbits.INT1R = RPD0_PPS_INPUT;                                                   // Assign RPD0 as INT1
     gpioPinSetup(gpio_port_d, 1, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 3, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 4, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPD5Rbits.RPD5R = SDO4_PPS_OUTPUT;                                                  // Assign RPD5 as SDO4
     gpioPinSetup(gpio_port_d, 6, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    SDI4Rbits.SDI4R = RPD7_PPS_INPUT;                                                   // Assign RPD7 as SDI4
     gpioPinSetup(gpio_port_d, 9, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 10, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 11, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
-    RPD11Rbits.RPD11R = REFCLKO1_PPS_OUTPUT;                                                // Assign RPD11 to REFCLKO1
+    RPD11Rbits.RPD11R = REFCLKO1_PPS_OUTPUT;                                            // Assign RPD11 to REFCLKO1
     gpioPinSetup(gpio_port_d, 12, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_d, 14, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
@@ -117,7 +128,9 @@ void portGGPIOInitialize (void) {
     gpioPinSetup(gpio_port_g, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_g, 6, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_g, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    SDI2Rbits.SDI2R = RPG7_PPS_INPUT;                                                       // Assign RPG7 as SDI2
     gpioPinSetup(gpio_port_g, 8, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    RPG8Rbits.RPG8R = SDO2_PPS_OUTPUT;                                                      // Assign RPG8 as SDO2
     gpioPinSetup(gpio_port_g, 9, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_g, 12, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_g, 13, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
@@ -126,7 +139,7 @@ void portGGPIOInitialize (void) {
     
 }
 
-// initializes port G GPIO pins
+// initializes port H GPIO pins
 void portHGPIOInitialize (void) {
 
     gpioPinSetup(gpio_port_h, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
