@@ -43,6 +43,7 @@
 #define POS12_PGOOD_PIN             PORTCbits.RC1
 #define nBATT_CHG_PIN               PORTCbits.RC2
 #define nBATT_DOK_PIN               PORTCbits.RC3
+#define HEARTBEAT_LED_PIN           LATCbits.LATC4
 
 // Port D
 #define FLIR_VOSPI_VSYNC_PIN        PORTDbits.RD0

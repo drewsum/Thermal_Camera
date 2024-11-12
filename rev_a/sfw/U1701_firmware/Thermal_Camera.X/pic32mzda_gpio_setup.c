@@ -57,7 +57,7 @@ void portCGPIOInitialize (void) {
     gpioPinSetup(gpio_port_c, 2, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 3, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 4, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
-    RPC4Rbits.RPC4R = OC5_PPS_OUTPUT;                                                   // Assign RPC4 as OC5
+    RPC4Rbits.RPC4R = OC4_PPS_OUTPUT;                                                   // Assign RPC4 as OC4
     gpioPinSetup(gpio_port_c, 12, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 13, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_c, 14, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);

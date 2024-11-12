@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "32mzda_interrupt_control.h"
-// #include "terminal_control.h"
+#include "terminal_control.h"
 
 // This function configures the system for multi-interrupt operation and
 // assigns shadow registers sets to priority level ISRs
@@ -7128,77 +7128,76 @@ char * getInterruptNameStringPadded(interrupt_source_t input_interrupt) {
     
 }
 
-#warning "re-enable serial output"
-//
-//// This function prints information on all interrupt settings
-//void printInterruptStatus(void) {
-//    
-//    terminalTextAttributesReset();
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-//    printf("Interrupt Controller Status:\n\r");
-//
-//    terminalTextAttributesReset();
-//    
-//    if (getGlobalInterruptsState()) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("Global Interrupt Enable: %s\n\r", getGlobalInterruptsState() ? "T" : "F");
-//    
-//    // Print interrupt vector mode
-//    if (INTCONbits.MVEC) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("Interrupt Vector Mode: %s\n\r", INTCONbits.MVEC ? "Multi-Vector" : "Single-Vector");
-//
-//    // Print interrupt priority shadow register settings
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("Interrupt Priority Shadow Register Setting: 0x%08X\n\r", PRISS);
-//    
-//    // Print latest serviced interrupt priority
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("Latest interrupt priority serviced: 0x%08X\n\r", INTSTATbits.SRIPL);
-//    
-//    // Print latest serviced interrupt
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("Latest interrupt serviced: 0x%08X\n\r", INTSTATbits.SIRQ);
-//    
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
-//    printf("\n\rInterrupts in list are marked green if they are enabled or have IPL > 0\n\r");
-//    
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//    printf("\n\rInterrupt sources:\n\r");
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
-//    printf("###  Name                     EN?  IPL ISL IRQ?\n\r");
-//    
-//    terminalTextAttributesReset();
-//
-//    // Loop through all possible interrupts
-//    uint8_t i;
-//    for (i = 0; i <= 215; i++) {
-//     
-//        if (i % 2 == 0) {
-//         
-//            
-//            if (getInterruptEnable(i) || getInterruptPriority(i) > 0) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-//            
-//        }
-//        
-//        else {
-//         
-//            if (getInterruptEnable(i) || getInterruptPriority(i) > 0) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
-//            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
-//            
-//        }
-//        
-//        printf("%03d  %s %c    %d   %d    %c\n\r", 
-//                i,
-//                getInterruptNameStringPadded(i),
-//                getInterruptEnable(i) ? 'T' : 'F',
-//                getInterruptPriority(i),
-//                getInterruptSubriority(i),
-//                getInterruptFlag(i) ? 'T' : 'F');
-//
-//    }
-//
-//    terminalTextAttributesReset();    
-//    
-//}
+
+// This function prints information on all interrupt settings
+void printInterruptStatus(void) {
+    
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Interrupt Controller Status:\n\r");
+
+    terminalTextAttributesReset();
+    
+    if (getGlobalInterruptsState()) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Global Interrupt Enable: %s\n\r", getGlobalInterruptsState() ? "T" : "F");
+    
+    // Print interrupt vector mode
+    if (INTCONbits.MVEC) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Interrupt Vector Mode: %s\n\r", INTCONbits.MVEC ? "Multi-Vector" : "Single-Vector");
+
+    // Print interrupt priority shadow register settings
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Interrupt Priority Shadow Register Setting: 0x%08X\n\r", PRISS);
+    
+    // Print latest serviced interrupt priority
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Latest interrupt priority serviced: 0x%08X\n\r", INTSTATbits.SRIPL);
+    
+    // Print latest serviced interrupt
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Latest interrupt serviced: 0x%08X\n\r", INTSTATbits.SIRQ);
+    
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("\n\rInterrupts in list are marked green if they are enabled or have IPL > 0\n\r");
+    
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("\n\rInterrupt sources:\n\r");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("###  Name                     EN?  IPL ISL IRQ?\n\r");
+    
+    terminalTextAttributesReset();
+
+    // Loop through all possible interrupts
+    uint8_t i;
+    for (i = 0; i <= 215; i++) {
+     
+        if (i % 2 == 0) {
+         
+            
+            if (getInterruptEnable(i) || getInterruptPriority(i) > 0) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            
+        }
+        
+        else {
+         
+            if (getInterruptEnable(i) || getInterruptPriority(i) > 0) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+            else terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
+            
+        }
+        
+        printf("%03d  %s %c    %d   %d    %c\n\r", 
+                i,
+                getInterruptNameStringPadded(i),
+                getInterruptEnable(i) ? 'T' : 'F',
+                getInterruptPriority(i),
+                getInterruptSubriority(i),
+                getInterruptFlag(i) ? 'T' : 'F');
+
+    }
+
+    terminalTextAttributesReset();    
+    
+}

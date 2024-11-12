@@ -15,7 +15,7 @@
 #include "pic32mzda_configuration.h"
 #include "device_control.h"
 #include "32mzda_interrupt_control.h"
-//#include "heartbeat_timer.h"
+#include "heartbeat_timer.h"
 //#include "watchdog_timer.h"
 //#include "error_handler.h"
 //#include "prefetch.h"
@@ -44,8 +44,8 @@
 //#include "power_monitors.h"
 //#include "misc_i2c_devices.h"
 //
-////// USB
-//#include "terminal_control.h"
+//// USB
+#include "terminal_control.h"
 //#include "uthash.h"
 //#include "usb_uart.h"
 //#include "usb_uart_rx_lookup_table.h"
@@ -75,6 +75,10 @@ void main(void) {
     
     // Configure interrupt controller
     interruptControllerInitialize();
+    
+    // Setup heartbeat timer
+    heartbeatTimerInitialize();
+    printf("    Heartbeat Timer Initialized\n\r");
     
     // Enable Global Interrupts
     enableGlobalInterrupts();
