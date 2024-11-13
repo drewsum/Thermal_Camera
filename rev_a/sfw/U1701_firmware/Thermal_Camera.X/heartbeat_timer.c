@@ -14,8 +14,15 @@ void heartbeatTimerInitialize(void) {
     // Stop timer 1
     T1CONbits.ON = 0;
     
-    // Set timer 1 prescalar to 256
-    T1CONbits.TCKPS = 0b11;
+    // Set timer 1 prescalar to 8
+    // PBCLK3 is 12.5 MHz
+    T1CONbits.TCKPS = 0b01;
+    
+    // Stop in idle
+    T1CONbits.SIDL = 1;
+    
+    // non-gated
+    T1CONbits.TGATE = 0;
     
     // Set timer clock input as PBCLK3
     T1CONbits.TCS = 0;
