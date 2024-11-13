@@ -18,7 +18,7 @@
 #include "heartbeat_timer.h"
 //#include "watchdog_timer.h"
 //#include "error_handler.h"
-//#include "prefetch.h"
+#include "prefetch.h"
 //#include "cause_of_reset.h"
 //#include "rtcc.h"
 //
