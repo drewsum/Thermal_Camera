@@ -33,7 +33,6 @@
 //#include "heartbeat_services.h"
 //#include "power_saving.h"
 //#include "telemetry.h"
-//#include "carrier_spd.h"
 //#include "pgood_monitor.h"
 
 
@@ -83,6 +82,10 @@ void main(void) {
     // Enable Global Interrupts
     enableGlobalInterrupts();
     printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
+    
+    // Setup prefetch module
+    prefetchInitialize();
+    printf("    CPU Instruction Prefetch Module Enabled\r\n");
     
     RESET_LED_PIN = LOW;
     
