@@ -151,6 +151,7 @@ void clockInitialize(void) {
     REFCLK2Initialize();
     REFCLK3Initialize();
     REFCLK4Initialize();
+#warning "add in setup for fifth refclk"
     
 #warning "fix clocking stuff"
 //    // Initialize the PLL

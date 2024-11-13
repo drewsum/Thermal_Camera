@@ -17,11 +17,9 @@
 #include "32mzda_interrupt_control.h"
 #include "heartbeat_timer.h"
 #include "watchdog_timer.h"
-//#include "error_handler.h"
 #include "prefetch.h"
 //#include "cause_of_reset.h"
 //#include "rtcc.h"
-//
 
 // GPIO
 #include "pin_macros.h"
@@ -31,7 +29,7 @@
 //
 //// Application
 //#include "heartbeat_services.h"
-//#include "power_saving.h"
+#include "power_saving.h"
 //#include "telemetry.h"
 //#include "pgood_monitor.h"
 
@@ -71,21 +69,24 @@ void main(void) {
     // Initialize system clocks
     clockInitialize();
     printf("    Oscillators, Phase-Locked Loop, and System Clocks Initialized\n\r");
-    
-    // Configure interrupt controller
+        
+    // Enable Global Interrupts
     interruptControllerInitialize();
+    enableGlobalInterrupts();
+        printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
+    
     
     // Setup heartbeat timer
     heartbeatTimerInitialize();
     printf("    Heartbeat Timer Initialized\n\r");
-    
-    // Enable Global Interrupts
-    enableGlobalInterrupts();
-    printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
-    
+        
     // Setup prefetch module
     prefetchInitialize();
     printf("    CPU Instruction Prefetch Module Enabled\r\n");
+    
+    // Disable unused peripherals for power savings
+    PMDInitialize();
+    printf("    Unused Peripheral Modules Disabled\n\r");
     
     // setup watchdog timer
     watchdogTimerInitialize();
