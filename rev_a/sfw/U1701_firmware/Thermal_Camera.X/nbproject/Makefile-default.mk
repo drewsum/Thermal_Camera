@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=device_control.c 32mzda_interrupt_control.c heartbeat_timer.c pic32mzda_gpio_setup.c terminal_control.c main.c prefetch.c
+SOURCEFILES_QUOTED_IF_SPACED=device_control.c 32mzda_interrupt_control.c heartbeat_timer.c pic32mzda_gpio_setup.c terminal_control.c main.c prefetch.c watchdog_timer.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/main.o ${OBJECTDIR}/prefetch.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/prefetch.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/main.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/main.o ${OBJECTDIR}/prefetch.o
+OBJECTFILES=${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/main.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o
 
 # Source Files
-SOURCEFILES=device_control.c 32mzda_interrupt_control.c heartbeat_timer.c pic32mzda_gpio_setup.c terminal_control.c main.c prefetch.c
+SOURCEFILES=device_control.c 32mzda_interrupt_control.c heartbeat_timer.c pic32mzda_gpio_setup.c terminal_control.c main.c prefetch.c watchdog_timer.c
 
 
 
@@ -143,6 +143,12 @@ ${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/c87c1532b0f3
 	@${RM} ${OBJECTDIR}/prefetch.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}"  
 	
+${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/6e5cb5b2c6e94c4e2934bc713f89dd5ff202af2f .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}"  
+	
 else
 ${OBJECTDIR}/device_control.o: device_control.c  .generated_files/flags/default/9e9a1f1b1c229a449332895e706d1a09aa582c9d .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
@@ -185,6 +191,12 @@ ${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/94600d92cdca
 	@${RM} ${OBJECTDIR}/prefetch.o.d 
 	@${RM} ${OBJECTDIR}/prefetch.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/361e9f4db9a2feb18618ac4d8fceceadc016d68 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}"  
 	
 endif
 

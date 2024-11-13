@@ -16,7 +16,7 @@
 #include "device_control.h"
 #include "32mzda_interrupt_control.h"
 #include "heartbeat_timer.h"
-//#include "watchdog_timer.h"
+#include "watchdog_timer.h"
 //#include "error_handler.h"
 #include "prefetch.h"
 //#include "cause_of_reset.h"
@@ -87,11 +87,19 @@ void main(void) {
     prefetchInitialize();
     printf("    CPU Instruction Prefetch Module Enabled\r\n");
     
+    // setup watchdog timer
+    watchdogTimerInitialize();
+    printf("    Watchdog Timer Initialized\n\r");
+    
     RESET_LED_PIN = LOW;
     
     while(true) {
         
-        Nop();
+        // clear the watchdog if we need to
+        if (wdt_clear_request) {
+            kickTheDog();
+            wdt_clear_request = 0;
+        }
         
     }
 
