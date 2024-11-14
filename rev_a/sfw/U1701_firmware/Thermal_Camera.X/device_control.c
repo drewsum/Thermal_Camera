@@ -39,6 +39,9 @@ void REFCLK3Initialize(void);
 // this function sets up reference clock 4
 void REFCLK4Initialize(void);
 
+// this function sets up reference clock 5
+void REFCLK5Initialize(void);
+
 // this function sets up peripheral bus clock 1
 void PBCLK1Initialize(void);
 
@@ -151,7 +154,7 @@ void clockInitialize(void) {
     REFCLK2Initialize();
     REFCLK3Initialize();
     REFCLK4Initialize();
-#warning "add in setup for fifth refclk"
+    REFCLK5Initialize();
     
 #warning "fix clocking stuff"
 //    // Initialize the PLL
@@ -296,6 +299,26 @@ void REFCLK4Initialize(void) {
     
     // Disable REFCLK4 in sleep
     REFO4CONbits.RSLP = 0;
+    
+}
+
+// this function sets up reference clock 5
+void REFCLK5Initialize(void) {
+ 
+    // Set REFCLK5 divider to 1
+    REFO5CONbits.RODIV = 0b000000000000000;
+    
+    // Disable REFCLK4
+    REFO4CONbits.ON = 0;
+    
+    // Disable REFCLK5 in Idle mode
+    REFO5CONbits.SIDL = 1;
+    
+    // Disable output of REFCLK5 onto output pin
+    REFO5CONbits.OE = 0;
+    
+    // Disable REFCLK5 in sleep
+    REFO5CONbits.RSLP = 0;
     
 }
 
@@ -922,6 +945,22 @@ void printClockStatus(uint32_t input_sysclk) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    REFCLK4 (Reference Clock 4) is set to: %s\n\r",
                 stringFromClockSetting(input_sysclk / (2 * REFO4CONbits.RODIV)));
+        
+    }
+    
+    // Determine refclk5
+    if (REFO5CONbits.ON == 0) {
+     
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    REFCLK5 (Reference Clock 5) Disabled\n\r");
+        
+    }
+    
+    else {
+     
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    REFCLK5 (Reference Clock 5) is set to: %s\n\r",
+                stringFromClockSetting(input_sysclk / (2 * REFO5CONbits.RODIV)));
         
     }
     
