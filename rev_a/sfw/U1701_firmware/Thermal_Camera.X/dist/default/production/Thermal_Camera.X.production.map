@@ -5,27 +5,27 @@ c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1\libgcc
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1\libgcc.a(floatunsidf.o)
                               build/default/production/device_control.o (__floatunsidf)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-bootstrap-exception-handler.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_bootstrap_exception_handler)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_bootstrap_exception_handler)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-on-reset.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_on_reset)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_on_reset)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-on-bootstrap.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_on_bootstrap)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_on_bootstrap)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-nmi-handler.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_nmi_handler)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_nmi_handler)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(pic32_data_init_core.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (__pic32_data_init)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (__pic32_data_init)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(pic32_init_cache.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (__pic32_init_cache)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (__pic32_init_cache)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(pic32_init_tlb_ebi_sqi.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (__pic32_tlb_init_ebi_sqi)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (__pic32_tlb_init_ebi_sqi)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(general-exception.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_general_exception_context)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_general_exception_context)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(cache-err-exception.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_cache_err_exception_context)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_cache_err_exception_context)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(simple-tlb-refill-exception.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o (_simple_tlb_refill_exception_context)
+                              C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o (_simple_tlb_refill_exception_context)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(defaultinterrupt.o)
-                              C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o (_DefaultInterrupt)
+                              C:\Users\drewm\AppData\Local\Temp\cc29BORt.o (_DefaultInterrupt)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-general-exception-handler.o)
                               c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(general-exception.o) (_general_exception_handler)
 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-cache-err-exception-handler.o)
@@ -357,11 +357,11 @@ Microchip PIC32 Memory-Usage Report By Module
          964           0          13         977         3d1    heartbeat_timer.o                            build/default/production/heartbeat_timer.o
          956           0           0         956         3bc    _udivdi3.o                                   libgcc.a
          952           0           0         952         3b8    _umoddi3.o                                   libgcc.a
-           0         844           0         844         34c    ccSClW8e.o                                   C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+           0         844           0         844         34c    ccjpYiC1.o                                   C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
          812           0           0         812         32c    dp32mul.o                                    libm.a
          752           0          13         765         2fd    main.o                                       build/default/production/main.o
          632           0           0         632         278    fp32subadd.o                                 libm.a
-         584           0           0         584         248    ccc5WyWo.o                                   C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+         584           0           0         584         248    ccFd0GEq.o                                   C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
          536          36           0         572         23c    pic32_init_cache.o                           libpic32.a
          512           0           0         512         200    __fmt_x.o                                    libc-musl.a
          392           0           0         392         188    __pop_int.o                                  libc-musl.a
@@ -471,19 +471,19 @@ Discarded input sections
  .reginfo       0x0000000000000000       0x18 build/default/production/power_saving.o
  .MIPS.abiflags
                 0x0000000000000000       0x18 build/default/production/power_saving.o
- .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
  .MIPS.abiflags
-                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
- .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
+                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
+ .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
  .MIPS.abiflags
-                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
- .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
+ .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
  .MIPS.abiflags
-                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
- .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
+ .reginfo       0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
  .MIPS.abiflags
-                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
- .discard       0x0000000000000000        0x4 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+                0x0000000000000000       0x18 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
+ .discard       0x0000000000000000        0x4 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
  .reginfo       0x0000000000000000       0x18 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
  .MIPS.abiflags
                 0x0000000000000000       0x18 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
@@ -1291,10 +1291,10 @@ LOAD build/default/production/watchdog_timer.o
 LOAD build/default/production/power_saving.o
                 0x0000000000000001                __MPLAB_BUILD = 0x1
                 0x000000000001c200                _min_heap_size = 0x1c200
-LOAD C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
-LOAD C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
-LOAD C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
-LOAD C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+LOAD C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
+LOAD C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
+LOAD C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
+LOAD C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
 LOAD c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
 LOAD c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1\libgcc.a
 START GROUP
@@ -1812,16 +1812,16 @@ END GROUP
 
 .reset          0x00000000bfc00000      0x1b4
  *(.reset)
- .reset         0x00000000bfc00000       0x18 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .reset         0x00000000bfc00000       0x18 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
                 0x00000000bfc00000                _reset
  *(.reset.startup)
  .reset.startup
-                0x00000000bfc00018      0x19c C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+                0x00000000bfc00018      0x19c C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
                 0x00000000bfc00018                _startup
 
 .bev_excpt      0x00000000bfc00380       0x10
  *(.bev_handler)
- .bev_handler   0x00000000bfc00380       0x10 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .bev_handler   0x00000000bfc00380       0x10 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .cache_init     0x00000000bfc004b0      0x218
  *(.cache_init)
@@ -1839,17 +1839,17 @@ END GROUP
                 0x000000009d000000       0x10
  *(.simple_tlb_refill_vector)
  .simple_tlb_refill_vector
-                0x000000009d000000       0x10 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+                0x000000009d000000       0x10 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .cache_err_excpt
                 0x000000009d000100       0x10
  *(.cache_err_vector)
  .cache_err_vector
-                0x000000009d000100       0x10 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+                0x000000009d000100       0x10 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .app_excpt      0x000000009d000180       0x10
  *(.gen_handler)
- .gen_handler   0x000000009d000180       0x10 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .gen_handler   0x000000009d000180       0x10 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .vectors        0x000000009d000200       0x68
                 0x000000009d000200                . = ALIGN (0x4)
@@ -3683,13 +3683,13 @@ END GROUP
  .gnu.attributes
                 0x0000000000000090       0x10 build/default/production/power_saving.o
  .gnu.attributes
-                0x00000000000000a0       0x10 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+                0x00000000000000a0       0x10 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
  .gnu.attributes
-                0x00000000000000b0       0x10 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
+                0x00000000000000b0       0x10 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
  .gnu.attributes
-                0x00000000000000c0       0x10 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000000000c0       0x10 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
  .gnu.attributes
-                0x00000000000000d0       0x10 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+                0x00000000000000d0       0x10 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
  .gnu.attributes
                 0x00000000000000e0       0x10 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
  .gnu.attributes
@@ -3960,27 +3960,27 @@ __xc_reference_data
 .__vector_offset_BF810540_data
                 0x00000000bf810540      0x1b0
  .__vector_offset_BF810540_data
-                0x00000000bf810540      0x1b0 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000bf810540      0x1b0 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .__vector_offset_BF8106F4_data
                 0x00000000bf8106f4      0x154
  .__vector_offset_BF8106F4_data
-                0x00000000bf8106f4      0x154 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000bf8106f4      0x154 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .__vector_offset_BF81084C_data
                 0x00000000bf81084c       0x24
  .__vector_offset_BF81084C_data
-                0x00000000bf81084c       0x24 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000bf81084c       0x24 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .__vector_offset_BF810874_data
                 0x00000000bf810874       0x1c
  .__vector_offset_BF810874_data
-                0x00000000bf810874       0x1c C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000bf810874       0x1c C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .__vector_offset_BF810898_data
                 0x00000000bf810898        0x8
  .__vector_offset_BF810898_data
-                0x00000000bf810898        0x8 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+                0x00000000bf810898        0x8 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .COHERENTBSS$   0x00000000a0000040        0x2
  .COHERENTBSS$  0x00000000a0000040        0x1 build/default/production/heartbeat_timer.o
@@ -4243,16 +4243,16 @@ __xc_reference_data
  .data          0x0000000000000000        0x0 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
 
 .data%z83       0x0000000000000000        0x0
- .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+ .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
 
 .data%z84       0x0000000000000000        0x0
- .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+ .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .data%z85       0x0000000000000000        0x0
- .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
+ .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
 
 .data%z86       0x0000000000000000        0x0
- .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .data          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .data%z87       0x0000000000000000        0x0
  .data          0x0000000000000000        0x0 build/default/production/power_saving.o
@@ -4541,16 +4541,16 @@ __xc_reference_data
  .bss           0x0000000000000000        0x0 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\pic32_software_reset.o
 
 .bss%z180       0x0000000000000000        0x0
- .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+ .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
 
 .bss%z181       0x0000000000000000        0x0
- .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+ .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .bss%z182       0x0000000000000000        0x0
- .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
+ .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
 
 .bss%z183       0x0000000000000000        0x0
- .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .bss           0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .bss%z184       0x0000000000000000        0x0
  .bss           0x0000000000000000        0x0 build/default/production/power_saving.o
@@ -4992,7 +4992,7 @@ __xc_reference_data
 .text.main_entry
                 0x000000009d027194       0x54
  .text.main_entry
-                0x000000009d027194       0x54 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+                0x000000009d027194       0x54 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
                 0x000000009d0271c8                __crt0_exit
 
 .text.__pop_float
@@ -5455,16 +5455,16 @@ __xc_reference_data
  .text          0x0000000000000000        0x0 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\libpic32.a(default-bootstrap-exception-handler.o)
 
 .text%z263      0x0000000000000000        0x0
- .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccgbbq6O.o
+ .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cc29BORt.o
 
 .text%z264      0x0000000000000000        0x0
- .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccSClW8e.o
+ .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccjpYiC1.o
 
 .text%z265      0x0000000000000000        0x0
- .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccGSEXiL.o
+ .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\cce5dOtF.o
 
 .text%z266      0x0000000000000000        0x0
- .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccc5WyWo.o
+ .text          0x0000000000000000        0x0 C:\Users\drewm\AppData\Local\Temp\ccFd0GEq.o
 
 .text%z267      0x0000000000000000        0x0
  .text          0x0000000000000000        0x0 c:/program files/microchip/xc32/v4.45/bin/bin/../../lib/gcc/pic32mx/8.3.1/../../../../pic32mx/lib\debug-exception-return.o

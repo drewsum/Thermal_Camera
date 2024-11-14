@@ -32,7 +32,7 @@ void heartbeatTimerInitialize(void) {
     
     // Set timer 1 period match to 317
     // This will give an interrupt rate of 100 Hz
-    PR1 = 317;
+    PR1 = 634;
     
     // Clear timer1 Interrupt Flag
     clearInterruptFlag(timer1);

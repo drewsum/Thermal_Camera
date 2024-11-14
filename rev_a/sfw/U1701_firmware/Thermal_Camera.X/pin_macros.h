@@ -60,7 +60,7 @@
 #define PGOOD_LED_SHDN_PIN          LATEbits.LATE9
 
 // Port F
-#define CPU_TRAP_LED                LATFbits.LATF2
+#define CPU_TRAP_LED_PIN            LATFbits.LATF2
 #define POS1P2_RUN_PIN              LATEFbits.LATF12
 
 // Port G
