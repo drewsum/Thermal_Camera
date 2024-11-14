@@ -176,7 +176,7 @@ void clockInitialize(void) {
     CFGCONbits.OCACLK = 1;
 //    
 //    // lock clock and PLL settings
-//    OSCCONbits.CLKLOCK = 1;
+    OSCCONbits.CLKLOCK = 1;
     
     // re-lock the device
     deviceLock();

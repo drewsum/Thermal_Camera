@@ -43,9 +43,9 @@
 //
 //// USB
 #include "terminal_control.h"
-//#include "uthash.h"
-//#include "usb_uart.h"
-//#include "usb_uart_rx_lookup_table.h"
+#include "uthash.h"
+#include "usb_uart.h"
+#include "usb_uart_rx_lookup_table.h"
 //
 ////// ADC
 //#include "adc.h"
@@ -80,6 +80,10 @@ void main(void) {
     heartbeatTimerInitialize();
     printf("    Heartbeat Timer Initialized\n\r");
         
+    // Setup USB UART debugging
+    usbUartInitialize();
+    printf("    USB UART Initialized, DMA buffer method used\n\r");
+    
     // Setup prefetch module
     prefetchInitialize();
     printf("    CPU Instruction Prefetch Module Enabled\r\n");
