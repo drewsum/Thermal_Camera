@@ -14,9 +14,9 @@ void heartbeatTimerInitialize(void) {
     // Stop timer 1
     T1CONbits.ON = 0;
     
-    // Set timer 1 prescalar to 8
+    // Set timer 1 prescalar to 256
     // PBCLK3 is 12.5 MHz
-    T1CONbits.TCKPS = 0b01;
+    T1CONbits.TCKPS = 0b11;
     
     // Stop in idle
     T1CONbits.SIDL = 1;
@@ -30,9 +30,9 @@ void heartbeatTimerInitialize(void) {
     // Clear timer 1
     TMR1 = 0x0000;
     
-    // Set timer 1 period match to 317
+    // Set timer 1 period match to 488
     // This will give an interrupt rate of 100 Hz
-    PR1 = 634;
+    PR1 = 488;
     
     // Clear timer1 Interrupt Flag
     clearInterruptFlag(timer1);

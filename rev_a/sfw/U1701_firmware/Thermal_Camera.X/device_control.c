@@ -148,7 +148,7 @@ void clockInitialize(void) {
     PBCLK5Initialize();
     PBCLK6Initialize();
     PBCLK7Initialize();
-
+ 
     // Initialize reference clocks
     REFCLK1Initialize();
     REFCLK2Initialize();
@@ -156,21 +156,20 @@ void clockInitialize(void) {
     REFCLK4Initialize();
     REFCLK5Initialize();
     
-#warning "fix clocking stuff"
-//    // Initialize the PLL
-//    PLLInitialize();
-//    
-//    // wait for PLL to stabilize
-//    while (CLKSTATbits.SPLLRDY == 0);
-//    
-//    // Set new clock source as SPLL
-//    OSCCONbits.NOSC = 0b001;
-//    
-//    // Initiate clock switch
-//    OSCCONbits.OSWEN = 1;
-//    
-//    // wait for switch to complete
-//    while (OSCCONbits.OSWEN == 1);
+    // Initialize the PLL
+    PLLInitialize();
+    
+    // wait for PLL to stabilize
+    while (CLKSTATbits.SPLLRDY == 0);
+    
+    // Set new clock source as SPLL
+    OSCCONbits.NOSC = 0b001;
+    
+    // Initiate clock switch
+    OSCCONbits.OSWEN = 1;
+    
+    // wait for switch to complete
+    while (OSCCONbits.OSWEN == 1);
 //    
     // set PWM to alternate clock source, datasheet table 18-1
     CFGCONbits.OCACLK = 1;
@@ -186,37 +185,21 @@ void clockInitialize(void) {
 // this function sets up the PLL
 void PLLInitialize(void) {
  
-//    // Set PLL input range as 13-26 MHz
-//    SPLLCONbits.PLLRANGE = 0b011;
-//    
-//    // Set the input to the PLL as POSC
-//    SPLLCONbits.PLLICLK = 0;
-//    
-//    // Set PLL input divider to 3
-//    SPLLCONbits.PLLIDIV = 0b010;
-//    
-//    // Set PLL multiplier to 50
-//    SPLLCONbits.PLLMULT = 0b110001; // (49 in binary, 0b0000000 => PLL X 1)
-//    
-//    // Set PLL output divider to 2
-//    SPLLCONbits.PLLODIV = 0b001;
+    // Set PLL input range as 13-26 MHz
+    SPLLCONbits.PLLRANGE = 0b011;
     
-#warning "revert this when EC is fixed"
-    // Set PLL input range as 5-10 MHz
-    SPLLCONbits.PLLRANGE = 0b001;
+    // Set the input to the PLL as POSC
+    SPLLCONbits.PLLICLK = 0;
     
-    // Set the input to the PLL as FRC
-    SPLLCONbits.PLLICLK = 1;
+    // Set PLL input divider to 3
+    SPLLCONbits.PLLIDIV = 0b010;
     
-    // Set PLL input divider to 2
-    SPLLCONbits.PLLIDIV = 0b001;
-    
-    // Set PLL multiplier to 100
-    SPLLCONbits.PLLMULT = 0b1100011; // (99 in binary, 0b0000000 => PLL X 1)
+    // Set PLL multiplier to 50
+    SPLLCONbits.PLLMULT = 0b110001; // (49 in binary, 0b0000000 => PLL X 1)
     
     // Set PLL output divider to 2
     SPLLCONbits.PLLODIV = 0b001;
-    
+
 }
 
 // this function sets up reference clock 1
