@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c
+SOURCEFILES_QUOTED_IF_SPACED=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c cause_of_reset.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/cause_of_reset.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/cause_of_reset.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o
+OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/cause_of_reset.o
 
 # Source Files
-SOURCEFILES=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c
+SOURCEFILES=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c cause_of_reset.c
 
 
 
@@ -167,6 +167,12 @@ ${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/4f308f8e5b2b2e800f87
 	@${RM} ${OBJECTDIR}/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
+${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/b66a7b7602e0c4000e65ab0dc5df26113a8bbe74 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
 else
 ${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/ed007ce6efb68051700af125e785b9d3aae1b305 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
@@ -233,6 +239,12 @@ ${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/83f98b61602517818daf
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/be33b3840398ad1413afc287dde8166b2435aa9f .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
 endif
 
