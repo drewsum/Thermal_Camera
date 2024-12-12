@@ -20,7 +20,6 @@
 
 // Printable Variables from other header files
 extern uint32_t device_on_time_counter;
-// extern reset_cause_t reset_cause;
 
 // This function is used to setup DMA0 for UART transmit
 void usbUartTrasmitDmaInitialize(void) {
@@ -320,7 +319,7 @@ void __ISR(USB_UART_RX_DMA_INT_VECTOR, IPL2SRS) usbUartRxDmaISR(void) {
     // channel error
     else if (USB_UART_RX_DMA_INT_BITFIELD.CHERIF) {
         
-        // error_handler.flags.USB_rx_dma_error = 1;
+    // error_handler.flags.USB_rx_dma_error = 1;
     #warning "Add error handler here"
         
     }

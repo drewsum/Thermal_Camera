@@ -63,11 +63,11 @@ void main(void) {
     terminalSetCursorHome();
     
     // set serial terminal window name
-    char *terminal_title_str;
-    terminal_title_str = (char *) malloc(64);
-    sprintf(terminal_title_str, "%s Serial Terminal", PROJECT_NAME_STR);
-    terminalSetTitle(terminal_title_str);
-    free(terminal_title_str);
+//    char *terminal_title_str;
+//    terminal_title_str = (char *) malloc(64);
+//    sprintf(terminal_title_str, "%s Serial Terminal", PROJECT_NAME_STR);
+//    terminalSetTitle(terminal_title_str);
+//    free(terminal_title_str);
     
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
@@ -152,7 +152,7 @@ void main(void) {
         
     // Setup USB UART debugging
     usbUartInitialize();
-    printf("    USB UART Initialized, DMA buffer method used\n\r");
+    printf("    USB UART Initialized, DMA buffer method used, USB UART command hash table configured\n\r");
     
     // Setup prefetch module
     prefetchInitialize();

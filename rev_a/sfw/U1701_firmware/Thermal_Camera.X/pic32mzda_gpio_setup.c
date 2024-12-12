@@ -26,7 +26,7 @@ void portBGPIOInitialize (void) {
 
     gpioPinSetup(gpio_port_b, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
-    gpioPinSetup(gpio_port_b, 2, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
+    gpioPinSetup(gpio_port_b, 2, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     // RPB2Rbits.RPB2R = U5RTS_PPS_OUTPUT;                                                 // Assign RPB2 as U5RTS
     gpioPinSetup(gpio_port_b, 3, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     RPB3Rbits.RPB3R = U5TX_PPS_OUTPUT;                                                  // Assign RPB3 as U5TX

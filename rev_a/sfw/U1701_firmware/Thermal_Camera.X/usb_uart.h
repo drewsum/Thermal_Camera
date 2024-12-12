@@ -20,7 +20,7 @@
 #include <sys/attribs.h>
 
 #include "usb_uart_rx_lookup_table.h"
-
+#include "32mzda_interrupt_control.h"
 #include "uthash.h"
 
 
