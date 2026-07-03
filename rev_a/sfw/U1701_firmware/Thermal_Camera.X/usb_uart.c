@@ -85,7 +85,7 @@ void usbUartTrasmitDmaInitialize(void) {
 // This function is used to setup DMA1 for UART Receive
 void usbUartReceiveDmaInitialize(void) {
  
-    // Set up DMA1 for USB UART Transmit
+    // Set up DMA1 for USB UART Receive
     // From reference manual example 31-2
     // Disable DMA1 interrupt
     disableInterrupt(USB_UART_RX_DMA_INT_SOURCE);
@@ -102,7 +102,7 @@ void usbUartReceiveDmaInitialize(void) {
     // Disable DMA chaining
     USB_UART_RX_DMA_CON_BITFIELD.CHCHN = 0;
     
-    // Start interrupt request is UART 3 RX done
+    // Start interrupt request is RX UART receive done
     USB_UART_RX_DMA_ECON_BITFIELD.CHSIRQ = USB_UART_RX_INT_SOURCE;
     // configure DMA1 to start on an IRQ matching CHSIRQ
     USB_UART_RX_DMA_ECON_BITFIELD.SIRQEN = 1;
@@ -148,123 +148,206 @@ void usbUartReceiveDmaInitialize(void) {
     
 }
 
-// This function initializes UART 6 for USB debugging
-void usbUartInitialize(void) {
- 
-    // Disable UART 3 interrupts
-    disableInterrupt(USB_UART_RX_INT_SOURCE);
+// This function initializes the TX UART module (UART5) for USB debugging
+void usbUartTransmitInitialize(void) {
+
+    // Disable TX UART interrupts
     disableInterrupt(USB_UART_TX_INT_SOURCE);
-    disableInterrupt(USB_UART_FAULT_INT_SOURCE);
-    
-    // Turn off UART 3 for configuration
-    USB_UART_MODE_BITFIELD.ON = 0;
-    
-    // stop UART 3 operation in IDLE mode
-    // USB_UART_MODE_BITFIELD.SIDL = 1;
-    
+    disableInterrupt(USB_UART_TX_FAULT_INT_SOURCE);
+
+    // Turn off TX UART for configuration
+    USB_UART_TX_MODE_BITFIELD.ON = 0;
+
+    // stop TX UART operation in IDLE mode
+    // USB_UART_TX_MODE_BITFIELD.SIDL = 1;
+
     // Disable IrDA encoding
-    USB_UART_MODE_BITFIELD.IREN = 0;
-    
+    USB_UART_TX_MODE_BITFIELD.IREN = 0;
+
     // Disable CTS, RTS signals
     // (No flow control used)
-    USB_UART_MODE_BITFIELD.UEN = 0b00;
-    
+    USB_UART_TX_MODE_BITFIELD.UEN = 0b00;
+
     // Disable loopback
-    USB_UART_MODE_BITFIELD.LPBACK = 0;
-    
+    USB_UART_TX_MODE_BITFIELD.LPBACK = 0;
+
     // Disable auto-baud
-    USB_UART_MODE_BITFIELD.ABAUD = 0;
-    
-    // RX idle state is logic high
-    USB_UART_MODE_BITFIELD.RXINV = 0;
-    
+    USB_UART_TX_MODE_BITFIELD.ABAUD = 0;
+
     // High speed baud rate setting
-    USB_UART_MODE_BITFIELD.BRGH = 0;
-    
+    USB_UART_TX_MODE_BITFIELD.BRGH = 0;
+
     // 8 bit data length and no parity
-    USB_UART_MODE_BITFIELD.PDSEL = 0b00;
-    
+    USB_UART_TX_MODE_BITFIELD.PDSEL = 0b00;
+
     // 1 stop bit
-    USB_UART_MODE_BITFIELD.STSEL = 0;
-    
-    // Disable addressing
-    USB_UART_STA_BITFIELD.ADDEN = 0;
-    
+    USB_UART_TX_MODE_BITFIELD.STSEL = 0;
+
     // Interrupt on every transmitted character
-    USB_UART_STA_BITFIELD.UTXISEL = 0b01;
-    
+    USB_UART_TX_STA_BITFIELD.UTXISEL = 0b01;
+
     // Idle transmit state is high
-    USB_UART_STA_BITFIELD.UTXINV = 0;
-    
+    USB_UART_TX_STA_BITFIELD.UTXINV = 0;
+
     // Disable break
-    USB_UART_STA_BITFIELD.UTXBRK = 0;
-    
-    // Interrupt on every character received
-    USB_UART_STA_BITFIELD.URXISEL = 0b00;
-    
-    // Disable address detection
-    USB_UART_STA_BITFIELD.ADDEN = 0;
-    
+    USB_UART_TX_STA_BITFIELD.UTXBRK = 0;
+
     // Set baud rate to 115200 bps
     // From section 21.3 of PIC32MZ reference manual
     // Input CLK is PBCLK2 (84 MHz)
     // With PBCLK2 = 84 MHz, BRGH = 1, baud rate error is 0.16%
-    USB_UART_BRG_REG = 35;
-    
+    USB_UART_TX_BRG_REG = 35;
+
     // Set interrupt priorities
-    setInterruptPriority(USB_UART_FAULT_INT_SOURCE, 1);
-    
+    setInterruptPriority(USB_UART_TX_FAULT_INT_SOURCE, 1);
+
     // Set interrupt subpriorities
-    setInterruptSubpriority(USB_UART_FAULT_INT_SOURCE, 1);
-    
-    // Clear all UART 3 Interrupts
-    clearInterruptFlag(USB_UART_FAULT_INT_SOURCE);
+    setInterruptSubpriority(USB_UART_TX_FAULT_INT_SOURCE, 1);
+
+    // Clear all TX UART Interrupts
+    clearInterruptFlag(USB_UART_TX_FAULT_INT_SOURCE);
     clearInterruptFlag(USB_UART_TX_INT_SOURCE);
-    
-    // clear receive errors
-    USB_UART_STA_BITFIELD.FERR = 0;
-    USB_UART_STA_BITFIELD.PERR = 0;
-    USB_UART_STA_BITFIELD.OERR = 0;
-    
-    // Enable UART 3
-    USB_UART_MODE_BITFIELD.ON = 1;
-    
+
+    // Enable TX UART
+    USB_UART_TX_MODE_BITFIELD.ON = 1;
+
     // Enable transmitter
-    USB_UART_STA_BITFIELD.UTXEN = 1;
-    
+    USB_UART_TX_STA_BITFIELD.UTXEN = 1;
+
+    // Enable error interrupt
+    enableInterrupt(USB_UART_TX_FAULT_INT_SOURCE);
+
+}
+
+// This function initializes the RX UART module (UART4) for USB debugging
+void usbUartReceiveInitialize(void) {
+
+    // Disable RX UART interrupts
+    disableInterrupt(USB_UART_RX_INT_SOURCE);
+    disableInterrupt(USB_UART_RX_FAULT_INT_SOURCE);
+
+    // Turn off RX UART for configuration
+    USB_UART_RX_MODE_BITFIELD.ON = 0;
+
+    // stop RX UART operation in IDLE mode
+    // USB_UART_RX_MODE_BITFIELD.SIDL = 1;
+
+    // Disable IrDA encoding
+    USB_UART_RX_MODE_BITFIELD.IREN = 0;
+
+    // Disable CTS, RTS signals
+    // (No flow control used)
+    USB_UART_RX_MODE_BITFIELD.UEN = 0b00;
+
+    // Disable loopback
+    USB_UART_RX_MODE_BITFIELD.LPBACK = 0;
+
+    // Disable auto-baud
+    USB_UART_RX_MODE_BITFIELD.ABAUD = 0;
+
+    // RX idle state is logic high
+    USB_UART_RX_MODE_BITFIELD.RXINV = 0;
+
+    // High speed baud rate setting
+    USB_UART_RX_MODE_BITFIELD.BRGH = 0;
+
+    // 8 bit data length and no parity
+    USB_UART_RX_MODE_BITFIELD.PDSEL = 0b00;
+
+    // 1 stop bit
+    USB_UART_RX_MODE_BITFIELD.STSEL = 0;
+
+    // Disable addressing
+    USB_UART_RX_STA_BITFIELD.ADDEN = 0;
+
+    // Interrupt on every character received
+    USB_UART_RX_STA_BITFIELD.URXISEL = 0b00;
+
+    // Set baud rate to 115200 bps
+    // From section 21.3 of PIC32MZ reference manual
+    // Input CLK is PBCLK2 (84 MHz)
+    // With PBCLK2 = 84 MHz, BRGH = 1, baud rate error is 0.16%
+    USB_UART_RX_BRG_REG = 35;
+
+    // Set interrupt priorities
+    setInterruptPriority(USB_UART_RX_FAULT_INT_SOURCE, 1);
+
+    // Set interrupt subpriorities
+    setInterruptSubpriority(USB_UART_RX_FAULT_INT_SOURCE, 1);
+
+    // Clear all RX UART Interrupts
+    clearInterruptFlag(USB_UART_RX_FAULT_INT_SOURCE);
+
+    // clear receive errors
+    USB_UART_RX_STA_BITFIELD.FERR = 0;
+    USB_UART_RX_STA_BITFIELD.PERR = 0;
+    USB_UART_RX_STA_BITFIELD.OERR = 0;
+
+    // Enable RX UART
+    USB_UART_RX_MODE_BITFIELD.ON = 1;
+
     // Enable receiver
-    USB_UART_STA_BITFIELD.URXEN = 1;
-    
-    // Enable receive and error interrupts
-    enableInterrupt(USB_UART_FAULT_INT_SOURCE);
-    
+    USB_UART_RX_STA_BITFIELD.URXEN = 1;
+
+    // Enable error interrupt
+    enableInterrupt(USB_UART_RX_FAULT_INT_SOURCE);
+
+}
+
+// This function initializes the TX and RX UART modules for USB debugging
+void usbUartInitialize(void) {
+
+    // Configure UART5 for USB UART Transmit
+    usbUartTransmitInitialize();
+
+    // Configure UART4 for USB UART Receive
+    usbUartReceiveInitialize();
+
     // Setup DMA0 for USB UART Transmit
     usbUartTrasmitDmaInitialize();
 
     // Setup DMA1 for USB UART Receive
     usbUartReceiveDmaInitialize();
-    
+
     // setup usb uart receive commands
     usbUartHashTableInitialize();
-    
+
 }
 
-// This is the UAB UART fault interrupt service routine
-void __ISR(USB_UART_FAULT_INT_VECTOR, ipl1SRS) usbUartFaultISR(void) {
-    
+// This is the TX UART fault interrupt service routine
+void __ISR(USB_UART_TX_FAULT_INT_VECTOR, ipl1SRS) usbUartTxFaultISR(void) {
+
 //    error_handler.flags.USB_general_error = 1;
-//    if (USB_UART_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
-//    if (USB_UART_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
-//    if (USB_UART_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
-//    
+//    if (USB_UART_TX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
+//    if (USB_UART_TX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
+//    if (USB_UART_TX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
+//
     #warning "Add error handler here"
-    USB_UART_STA_BITFIELD.PERR = 0;
-    USB_UART_STA_BITFIELD.FERR = 0;
-    USB_UART_STA_BITFIELD.OERR = 0;
-    
+    USB_UART_TX_STA_BITFIELD.PERR = 0;
+    USB_UART_TX_STA_BITFIELD.FERR = 0;
+    USB_UART_TX_STA_BITFIELD.OERR = 0;
+
     // Clear fault interrupt flag
-    clearInterruptFlag(USB_UART_FAULT_INT_SOURCE);
-    
+    clearInterruptFlag(USB_UART_TX_FAULT_INT_SOURCE);
+
+}
+
+// This is the RX UART fault interrupt service routine
+void __ISR(USB_UART_RX_FAULT_INT_VECTOR, ipl1SRS) usbUartRxFaultISR(void) {
+
+//    error_handler.flags.USB_general_error = 1;
+//    if (USB_UART_RX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
+//    if (USB_UART_RX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
+//    if (USB_UART_RX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
+//
+    #warning "Add error handler here"
+    USB_UART_RX_STA_BITFIELD.PERR = 0;
+    USB_UART_RX_STA_BITFIELD.FERR = 0;
+    USB_UART_RX_STA_BITFIELD.OERR = 0;
+
+    // Clear fault interrupt flag
+    clearInterruptFlag(USB_UART_RX_FAULT_INT_SOURCE);
+
 }
 
 // These are the USB UART DMA Interrupt Service Routines
@@ -338,7 +421,7 @@ void _mon_putc (char c) {
     usb_uart_tx_buffer[usb_uart_tx_buffer_head] = c;
     usb_uart_tx_buffer_head++;
     
-    if (USB_UART_STA_BITFIELD.UTXBF == 0 || usb_uart_tx_buffer_head == 1) {
+    if (USB_UART_TX_STA_BITFIELD.UTXBF == 0 || usb_uart_tx_buffer_head == 1) {
         
         USB_UART_TX_DMA_CON_BITFIELD.CHEN = 1;
         USB_UART_TX_DMA_ECON_BITFIELD.CFORCE = 1;

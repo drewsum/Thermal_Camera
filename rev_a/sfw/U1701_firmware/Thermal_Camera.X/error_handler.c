@@ -182,7 +182,7 @@ void exceptionPrint(char *input_string) {
         USB_UART_TX_REG = input_string[i];
         
         // wait for buffer to open
-        while(USB_UART_STA_BITFIELD.UTXBF);
+        while(USB_UART_TX_STA_BITFIELD.UTXBF);
         
         
     }

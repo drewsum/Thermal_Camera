@@ -8,7 +8,8 @@
     usb_uart.h
 
   @Summary
- Allows USB debugging over UART3 to a USB virtual COM port
+ Allows USB debugging to a USB virtual COM port
+ TX is handled by UART5 (RPB3), RX is handled by UART4 (RPB6)
 
  */
 /* ************************************************************************** */
@@ -28,25 +29,39 @@
 #define USB_UART_TX_BUFFER_SIZE 16384
 #define USB_UART_RX_BUFFER_SIZE 4096
 
-// these macros are used to switch which UART module is used for USB_UART,
+// these macros are used to switch which UART modules are used for USB_UART,
 // since this is project configurable
 // These map to UART SFRs
-// They must all map to the same UART module
-// Some macros are also used to map to interrupts
+// On this board the TX and RX pins fall in different PPS input/output pin
+// groups, so no single UART module can drive both. Because of this the
+// transmitter and receiver live on two separate UART modules:
+//   TX -> UART5 on RPB3 (TX pin is only remappable to U1TX/U5TX)
+//   RX -> UART4 on RPB6 (RB6 is only remappable as a U4RX input)
+// All of the TX_* macros must map to the TX module, and all of the RX_*
+// macros must map to the RX module.
 // Make sure UART modules have signals properly routed to pins using PPS
 
-// REGISTER MAPPINGS
-#define USB_UART_MODE_BITFIELD          U5MODEbits
-#define USB_UART_STA_BITFIELD           U5STAbits
+// TX MODULE REGISTER MAPPINGS
+#define USB_UART_TX_MODE_BITFIELD       U5MODEbits
+#define USB_UART_TX_STA_BITFIELD        U5STAbits
 #define USB_UART_TX_REG                 U5TXREG
-#define USB_UART_RX_REG                 U5RXREG
-#define USB_UART_BRG_REG                U5BRG
+#define USB_UART_TX_BRG_REG             U5BRG
 
-// INTERRUPT MAPPINGS
+// RX MODULE REGISTER MAPPINGS
+#define USB_UART_RX_MODE_BITFIELD       U4MODEbits
+#define USB_UART_RX_STA_BITFIELD        U4STAbits
+#define USB_UART_RX_REG                 U4RXREG
+#define USB_UART_RX_BRG_REG             U4BRG
+
+// TX MODULE INTERRUPT MAPPINGS
 #define USB_UART_TX_INT_SOURCE          uart5_transfer_done
-#define USB_UART_RX_INT_SOURCE          uart5_receive_done
-#define USB_UART_FAULT_INT_SOURCE       uart5_fault
-#define USB_UART_FAULT_INT_VECTOR       _UART5_FAULT_VECTOR
+#define USB_UART_TX_FAULT_INT_SOURCE    uart5_fault
+#define USB_UART_TX_FAULT_INT_VECTOR    _UART5_FAULT_VECTOR
+
+// RX MODULE INTERRUPT MAPPINGS
+#define USB_UART_RX_INT_SOURCE          uart4_receive_done
+#define USB_UART_RX_FAULT_INT_SOURCE    uart4_fault
+#define USB_UART_RX_FAULT_INT_VECTOR    _UART4_FAULT_VECTOR
 
 // TX DMA MAPPINGS
 #define USB_UART_TX_DMA_CON_BITFIELD    DCH0CONbits
@@ -115,11 +130,18 @@ void usbUartTrasmitDmaInitialize(void);
 // This function is used to setup DMA1 for UART Receive
 void usbUartReceiveDmaInitialize(void);
 
-// This function initializes UART 3 for USB debugging
+// This function initializes the TX UART module (UART5) for USB debugging
+void usbUartTransmitInitialize(void);
+
+// This function initializes the RX UART module (UART4) for USB debugging
+void usbUartReceiveInitialize(void);
+
+// This function initializes the TX and RX UART modules for USB debugging
 void usbUartInitialize(void);
 
-// These are the USB UART Interrupt Service Routines
-void __ISR(USB_UART_FAULT_INT_VECTOR, ipl1SRS) usbUartFaultISR(void);
+// These are the USB UART fault Interrupt Service Routines
+void __ISR(USB_UART_TX_FAULT_INT_VECTOR, ipl1SRS) usbUartTxFaultISR(void);
+void __ISR(USB_UART_RX_FAULT_INT_VECTOR, ipl1SRS) usbUartRxFaultISR(void);
 
 // These are the USB UART DMA Interrupt Service Routines
 void __ISR(_DMA0_VECTOR, IPL1SRS) usbUartTxDmaISR(void);

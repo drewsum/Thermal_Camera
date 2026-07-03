@@ -34,7 +34,7 @@ void portBGPIOInitialize (void) {
     gpioPinSetup(gpio_port_b, 5, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     RPB5Rbits.RPB5R = OC3_PPS_OUTPUT;                                                   // Assign RPB5 as OC3
     gpioPinSetup(gpio_port_b, 6, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
-    U5RXRbits.U5RXR = RPB6_PPS_INPUT;                                                   // Assign RPB6 as U5RX
+    U4RXRbits.U4RXR = RPB6_PPS_INPUT;                                                   // Assign RPB6 as U4RX (USB UART receiver)
     gpioPinSetup(gpio_port_b, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     // U5CTSRbits.U5CTSR = RPB7_PPS_INPUT;                                                 // Assign RPB7 as U5CTS
     gpioPinSetup(gpio_port_b, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);

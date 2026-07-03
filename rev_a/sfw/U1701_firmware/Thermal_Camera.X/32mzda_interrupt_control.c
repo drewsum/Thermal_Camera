@@ -460,7 +460,7 @@ void setInterruptEnable(interrupt_source_t input_interrupt, uint8_t input_state)
             break;
 
         case adc_data_41:
-            IEC3bits.ADCD42IE = input_state;
+            IEC3bits.ADCD41IE = input_state;
             break;
 
         case adc_data_42:
@@ -1316,7 +1316,7 @@ uint8_t getInterruptEnable(interrupt_source_t input_interrupt) {
             break;
 
         case adc_data_41:
-            return IEC3bits.ADCD42IE;
+            return IEC3bits.ADCD41IE;
             break;
 
         case adc_data_42:
@@ -2172,7 +2172,7 @@ void setInterruptFlag(interrupt_source_t input_interrupt, uint8_t flag_state) {
             break;
 
         case adc_data_41:
-            IFS3bits.ADCD42IF = flag_state;
+            IFS3bits.ADCD41IF = flag_state;
             break;
 
         case adc_data_42:
@@ -3030,7 +3030,7 @@ uint8_t getInterruptFlag(interrupt_source_t input_interrupt) {
             break;
 
         case adc_data_41:
-            return IFS3bits.ADCD42IF;
+            return IFS3bits.ADCD41IF;
             break;
 
         case adc_data_42:
@@ -3597,6 +3597,13 @@ void setInterruptPriority(interrupt_source_t input_interrupt, uint8_t input_prio
 
         case input_capture_5:
             IPC6bits.IC5IP = input_priority;
+            break;
+
+        // IRQ 27 has no named IPC6 field on this device, so set it directly
+        // IPC6<28:26> = priority, IPC6<25:24> = subpriority
+        case output_compare_5:
+            IPC6CLR = 0x7 << 26;
+            IPC6SET = input_priority << 26;
             break;
 
         case timer6:
@@ -4243,6 +4250,13 @@ void setInterruptPriority(interrupt_source_t input_interrupt, uint8_t input_prio
             IPC47bits.U6TXIP = input_priority;
             break;
 
+        // IRQ 191 has no named IPC47 field on this device, so set it directly
+        // IPC47<28:26> = priority, IPC47<25:24> = subpriority
+        case sdhc_interrupt:
+            IPC47CLR = 0x7 << 26;
+            IPC47SET = input_priority << 26;
+            break;
+
         case glcd_interrupt:
             IPC48bits.GLCDIP = input_priority;
             break;
@@ -4451,6 +4465,13 @@ void setInterruptSubpriority(interrupt_source_t input_interrupt, uint8_t input_s
 
         case input_capture_5:
             IPC6bits.IC5IS = input_subpriority;
+            break;
+
+        // IRQ 27 has no named IPC6 field on this device, so set it directly
+        // IPC6<28:26> = priority, IPC6<25:24> = subpriority
+        case output_compare_5:
+            IPC6CLR = 0x3 << 24;
+            IPC6SET = input_subpriority << 24;
             break;
 
         case timer6:
@@ -5097,6 +5118,13 @@ void setInterruptSubpriority(interrupt_source_t input_interrupt, uint8_t input_s
             IPC47bits.U6TXIS = input_subpriority;
             break;
 
+        // IRQ 191 has no named IPC47 field on this device, so set it directly
+        // IPC47<28:26> = priority, IPC47<25:24> = subpriority
+        case sdhc_interrupt:
+            IPC47CLR = 0x3 << 24;
+            IPC47SET = input_subpriority << 24;
+            break;
+
         case glcd_interrupt:
             IPC48bits.GLCDIS = input_subpriority;
             break;
@@ -5299,6 +5327,11 @@ uint8_t getInterruptPriority(interrupt_source_t input_interrupt) {
 
         case input_capture_5:
             return IPC6bits.IC5IP;
+            break;
+
+        // IRQ 27 has no named IPC6 field on this device, read it directly
+        case output_compare_5:
+            return (IPC6 >> 26) & 0x7;
             break;
 
         case timer6:
@@ -5945,6 +5978,11 @@ uint8_t getInterruptPriority(interrupt_source_t input_interrupt) {
             return IPC47bits.U6TXIP;
             break;
 
+        // IRQ 191 has no named IPC47 field on this device, read it directly
+        case sdhc_interrupt:
+            return (IPC47 >> 26) & 0x7;
+            break;
+
         case glcd_interrupt:
             return IPC48bits.GLCDIP;
             break;
@@ -6147,6 +6185,11 @@ uint8_t getInterruptSubriority(interrupt_source_t input_interrupt) {
 
         case input_capture_5:
             return IPC6bits.IC5IS;
+            break;
+
+        // IRQ 27 has no named IPC6 field on this device, read it directly
+        case output_compare_5:
+            return (IPC6 >> 24) & 0x3;
             break;
 
         case timer6:
@@ -6793,6 +6836,11 @@ uint8_t getInterruptSubriority(interrupt_source_t input_interrupt) {
             return IPC47bits.U6TXIS;
             break;
 
+        // IRQ 191 has no named IPC47 field on this device, read it directly
+        case sdhc_interrupt:
+            return (IPC47 >> 24) & 0x3;
+            break;
+
         case glcd_interrupt:
             return IPC48bits.GLCDIS;
             break;
@@ -7018,6 +7066,7 @@ char * getInterruptNameStringPadded(interrupt_source_t input_interrupt) {
         "core_fast_debug_channel_interrupt  ",
         "system_bus_protection_violation    ",
         "crypto_engine_event                ",
+        "reserved                           ",
         "spi1_fault                         ",
         "spi1_receive_done                  ",
         "spi1_transfer_done                 ",
@@ -7103,6 +7152,7 @@ char * getInterruptNameStringPadded(interrupt_source_t input_interrupt) {
         "sdhc_interrupt                     ",
         "glcd_interrupt                     ",
         "gpu_interrupt                      ",
+        "reserved                           ",
         "ctmu_interrupt                     ",
         "adc_end_of_scan                    ",
         "adc_analog_circuit_ready           ",
@@ -7112,6 +7162,7 @@ char * getInterruptNameStringPadded(interrupt_source_t input_interrupt) {
         "adc2_early_interrupt               ",
         "adc3_early_interrupt               ",
         "adc4_early_interrupt               ",
+        "reserved                           ",
         "adc_group_early_interrupt_request  ",
         "adc7_early_interrupt               ",
         "adc0_warm_interrupt                ",
@@ -7119,6 +7170,8 @@ char * getInterruptNameStringPadded(interrupt_source_t input_interrupt) {
         "adc2_warm_interrupt                ",
         "adc3_warm_interrupt                ",
         "adc4_warm_interrupt                ",
+        "reserved                           ",
+        "reserved                           ",
         "adc7_warm_interrupt                ",
         "mpll_fault_interrupt               "
 
