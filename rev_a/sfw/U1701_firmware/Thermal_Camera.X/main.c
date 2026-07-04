@@ -17,7 +17,7 @@
 #include "watchdog_timer.h"
 #include "prefetch.h"
 #include "cause_of_reset.h"
-//#include "rtcc.h"
+#include "rtcc.h"
 
 // GPIO
 #include "pin_macros.h"
@@ -110,11 +110,13 @@ void main(void) {
         
     }
     
-//    // only clear persistent error flags if we've seen a POR... keep old values after other resets
-//    if (reset_cause == POR_Reset) {
-//        clearErrorHandler();
-//    }
-//
+    // only clear persistent error flags if we've seen a POR... keep old values after other resets
+    if (reset_cause == POR_Reset) {
+        clearErrorHandler();
+    }
+    
+    errorHandlerInitialize();
+
 //    live_telemetry_enable = 0;
 //    live_telemetry_print_request = 0;
 //    
@@ -146,6 +148,9 @@ void main(void) {
     enableGlobalInterrupts();
     printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
     
+    // Setup error handling
+    errorHandlerInitialize();
+    printf("    Error Handler Initialized\n\r");
     
     // Setup heartbeat timer
     heartbeatTimerInitialize();
@@ -168,6 +173,11 @@ void main(void) {
     // setup watchdog timer
     watchdogTimerInitialize();
     printf("    Watchdog Timer Initialized\n\r");
+    while(usbUartCheckIfBusy());
+    
+    rtccInitialize();
+    if (reset_cause == POR_Reset) rtccClear();
+    printf("    Real Time Clock-Calendar Initialized\r\n");
     while(usbUartCheckIfBusy());
     
     // Disable reset LED
@@ -202,6 +212,12 @@ void main(void) {
                 usb_uart_rx_buffer[index] = '\0';
             }
         }
+    
+        // check to see if a clock fail has occurred and latch it
+        clockFailCheck();
+        
+        // update error LEDs if needed
+        if (update_error_leds_flag) updateErrorLEDs();
         
     }
 

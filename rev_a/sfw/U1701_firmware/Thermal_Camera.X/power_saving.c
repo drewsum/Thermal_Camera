@@ -22,7 +22,13 @@ void PMDInitialize(void) {
  
     // Disable comparator voltage reference
     PMD1bits.CVRMD = 1;
-    
+
+    // Disable charge time measurement unit (unused)
+    PMD1bits.CTMUMD = 1;
+
+    // Disable low-voltage detect (unused)
+    PMD1bits.LVDMD = 1;
+
     // Disable both comparators
     PMD2bits.CMP1MD = 1;
     PMD2bits.CMP2MD = 1;
@@ -91,7 +97,11 @@ void PMDInitialize(void) {
     
     // Disable USB Module (UART 1 is used for USB debug)
     PMD5bits.USBMD = 1;
-    
+
+    // Disable CAN modules (unused)
+    PMD5bits.CAN1MD = 1;
+    PMD5bits.CAN2MD = 1;
+
     // Enable all reference clocks, per device errata
     PMD6bits.REFO1MD = 0;
     PMD6bits.REFO2MD = 0;
@@ -106,7 +116,16 @@ void PMDInitialize(void) {
     #ifdef EBICS0
     PMD6bits.EBIMD = 1;
     #endif
-    
+
+    // Disable GPU (unused)
+    PMD6bits.GPUMD = 1;
+
+    // Disable graphics LCD controller (unused)
+    PMD6bits.GLCDMD = 1;
+
+    // Disable SD host controller (unused)
+    PMD6bits.SDHCMD = 1;
+
     // Disable serial quad interface
     PMD6bits.SQI1MD = 1;
     
@@ -118,9 +137,10 @@ void PMDInitialize(void) {
     
     // Enable random number generator
     PMD7bits.RNGMD = 0;
-    
-    #warning "add in other PMD shit"
-    
+
+    // Disable DDR2 controller (unused)
+    PMD7bits.DDR2CMD = 1;
+
     // Lock PMD
     PMDLock();
     
@@ -144,7 +164,17 @@ void printPMDStatus(void) {
     if (PMD1bits.CVRMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("   Comparator Voltage Reference Enabled:     %s\n\r", PMD1bits.CVRMD ? "F" : "T");
-    
+
+    // CTMU
+    if (PMD1bits.CTMUMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   Charge Time Measurement Unit Enabled:     %s\n\r", PMD1bits.CTMUMD ? "F" : "T");
+
+    // LVD
+    if (PMD1bits.LVDMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("   Low-Voltage Detect Enabled:               %s\n\r", PMD1bits.LVDMD ? "F" : "T");
+
     // Comparators
     if (PMD2bits.CMP1MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -307,7 +337,15 @@ void printPMDStatus(void) {
     if (PMD5bits.USBMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("   USB Enabled:                              %s\n\r", PMD5bits.USBMD ? "F" : "T");
-    
+
+    // CAN Modules
+    if (PMD5bits.CAN1MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("   CAN 1 Enabled:                            %s\n\r", PMD5bits.CAN1MD ? "F" : "T");
+    if (PMD5bits.CAN2MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   CAN 2 Enabled:                            %s\n\r", PMD5bits.CAN2MD ? "F" : "T");
+
     // REFCLKS
     if (PMD6bits.REFO1MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -321,7 +359,10 @@ void printPMDStatus(void) {
     if (PMD6bits.REFO4MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("   Reference Clock 4 Enabled:                %s\n\r", PMD6bits.REFO4MD ? "F" : "T");
-    
+    if (PMD6bits.REFO5MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   Reference Clock 5 Enabled:                %s\n\r", PMD6bits.REFO5MD ? "F" : "T");
+
     // PMP
     if (PMD6bits.PMPMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -333,7 +374,22 @@ void printPMDStatus(void) {
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("   External Bus Interface Enabled:           %s\n\r", PMD6bits.EBIMD ? "F" : "T");
     #endif
-    
+
+    // GPU
+    if (PMD6bits.GPUMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   GPU Enabled:                              %s\n\r", PMD6bits.GPUMD ? "F" : "T");
+
+    // GLCD
+    if (PMD6bits.GLCDMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("   Graphics LCD Controller Enabled:          %s\n\r", PMD6bits.GLCDMD ? "F" : "T");
+
+    // SDHC
+    if (PMD6bits.SDHCMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   SD Host Controller Enabled:               %s\n\r", PMD6bits.SDHCMD ? "F" : "T");
+
     // SQI
     if (PMD6bits.SQI1MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -353,9 +409,12 @@ void printPMDStatus(void) {
     if (PMD7bits.RNGMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("   Random Number Generator Enabled:          %s\n\r", PMD7bits.RNGMD ? "F" : "T");
-    
-#warning "add in other PMD shit"
-    
+
+    // DDR2 Controller
+    if (PMD7bits.DDR2CMD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("   DDR2 Controller Enabled:                  %s\n\r", PMD7bits.DDR2CMD ? "F" : "T");
+
     // PMD Locked?
     if (CFGCONbits.PMDLOCK) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
