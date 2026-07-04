@@ -454,6 +454,42 @@ usb_uart_command_function_t setRTCCCommand(char * input_str) {
     
 }
 
+usb_uart_command_function_t flirPowerOnCommand(char * input_str) {
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Enabling FLIR power supplies...\r\n");
+
+    // Turn on the 1.2V and 2.8V power supplies used by the FLIR module
+    POS1P2_RUN_PIN = HIGH;
+    POS2P8_RUN_PIN = HIGH;
+
+    // Block on the 1.2V supply and print its status once it's good
+    while (POS1P2_PGOOD_PIN == LOW);
+    printf("    +1.2V supply PGOOD is high\r\n");
+
+    // Block on the 2.8V supply and print its status once it's good
+    while (POS2P8_PGOOD_PIN == LOW);
+    printf("    +2.8V supply PGOOD is high\r\n");
+
+    printf("FLIR power supplies enabled, all PGOOD signals are high\r\n");
+    terminalTextAttributesReset();
+
+}
+
+usb_uart_command_function_t flirPowerOffCommand(char * input_str) {
+
+    // Turn off the 1.2V and 2.8V power supplies used by the FLIR module
+    POS1P2_RUN_PIN = LOW;
+    POS2P8_RUN_PIN = LOW;
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("FLIR power supplies disabled\r\n");
+    terminalTextAttributesReset();
+
+}
+
 // This function must be called to set up the usb_uart_commands hash table
 // Entries into this hash table are "usb_uart serial commands"
 void usbUartHashTableInitialize(void) {
@@ -500,6 +536,12 @@ void usbUartHashTableInitialize(void) {
     usbUartAddCommand("Platform Status?",
         "Prints current state of surrounding circuitry, including PGOOD, time of flight, I2C slaves",
         platformStatusCommand);
+    usbUartAddCommand("FLIR Power On",
+        "Enables the FLIR 1.2V and 2.8V power supplies and blocks until their PGOOD signals go high",
+        flirPowerOnCommand);
+    usbUartAddCommand("FLIR Power Off",
+        "Disables the FLIR 1.2V and 2.8V power supplies",
+        flirPowerOffCommand);
 //    if (TELEMETRY_HARDSTRAP_PIN == LOW) {
 //        usbUartAddCommand("Live Telemetry",
 //                "Toggles live updates of system level telemetry",
