@@ -31,7 +31,7 @@
 #include "power_saving.h"
 #include "heartbeat_services.h"
 //#include "telemetry.h"
-//#include "pgood_monitor.h"
+#include "pgood_monitor.h"
 
 
 ////// I2C
@@ -203,14 +203,9 @@ void main(void) {
         // parse received USB strings if we have a new one received
         if (usb_uart_rx_ready) {
             usbUartRxLUTInterface(usb_uart_rx_buffer);
-            // Determine length of received string
-            uint32_t length = strlen(usb_uart_rx_buffer);
-        
+
             // clear rx buffer
-            uint32_t index;
-            for (index = 0; index < length; index++) {
-                usb_uart_rx_buffer[index] = '\0';
-            }
+            memset(usb_uart_rx_buffer, 0, strlen(usb_uart_rx_buffer));
         }
     
         // check to see if a clock fail has occurred and latch it

@@ -21,8 +21,15 @@
 #include <xc.h>
 #include <stdio.h>
 
-// This function must be called at boot to set up the usb_uart_commands hash table
-void usbUartHashTableInitialize(void);
+// Defines a usb_uart serial command function and automatically registers it
+// into the usb_uart_commands hash table via a constructor that runs before
+// main(), so no dedicated hash-table initialization function is needed.
+#define USB_UART_COMMAND(func_name, cmd_name, help_msg)                       \
+    static void func_name(char *input_str);                                   \
+    static void __attribute__((constructor)) func_name##_autoregister(void) { \
+        usbUartAddCommand(cmd_name, help_msg, func_name);                     \
+    }                                                                         \
+    static void func_name(char *input_str)
 
 #endif /* _USB_UART_RX_LOOKUP_TABLE_H */
 

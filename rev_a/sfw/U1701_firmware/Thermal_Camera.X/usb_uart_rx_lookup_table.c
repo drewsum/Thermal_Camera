@@ -22,7 +22,7 @@
 #include "pin_macros.h"
 #include "pgood_monitor.h"
 
-usb_uart_command_function_t helpCommandFunction(char * input_str) {
+USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
     terminalTextAttributesReset();
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, BOLD_FONT);
@@ -54,20 +54,20 @@ usb_uart_command_function_t helpCommandFunction(char * input_str) {
     
 }
 
-usb_uart_command_function_t resetCommand(char * input_str) {
+USB_UART_COMMAND(resetCommand, "Reset", "Executes an MCU software reset") {
  
     deviceReset();
     
 }
 
-usb_uart_command_function_t clearCommand(char * input_str) {
+USB_UART_COMMAND(clearCommand, "Clear Screen", "Clears the serial port terminal") {
 
     terminalClearScreen();
     terminalSetCursorHome();
     
 }
 
-usb_uart_command_function_t idnCommand(char * input_str) {
+USB_UART_COMMAND(idnCommand, "*IDN?", "Prints identification string") {
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("%s by Drew Maatman, %s, FW version %s\r\n", 
@@ -77,14 +77,14 @@ usb_uart_command_function_t idnCommand(char * input_str) {
     terminalTextAttributesReset();
 }
 
-usb_uart_command_function_t repositoryCommand(char * input_str) {
+USB_UART_COMMAND(repositoryCommand, "Repository?", "Prints project Git repo location") {
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("Project Git repository is hosted at: %s\r\n", PROJECT_REPOSITORY_STR);
     terminalTextAttributesReset();    
 }
 
-usb_uart_command_function_t hostStatusCommand(char * input_str) {
+USB_UART_COMMAND(hostStatusCommand, "Host Status?", "Prints status of MCU host device (IDs, WDT, DMT, Prefetch, Cause of Reset, up time)") {
 
     terminalTextAttributesReset();
     
@@ -147,7 +147,20 @@ usb_uart_command_function_t hostStatusCommand(char * input_str) {
 
 }
 
-usb_uart_command_function_t peripheralStatusCommand(char * input_str) {
+USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
+        "\b\b <peripheral_name>: Prints status of passed host peripheral. Available peripherals:\r\n"
+        "       Interrupts\r\n"
+        "       Clocks\r\n"
+        "       PMD\r\n"
+        "       WDT\r\n"
+        "       DMT\r\n"
+        "       Prefetch\r\n"
+        "       DMA\r\n"
+        "       ADC\r\n"
+        "       ADC Channels\r\n"
+        "       I2C Master\r\n"
+        "       RTCC\r\n"
+        "       Timer <x> (x = 1-9)") {
  
     // Snipe out received arguments
     char rx_peripheral_name[32];
@@ -224,7 +237,7 @@ usb_uart_command_function_t peripheralStatusCommand(char * input_str) {
 
 }
 
-usb_uart_command_function_t errorStatusCommand(char * input_str) {
+USB_UART_COMMAND(errorStatusCommand, "Error Status?", "Prints the status of various error handler flags") {
  
     // Print error handler status
     printErrorHandlerStatus();
@@ -236,7 +249,7 @@ usb_uart_command_function_t errorStatusCommand(char * input_str) {
     
 }
 
-usb_uart_command_function_t clearErrorsCommand(char * input_str) {
+USB_UART_COMMAND(clearErrorsCommand, "Clear Errors", "Clears all error handler flags") {
  
     // Zero out all error handler flags
     clearErrorHandler();
@@ -251,7 +264,8 @@ usb_uart_command_function_t clearErrorsCommand(char * input_str) {
     
 }
 
-usb_uart_command_function_t platformStatusCommand(char * input_str) {
+USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
+        "Prints current state of surrounding circuitry, including PGOOD, time of flight, I2C slaves") {
  
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("Platform Revision: %s\r\n", PLATFORM_REVISION_STR);
@@ -295,7 +309,7 @@ usb_uart_command_function_t platformStatusCommand(char * input_str) {
 //    
 //}
 //
-usb_uart_command_function_t timeAndDateCommand(char * input_str) {
+USB_UART_COMMAND(timeAndDateCommand, "Time and Date?", "Prints the current system time and date") {
  
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
@@ -306,7 +320,12 @@ usb_uart_command_function_t timeAndDateCommand(char * input_str) {
     
 }
 
-usb_uart_command_function_t setRTCCCommand(char * input_str) {
+USB_UART_COMMAND(setRTCCCommand, "Set RTCC:",
+        "\b\b <parameter>: <parameter args>: sets a time parameter within the Real Time Clock and Calendar. Available parameters:\r\n"
+        "       Date: <mm>/<dd>/<yyyy>: Sets the RTCC date \r\n"
+        "       Time: <hh>:<mm>:<ss>: Sets the RTCC time. (Must be 24 hr time format)\r\n"
+        "       Weekday: <weekday>: Sets the RTCC weekday\r\n"
+        "       Unix Time: <decimal unix time>, <hour offset from UTC to local time>: sets the RTCC to the supplied UNIX time with hour offset from UTC") {
 
     // Snipe out received arguments
     char rtcc_args[64];
@@ -454,7 +473,8 @@ usb_uart_command_function_t setRTCCCommand(char * input_str) {
     
 }
 
-usb_uart_command_function_t flirPowerOnCommand(char * input_str) {
+USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
+        "Enables the FLIR 1.2V and 2.8V power supplies and blocks until their PGOOD signals go high") {
 
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -477,7 +497,7 @@ usb_uart_command_function_t flirPowerOnCommand(char * input_str) {
 
 }
 
-usb_uart_command_function_t flirPowerOffCommand(char * input_str) {
+USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V and 2.8V power supplies") {
 
     // Turn off the 1.2V and 2.8V power supplies used by the FLIR module
     POS1P2_RUN_PIN = LOW;
@@ -490,72 +510,11 @@ usb_uart_command_function_t flirPowerOffCommand(char * input_str) {
 
 }
 
-// This function must be called to set up the usb_uart_commands hash table
-// Entries into this hash table are "usb_uart serial commands"
-void usbUartHashTableInitialize(void) {
-    
-    usbUartAddCommand("Help", 
-            "Prints help message for all supported serial commands", 
-            helpCommandFunction);
-    usbUartAddCommand("Reset", 
-            "Executes an MCU software reset", 
-            resetCommand);
-    usbUartAddCommand("Clear Screen", 
-            "Clears the serial port terminal", 
-            clearCommand);
-    usbUartAddCommand("*IDN?", 
-            "Prints identification string", 
-            idnCommand);
-    usbUartAddCommand("Repository?",
-            "Prints project Git repo location",
-            repositoryCommand);
-    usbUartAddCommand("Host Status?",
-            "Prints status of MCU host device (IDs, WDT, DMT, Prefetch, Cause of Reset, up time)", 
-            hostStatusCommand);
-    usbUartAddCommand("Peripheral Status?",
-            "\b\b <peripheral_name>: Prints status of passed host peripheral. Available peripherals:\r\n"
-            "       Interrupts\r\n"
-            "       Clocks\r\n"
-            "       PMD\r\n"
-            "       WDT\r\n"
-            "       DMT\r\n"
-            "       Prefetch\r\n"
-            "       DMA\r\n"
-            "       ADC\r\n"
-            "       ADC Channels\r\n"
-            "       I2C Master\r\n"
-            "       RTCC\r\n"
-            "       Timer <x> (x = 1-9)",
-            peripheralStatusCommand);
-    usbUartAddCommand("Error Status?",
-            "Prints the status of various error handler flags",
-            errorStatusCommand);
-    usbUartAddCommand("Clear Errors",
-            "Clears all error handler flags",
-            clearErrorsCommand);
-    usbUartAddCommand("Platform Status?",
-        "Prints current state of surrounding circuitry, including PGOOD, time of flight, I2C slaves",
-        platformStatusCommand);
-    usbUartAddCommand("FLIR Power On",
-        "Enables the FLIR 1.2V and 2.8V power supplies and blocks until their PGOOD signals go high",
-        flirPowerOnCommand);
-    usbUartAddCommand("FLIR Power Off",
-        "Disables the FLIR 1.2V and 2.8V power supplies",
-        flirPowerOffCommand);
+// Note: "Live Telemetry" is not currently registered as a command, since it
+// depended on runtime hardstrap detection (TELEMETRY_HARDSTRAP_PIN) rather
+// than being unconditionally registered like the other commands above.
 //    if (TELEMETRY_HARDSTRAP_PIN == LOW) {
 //        usbUartAddCommand("Live Telemetry",
 //                "Toggles live updates of system level telemetry",
 //                liveTelemetryCommand);
 //    }
-    usbUartAddCommand("Time and Date?",
-            "Prints the current system time and date",
-            timeAndDateCommand);
-    usbUartAddCommand("Set RTCC:",
-            "\b\b <parameter>: <parameter args>: sets a time parameter within the Real Time Clock and Calendar. Available parameters:\r\n"
-            "       Date: <mm>/<dd>/<yyyy>: Sets the RTCC date \r\n"
-            "       Time: <hh>:<mm>:<ss>: Sets the RTCC time. (Must be 24 hr time format)\r\n"
-            "       Weekday: <weekday>: Sets the RTCC weekday\r\n"
-            "       Unix Time: <decimal unix time>, <hour offset from UTC to local time>: sets the RTCC to the supplied UNIX time with hour offset from UTC",
-            setRTCCCommand);
-
-}

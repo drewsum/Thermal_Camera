@@ -309,8 +309,8 @@ void usbUartInitialize(void) {
     // Setup DMA1 for USB UART Receive
     usbUartReceiveDmaInitialize();
 
-    // setup usb uart receive commands
-    usbUartHashTableInitialize();
+    // Note: usb_uart_commands is populated automatically by each command's
+    // USB_UART_COMMAND-generated constructor before main() runs
 
 }
 
@@ -355,17 +355,12 @@ void __ISR(USB_UART_TX_DMA_INT_VECTOR, IPL1SRS) usbUartTxDmaISR(void) {
     // Determine source of DMA 0 interrupt
     // Channel block transfer complete interrupt flag (or pattern match)
     if (USB_UART_TX_DMA_INT_BITFIELD.CHBCIF) {
-        
+
         // clear tx buffer
-        uint32_t index;
-        for (index = 0; index <= usb_uart_tx_buffer_head; index++) {
-         
-            usb_uart_tx_buffer[index] = '\0';
-            
-        }
-        
+        memset(usb_uart_tx_buffer, 0, usb_uart_tx_buffer_head + 1);
+
         usb_uart_tx_buffer_head = 0;
-        
+
     }
     
     // channel error
@@ -440,47 +435,65 @@ void usbUartAddCommand(char * input_cmd_name, char * input_cmd_help_message, usb
 
 // This function is what interprets strings sent over USB Virtual COM Port
 void usbUartRxLUTInterface(char * cmd_string) {
-    
+
     usb_uart_rx_ready = 0;
-    
+
     // Remove trailing newlines and carriage returns
     strtok(cmd_string, "\n");
     strtok(cmd_string, "\r");
-    
-    // iterate over usb_uart_commands hash table to find a matching command to cmd_string
-    usb_uart_command_t *current_command, *temp;
-    HASH_ITER(hh, usb_uart_commands, current_command, temp) {
-        
-        // print help message if user has passed command with "-h" flag
-        char help_flag_str[64];
-        strcpy(help_flag_str, current_command->command_name);
-        strcat(help_flag_str, " -h");
-        if (strcmp(cmd_string, help_flag_str) == 0) {
-            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-            printf("%s: %s\r\n",
-                    current_command->command_name,
-                    current_command->command_help_message);
-            terminalTextAttributesReset();
-            break;
-        }
-        
-        // if the current entry that we've found in the hash table matches cmd_string,
-        // call the function pointed to by the current entry in the hash table
-        else if (strcmp(cmd_string, current_command->command_name) == 0) {
-         
-            current_command->func(cmd_string);
-            break;
-            
-        }
-        
-        else if (strcomp(cmd_string, current_command->command_name) == 0) {
-         
-            current_command->func(cmd_string);
-            break;
-            
-        }
+
+    // Detect and strip a trailing " -h" help flag from the received string,
+    // leaving cmd_string as just the command (and, for parameterized
+    // commands, its arguments) to be looked up below
+    uint8_t help_requested = 0;
+    size_t cmd_string_length = strlen(cmd_string);
+    const char help_flag_suffix[] = " -h";
+    size_t help_flag_suffix_length = strlen(help_flag_suffix);
+
+    if (cmd_string_length >= help_flag_suffix_length &&
+            strcmp(cmd_string + cmd_string_length - help_flag_suffix_length, help_flag_suffix) == 0) {
+
+        cmd_string[cmd_string_length - help_flag_suffix_length] = '\0';
+        help_requested = 1;
+
     }
-    
+
+    // Attempt an O(1) exact match against the command hash table first
+    usb_uart_command_t *current_command;
+    HASH_FIND_STR(usb_uart_commands, cmd_string, current_command);
+
+    // Fall back to a linear prefix scan for parameterized commands
+    // (e.g. "Timer 3", "Peripheral Status? Clocks") that can't be an exact key match
+    if (current_command == NULL) {
+
+        usb_uart_command_t *temp;
+        HASH_ITER(hh, usb_uart_commands, current_command, temp) {
+
+            if (strcomp(cmd_string, current_command->command_name) == 0) break;
+            current_command = NULL;
+
+        }
+
+    }
+
+    if (current_command == NULL) return;
+
+    if (help_requested) {
+
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("%s: %s\r\n",
+                current_command->command_name,
+                current_command->command_help_message);
+        terminalTextAttributesReset();
+
+    }
+
+    else {
+
+        current_command->func(cmd_string);
+
+    }
+
 }
 
 // This function returns a string of a large number of seconds in a human readable format
