@@ -30,7 +30,7 @@
 #include "main.h"
 #include "power_saving.h"
 #include "heartbeat_services.h"
-//#include "telemetry.h"
+#include "telemetry.h"
 #include "pgood_monitor.h"
 
 
@@ -48,8 +48,8 @@
 #include "usb_uart_rx_lookup_table.h"
 //
 ////// ADC
-//#include "adc.h"
-//#include "adc_channels.h"
+#include "adc.h"
+#include "adc_channels.h"
 
 
 void main(void) {
@@ -113,13 +113,14 @@ void main(void) {
     // only clear persistent error flags if we've seen a POR... keep old values after other resets
     if (reset_cause == POR_Reset) {
         clearErrorHandler();
+        live_telemetry_enable = 0;
     }
-    
+
     errorHandlerInitialize();
 
-//    live_telemetry_enable = 0;
-//    live_telemetry_print_request = 0;
-//    
+    // live_telemetry_print_request is not persistent, so always clear it at boot
+    live_telemetry_print_request = 0;
+
     printf("\r\nCause of most recent device reset: %s\r\n\r\n", getResetCauseString(reset_cause));
     terminalTextAttributesReset();
     
@@ -180,6 +181,11 @@ void main(void) {
     printf("    Real Time Clock-Calendar Initialized\r\n");
     while(usbUartCheckIfBusy());
     
+    // Enable ADC
+    ADCInitialize();
+    printf("    Analog to Digital Converter Initialized\n\r");
+    while(usbUartCheckIfBusy());
+    
     // Disable reset LED
     RESET_LED_PIN = LOW;
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -208,6 +214,27 @@ void main(void) {
             memset(usb_uart_rx_buffer, 0, strlen(usb_uart_rx_buffer));
         }
     
+        
+        if (live_telemetry_print_request && live_telemetry_enable) {
+            
+            // Clear the terminal
+            terminalClearScreen();
+            terminalSetCursorHome();
+            
+            terminalTextAttributesReset();
+            terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
+            printf("Live system telemetry:\033[K\n\r\033[K");
+            
+            printCurrentTelemetry();
+            
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("Call 'Live Telemetry' command to disable\033[K\n\r");
+            terminalTextAttributesReset();
+            
+            live_telemetry_print_request = 0;
+            
+        }
+        
         // check to see if a clock fail has occurred and latch it
         clockFailCheck();
         

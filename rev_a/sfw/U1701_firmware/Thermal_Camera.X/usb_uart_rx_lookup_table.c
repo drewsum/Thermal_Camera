@@ -21,6 +21,7 @@
 #include "power_saving.h"
 #include "pin_macros.h"
 #include "pgood_monitor.h"
+#include "telemetry.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -277,38 +278,35 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
 //    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
 //    printf("\r\nI2C Bus Slave Device Status:\r\n");
 //    terminalTextAttributesReset();
-//    if (TELEMETRY_HARDSTRAP_PIN == LOW) {
-//        printTemperatureSensorStatus();
-//        printPowerMonitorStatus();
-//    }
-//
+//    printTemperatureSensorStatus();
+//    printPowerMonitorStatus();
 //    miscI2CDevicesPrintStatus();
     
 }
 
-//usb_uart_command_function_t liveTelemetryCommand(char * input_str) {
-// 
-//    terminalTextAttributesReset();
-//    
-//    if (live_telemetry_enable == 0) {
-//        terminalClearScreen();
-//        terminalSetCursorHome();
-//        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-//        printf("Enabling Live Telemetry\n\r");
-//        live_telemetry_enable = 1;
-//    }
-//    else {
-//        terminalClearScreen();
-//        terminalSetCursorHome();
-//        terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
-//        printf("Disabling Live Telemetry\n\r");
-//        live_telemetry_enable = 0;
-//    }
-//    
-//    terminalTextAttributesReset();
-//    
-//}
-//
+USB_UART_COMMAND(liveTelemetryCommand, "Live Telemetry", "Toggles live updates of system level telemetry") {
+
+    terminalTextAttributesReset();
+
+    if (live_telemetry_enable == 0) {
+        terminalClearScreen();
+        terminalSetCursorHome();
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("Enabling Live Telemetry\n\r");
+        live_telemetry_enable = 1;
+    }
+    else {
+        terminalClearScreen();
+        terminalSetCursorHome();
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("Disabling Live Telemetry\n\r");
+        live_telemetry_enable = 0;
+    }
+
+    terminalTextAttributesReset();
+
+}
+
 USB_UART_COMMAND(timeAndDateCommand, "Time and Date?", "Prints the current system time and date") {
  
     terminalTextAttributesReset();
@@ -510,11 +508,3 @@ USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V 
 
 }
 
-// Note: "Live Telemetry" is not currently registered as a command, since it
-// depended on runtime hardstrap detection (TELEMETRY_HARDSTRAP_PIN) rather
-// than being unconditionally registered like the other commands above.
-//    if (TELEMETRY_HARDSTRAP_PIN == LOW) {
-//        usbUartAddCommand("Live Telemetry",
-//                "Toggles live updates of system level telemetry",
-//                liveTelemetryCommand);
-//    }

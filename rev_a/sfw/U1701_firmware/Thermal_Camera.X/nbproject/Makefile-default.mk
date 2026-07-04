@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c
+SOURCEFILES_QUOTED_IF_SPACED=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c adc.c adc_channels.c telemetry.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/cause_of_reset.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/error_handler.o.d ${OBJECTDIR}/rtcc.o.d ${OBJECTDIR}/heartbeat_services.o.d ${OBJECTDIR}/pgood_monitor.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/cause_of_reset.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/error_handler.o.d ${OBJECTDIR}/rtcc.o.d ${OBJECTDIR}/heartbeat_services.o.d ${OBJECTDIR}/pgood_monitor.o.d ${OBJECTDIR}/adc.o.d ${OBJECTDIR}/adc_channels.o.d ${OBJECTDIR}/telemetry.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o
+OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o
 
 # Source Files
-SOURCEFILES=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c
+SOURCEFILES=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c adc.c adc_channels.c telemetry.c
 
 
 
@@ -197,6 +197,24 @@ ${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/eb
 	@${RM} ${OBJECTDIR}/pgood_monitor.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pgood_monitor.o.d" -o ${OBJECTDIR}/pgood_monitor.o pgood_monitor.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
+${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/dbd3f0eb8e5b511760683c8ee33ea95d0a489831 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc.o.d 
+	@${RM} ${OBJECTDIR}/adc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/e4c4d39347e760f341448310e86f263e6025cca5 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc_channels.o.d 
+	@${RM} ${OBJECTDIR}/adc_channels.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc_channels.o.d" -o ${OBJECTDIR}/adc_channels.o adc_channels.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/d8a181d4e84b8901916ae4cb01fa8ac102595c0d .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/telemetry.o.d 
+	@${RM} ${OBJECTDIR}/telemetry.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/telemetry.o.d" -o ${OBJECTDIR}/telemetry.o telemetry.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
 else
 ${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/c9836cd3f014a5ca4c46819c8d6282887c57ad38 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
@@ -293,6 +311,24 @@ ${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/f2
 	@${RM} ${OBJECTDIR}/pgood_monitor.o.d 
 	@${RM} ${OBJECTDIR}/pgood_monitor.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pgood_monitor.o.d" -o ${OBJECTDIR}/pgood_monitor.o pgood_monitor.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/6a9508d810911cc569313db862c6d3bd06da7ef8 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc.o.d 
+	@${RM} ${OBJECTDIR}/adc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/da44e7d15e34bf114d837ebb0a40c44c6f098b8b .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc_channels.o.d 
+	@${RM} ${OBJECTDIR}/adc_channels.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc_channels.o.d" -o ${OBJECTDIR}/adc_channels.o adc_channels.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/41a75971b04c5d556329ba622e2697c27264124c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/telemetry.o.d 
+	@${RM} ${OBJECTDIR}/telemetry.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/telemetry.o.d" -o ${OBJECTDIR}/telemetry.o telemetry.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
 endif
 
