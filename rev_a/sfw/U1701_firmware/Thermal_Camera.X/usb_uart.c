@@ -365,9 +365,17 @@ void __ISR(USB_UART_TX_DMA_INT_VECTOR, IPL1SRS) usbUartTxDmaISR(void) {
     
     // channel error
     else if (USB_UART_TX_DMA_INT_BITFIELD.CHERIF) {
-        
+
         error_handler.flags.USB_tx_dma_error = 1;
-        
+
+        // Recover the buffer and channel instead of leaving the TX path
+        // permanently stalled (which would otherwise let usb_uart_tx_buffer_head
+        // keep climbing toward the end of usb_uart_tx_buffer on every future
+        // _mon_putc() call)
+        memset(usb_uart_tx_buffer, 0, usb_uart_tx_buffer_head + 1);
+        usb_uart_tx_buffer_head = 0;
+        USB_UART_TX_DMA_CON_BITFIELD.CHEN = 0;
+
     }
     
     // Clear DMA controller interrupt flags
@@ -409,12 +417,28 @@ void __ISR(USB_UART_RX_DMA_INT_VECTOR, IPL2SRS) usbUartRxDmaISR(void) {
 
 // This function redirects stdout to USB_UART output, allowing printf functionality
 void _mon_putc (char c) {
-    
+
+    // Guard against usbUartTxDmaISR() resetting usb_uart_tx_buffer_head out
+    // from under this read-modify-write
+    disableInterrupt(USB_UART_TX_DMA_INT_SOURCE);
+
+    // Drop the character instead of writing past the end of usb_uart_tx_buffer
+    // if it's ever not being drained (e.g. after a TX DMA error)
+    if (usb_uart_tx_buffer_head >= USB_UART_TX_BUFFER_SIZE - 1) {
+
+        error_handler.flags.USB_tx_dma_error = 1;
+        enableInterrupt(USB_UART_TX_DMA_INT_SOURCE);
+        return;
+
+    }
+
     usb_uart_tx_buffer[usb_uart_tx_buffer_head] = c;
     usb_uart_tx_buffer_head++;
-    
+
+    enableInterrupt(USB_UART_TX_DMA_INT_SOURCE);
+
     if (USB_UART_TX_STA_BITFIELD.UTXBF == 0 || usb_uart_tx_buffer_head == 1) {
-        
+
         USB_UART_TX_DMA_CON_BITFIELD.CHEN = 1;
         USB_UART_TX_DMA_ECON_BITFIELD.CFORCE = 1;
     }
