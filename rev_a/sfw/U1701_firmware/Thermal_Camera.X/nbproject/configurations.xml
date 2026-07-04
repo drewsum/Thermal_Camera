@@ -9,6 +9,7 @@
         <itemPath>main.h</itemPath>
         <itemPath>error_handler.h</itemPath>
         <itemPath>heartbeat_services.h</itemPath>
+        <itemPath>pgood_monitor.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Core" projectFiles="true">
         <itemPath>pic32mzda_configuration.h</itemPath>
@@ -47,6 +48,7 @@
         <itemPath>power_saving.c</itemPath>
         <itemPath>error_handler.c</itemPath>
         <itemPath>heartbeat_services.c</itemPath>
+        <itemPath>pgood_monitor.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Core" projectFiles="true">
         <itemPath>device_control.c</itemPath>

@@ -26,7 +26,6 @@
 
 //
 //// Application
-//#include "heartbeat_services.h"
 #include "error_handler.h"
 #include "main.h"
 #include "power_saving.h"
