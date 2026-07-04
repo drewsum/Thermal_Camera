@@ -6,6 +6,7 @@
 #include "watchdog_timer.h"
 #include "terminal_control.h"
 #include "pin_macros.h"
+#include "error_handler.h"
 
 // This function initializes the watchdog timer for a timeout period of 
 // 2 seconds, and no window (window always open)
@@ -91,8 +92,7 @@ void verifyThumbTightEnough(void) {
     // If we've had a DMT error, set the DMT error flag
     if (DMTSTATbits.BAD1 || DMTSTATbits.BAD2 || DMTSTATbits.DMTEVENT) {
      
-        // error_handler.flags.DMT_error = 1;
-#warning "add error handler back"
+         error_handler.flags.DMT_error = 1;
         
     }
     

@@ -27,6 +27,7 @@
 //
 //// Application
 //#include "heartbeat_services.h"
+#include "error_handler.h"
 #include "main.h"
 #include "power_saving.h"
 //#include "telemetry.h"
@@ -63,11 +64,11 @@ void main(void) {
     terminalSetCursorHome();
     
     // set serial terminal window name
-//    char *terminal_title_str;
-//    terminal_title_str = (char *) malloc(64);
-//    sprintf(terminal_title_str, "%s Serial Terminal", PROJECT_NAME_STR);
-//    terminalSetTitle(terminal_title_str);
-//    free(terminal_title_str);
+    char *terminal_title_str;
+    terminal_title_str = (char *) malloc(64);
+    sprintf(terminal_title_str, "%s Serial Terminal", PROJECT_NAME_STR);
+    terminalSetTitle(terminal_title_str);
+    free(terminal_title_str);
     
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);

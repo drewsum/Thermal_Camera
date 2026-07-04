@@ -10,18 +10,18 @@
 #include "32mzda_interrupt_control.h"
 #include "pin_macros.h"
 #include "terminal_control.h"
-//#include "usb_uart.h"
+#include "usb_uart.h"
 #include "watchdog_timer.h"
 
 // This function initializes the error handler structure to detect fault conditions
 void errorHandlerInitialize(void) {
  
     // Setup system bus protection violation interrupt
-    disableInterrupt(System_Bus_Protection_Violation);
-    setInterruptPriority(System_Bus_Protection_Violation, 1);
-    setInterruptSubpriority(System_Bus_Protection_Violation, 1);
-    clearInterruptFlag(System_Bus_Protection_Violation);
-    enableInterrupt(System_Bus_Protection_Violation);
+    disableInterrupt(system_bus_protection_violation);
+    setInterruptPriority(system_bus_protection_violation, 1);
+    setInterruptSubpriority(system_bus_protection_violation, 1);
+    clearInterruptFlag(system_bus_protection_violation);
+    enableInterrupt(system_bus_protection_violation);
     
 }
 
@@ -30,7 +30,7 @@ void __ISR(_SYSTEM_BUS_PROTECTION_VECTOR, ipl1SRS) systemBusProtectionISR(void) 
  
     // Record a system bus protection violation occurred
     error_handler.flags.system_bus_protection_violation = 1;
-    clearInterruptFlag(System_Bus_Protection_Violation);
+    clearInterruptFlag(system_bus_protection_violation);
     
 }
 
@@ -51,7 +51,7 @@ void __attribute__((nomips16)) _general_exception_handler(void) {
     
     uint8_t exception_code = (_CP0_GET_CAUSE() >> 2) & 0b11111;
     char exception_code_number = exception_code + 48;
-    U3TXREG = exception_code_number;
+    USB_UART_TX_REG = exception_code_number;
     exceptionPrint("\n\r");
     
     // Give up

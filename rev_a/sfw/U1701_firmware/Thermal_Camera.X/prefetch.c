@@ -4,7 +4,7 @@
 
 #include "prefetch.h"
 #include "32mzda_interrupt_control.h"
-// #include "error_handler.h"
+#include "error_handler.h"
 #include "terminal_control.h"
 
 // This function initializes the prefetch module
@@ -37,8 +37,7 @@ void __ISR(_PREFETCH_VECTOR, ipl4SRS) prefetchSECEventISR(void) {
     PRESTATbits.PFMSECCNT = PRECONbits.PFMSECEN;
     
     // Set error handler flag high
-    // error_handler.flags.prefetch_module_SEC = 1;
-    #warning "add prefetch back in"
+    error_handler.flags.prefetch_module_SEC = 1;
     
     // Clear interrupt flag
     clearInterruptFlag(prefetch_module_sec_event);

@@ -16,7 +16,7 @@
 #include "device_control.h"
 #include "usb_uart.h"
 #include "terminal_control.h"
-// #include "error_handler.h"
+#include "error_handler.h"
 
 // Printable Variables from other header files
 extern uint32_t device_on_time_counter;
@@ -317,12 +317,12 @@ void usbUartInitialize(void) {
 // This is the TX UART fault interrupt service routine
 void __ISR(USB_UART_TX_FAULT_INT_VECTOR, ipl1SRS) usbUartTxFaultISR(void) {
 
-//    error_handler.flags.USB_general_error = 1;
-//    if (USB_UART_TX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
-//    if (USB_UART_TX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
-//    if (USB_UART_TX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
-//
-    #warning "Add error handler here"
+    error_handler.flags.USB_general_error = 1;
+    if (USB_UART_TX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
+    if (USB_UART_TX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
+    if (USB_UART_TX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
+
+
     USB_UART_TX_STA_BITFIELD.PERR = 0;
     USB_UART_TX_STA_BITFIELD.FERR = 0;
     USB_UART_TX_STA_BITFIELD.OERR = 0;
@@ -335,12 +335,11 @@ void __ISR(USB_UART_TX_FAULT_INT_VECTOR, ipl1SRS) usbUartTxFaultISR(void) {
 // This is the RX UART fault interrupt service routine
 void __ISR(USB_UART_RX_FAULT_INT_VECTOR, ipl1SRS) usbUartRxFaultISR(void) {
 
-//    error_handler.flags.USB_general_error = 1;
-//    if (USB_UART_RX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
-//    if (USB_UART_RX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
-//    if (USB_UART_RX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
-//
-    #warning "Add error handler here"
+    error_handler.flags.USB_general_error = 1;
+    if (USB_UART_RX_STA_BITFIELD.FERR) error_handler.flags.USB_framing_error = 1;
+    if (USB_UART_RX_STA_BITFIELD.OERR) error_handler.flags.USB_overrun_error = 1;
+    if (USB_UART_RX_STA_BITFIELD.PERR) error_handler.flags.USB_parity_error = 1;
+
     USB_UART_RX_STA_BITFIELD.PERR = 0;
     USB_UART_RX_STA_BITFIELD.FERR = 0;
     USB_UART_RX_STA_BITFIELD.OERR = 0;
@@ -372,8 +371,7 @@ void __ISR(USB_UART_TX_DMA_INT_VECTOR, IPL1SRS) usbUartTxDmaISR(void) {
     // channel error
     else if (USB_UART_TX_DMA_INT_BITFIELD.CHERIF) {
         
-        // error_handler.flags.USB_tx_dma_error = 1;
-        #warning "Add error handler here"
+        error_handler.flags.USB_tx_dma_error = 1;
         
     }
     
@@ -402,8 +400,7 @@ void __ISR(USB_UART_RX_DMA_INT_VECTOR, IPL2SRS) usbUartRxDmaISR(void) {
     // channel error
     else if (USB_UART_RX_DMA_INT_BITFIELD.CHERIF) {
         
-    // error_handler.flags.USB_rx_dma_error = 1;
-    #warning "Add error handler here"
+    error_handler.flags.USB_rx_dma_error = 1;
         
     }
     
