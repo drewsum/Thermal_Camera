@@ -4,8 +4,7 @@
 #include <stdio.h>
 
 #include "heartbeat_timer.h"
-// #include "heartbeat_services.h"
-#warning "add heartbeat services back in"
+#include "heartbeat_services.h"
 #include "pin_macros.h"
 
 // This function initializes the heartbeat timer (100Hz)
@@ -137,8 +136,7 @@ void __ISR(_TIMER_1_VECTOR, IPL6SRS) hearbeatTimerISR(void) {
     heartbeat_systick++;
     
     // Set flags to execute recurring function calls
-    // heartbeatServices();
-    #warning "add heartbeat services back in"
+    heartbeatServices();
     
     // Clear interrupt flag
     clearInterruptFlag(timer1);
