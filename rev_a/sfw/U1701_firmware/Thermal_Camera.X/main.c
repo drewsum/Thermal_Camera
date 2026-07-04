@@ -30,6 +30,7 @@
 #include "error_handler.h"
 #include "main.h"
 #include "power_saving.h"
+#include "heartbeat_services.h"
 //#include "telemetry.h"
 //#include "pgood_monitor.h"
 

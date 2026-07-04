@@ -34,7 +34,7 @@ void prefetchInitialize(void) {
 void __ISR(_PREFETCH_VECTOR, ipl4SRS) prefetchSECEventISR(void) {
 
     // Reset SEC event counter
-    PRESTATbits.PFMSECCNT = PRECONbits.PFMSECEN;
+    PRESTATbits.PFMSECCNT = 0;
     
     // Set error handler flag high
     error_handler.flags.prefetch_module_SEC = 1;
