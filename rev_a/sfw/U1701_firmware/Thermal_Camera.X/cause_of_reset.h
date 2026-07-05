@@ -30,7 +30,10 @@ typedef enum {
     Wake_From_Sleep                             = 8,
     Wake_From_Idle                              = 9,
     BOR_Reset                                   = 10,
-    POR_Reset                                   = 11
+    POR_Reset                                   = 11,
+    Deep_Sleep_Reset                            = 12,
+    VBAT_POR                                    = 13,
+    VBAT_Wake                                   = 14
 
 } reset_cause_t;
 

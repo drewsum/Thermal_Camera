@@ -18,6 +18,7 @@
 #include "prefetch.h"
 #include "cause_of_reset.h"
 #include "rtcc.h"
+#include "hlvd.h"
 
 // GPIO
 #include "pin_macros.h"
@@ -98,20 +99,28 @@ void main(void) {
             reset_cause == WDT_Reset ||
             reset_cause == Software_Reset ||
             reset_cause == External_Reset ||
-            reset_cause == BOR_Reset) {
-    
+            reset_cause == BOR_Reset ||
+            reset_cause == VBAT_POR) {
+
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        
+
     }
-    
+
     else {
-     
+
+        // Deep_Sleep_Reset and VBAT_Wake are expected outcomes of the
+        // low-power features this device is configured for, not faults
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        
+
     }
-    
-    // only clear persistent error flags if we've seen a POR... keep old values after other resets
-    if (reset_cause == POR_Reset) {
+
+    // Deep Sleep exit, VBAT wake, and VBAT POR all re-arm a POR at the
+    // hardware level (RAM/SFRs reset the same as a plain POR), so persistent
+    // error flags are just as unreliable after these as after a plain POR
+    if (    reset_cause == POR_Reset ||
+            reset_cause == Deep_Sleep_Reset ||
+            reset_cause == VBAT_Wake ||
+            reset_cause == VBAT_POR) {
         clearErrorHandler();
         live_telemetry_enable = 0;
     }
@@ -177,7 +186,11 @@ void main(void) {
     while(usbUartCheckIfBusy());
     
     rtccInitialize();
-    if (reset_cause == POR_Reset) rtccClear();
+    // Deep_Sleep_Reset and VBAT_Wake keep the RTCC running across the event
+    // specifically so its time doesn't need to be cleared here -- only clear
+    // it when the time was never reliably set (POR) or the backup battery
+    // that was supposed to maintain it is missing/depleted (VBAT_POR)
+    if (reset_cause == POR_Reset || reset_cause == VBAT_POR) rtccClear();
     printf("    Real Time Clock-Calendar Initialized\r\n");
     while(usbUartCheckIfBusy());
     
@@ -189,6 +202,11 @@ void main(void) {
     // setup I2C
     I2CMaster_Initialize();
     printf("    I2C Bus Master Initialized\r\n");
+    while(usbUartCheckIfBusy());
+    
+    hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
+    while(!hlvdIsReady());
+    printf("    HLVD Initialized, bandgap stable\r\n");
     while(usbUartCheckIfBusy());
     
     // Disable reset LED
@@ -242,6 +260,10 @@ void main(void) {
         
         // check to see if a clock fail has occurred and latch it
         clockFailCheck();
+        
+        if (hlvdCheckAndClearLatchedEvent()) {
+            error_handler.flags.mcu_vdd_brownout = 1;
+        }
         
         // update error LEDs if needed
         if (update_error_leds_flag) updateErrorLEDs();

@@ -21,11 +21,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache XC32 compiler
         id: cache-xc32
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /opt/microchip/xc32
           key: xc32-${{ env.XC32_VERSION }}
@@ -41,7 +41,7 @@ jobs:
 
       - name: Cache device family pack (DFP)
         id: cache-dfp
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /opt/microchip/packs/${{ env.DFP_NAME }}/${{ env.DFP_VERSION }}
           key: dfp-${{ env.DFP_NAME }}-${{ env.DFP_VERSION }}
@@ -70,7 +70,7 @@ jobs:
             CONF=default
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: firmware-image
           path: |
@@ -82,7 +82,7 @@ jobs:
   static-analysis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck

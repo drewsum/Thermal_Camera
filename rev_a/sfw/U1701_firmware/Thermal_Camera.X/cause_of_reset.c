@@ -11,27 +11,58 @@
 reset_cause_t getResetCause(void) {
  
     reset_cause_t reset_cause;
-    
-    if (RCONbits.POR) {
-    
+
+    // Deep Sleep exit, VBAT wake, and VBAT POR all re-arm a Power-on Reset on
+    // this device, so they're checked ahead of the plain POR case below to
+    // report the more specific cause instead of just "POR"
+    if (RCONbits.DPSLP) {
+
+        reset_cause = Deep_Sleep_Reset;
+        RCONbits.DPSLP = 0;
+        RCONbits.POR = 0;
+
+    }
+
+    else if (RCONbits.VBPOR) {
+
+        reset_cause = VBAT_POR;
+        RCONbits.VBPOR = 0;
+        RCONbits.POR = 0;
+
+    }
+
+    else if (RCONbits.VBAT) {
+
+        reset_cause = VBAT_Wake;
+        RCONbits.VBAT = 0;
+        RCONbits.POR = 0;
+
+    }
+
+    else if (RCONbits.POR) {
+
         reset_cause = POR_Reset;
         RCONbits.POR = 0;
-        
+
     }
-    
+
     else if (RCONbits.EXTR) {
-     
+
         reset_cause = External_Reset;
         RCONbits.EXTR = 0;
-        
+
     }
-       
+
     else if (RCONbits.BOR) {
-     
+
         reset_cause = BOR_Reset;
         RCONbits.BOR = 0;
         //error_handler.flags.vdd_brownout = 1;
-        
+
+        // HVDCORE is also set by hardware alongside BOR on this device
+        // (per silicon errata) and must be cleared here to avoid stale state
+        RCONbits.HVDCORE = 0;
+
     }
     
     else if (RCONbits.SWR) {
@@ -113,8 +144,11 @@ char * getResetCauseString(reset_cause_t input_cause) {
         "Wake from Sleep",
         "Wake from Idle",
         "Brown Out Reset",
-        "Power On Reset"
-        
+        "Power On Reset",
+        "Deep Sleep Exit",
+        "VBAT Power-on Reset (VBAT missing/depleted, or first power-up)",
+        "VBAT Mode Wake (VDD restored after running on VBAT battery backup)"
+
     };
     
     return reset_descriptor_array[input_cause];

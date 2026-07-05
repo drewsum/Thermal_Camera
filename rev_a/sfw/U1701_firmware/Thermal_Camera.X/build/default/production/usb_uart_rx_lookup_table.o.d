@@ -4,7 +4,7 @@ build/default/production/usb_uart_rx_lookup_table.o: \
  error_handler.h heartbeat_services.h heartbeat_timer.h cause_of_reset.h \
  terminal_control.h device_control.h watchdog_timer.h prefetch.h \
  power_saving.h pgood_monitor.h telemetry.h plib_i2c.h plib_i2c_master.h \
- adc.h adc_channels.h
+ adc.h adc_channels.h hlvd.h
 
 usb_uart_rx_lookup_table.h:
 
@@ -49,3 +49,5 @@ plib_i2c_master.h:
 adc.h:
 
 adc_channels.h:
+
+hlvd.h:

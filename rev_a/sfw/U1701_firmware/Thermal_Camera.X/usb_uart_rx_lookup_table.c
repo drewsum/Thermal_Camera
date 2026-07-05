@@ -26,6 +26,7 @@
 #include "plib_i2c_master.h"
 #include "adc.h"
 #include "adc_channels.h"
+#include "hlvd.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -119,6 +120,7 @@ USB_UART_COMMAND(hostStatusCommand, "Host Status?", "Prints status of MCU host d
     printWatchdogStatus();
     printDeadmanStatus();
     printPrefetchStatus();
+    printHLVDStatus();
 
     // Print cause of reset
     if (    reset_cause == Undefined ||
@@ -159,6 +161,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       PMD\r\n"
         "       WDT\r\n"
         "       DMT\r\n"
+        "       HLVD\r\n"
         "       Prefetch\r\n"
         "       DMA\r\n"
         "       ADC\r\n"
@@ -186,6 +189,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     }
     else if (strcmp(rx_peripheral_name, "DMT") == 0) {
         printDeadmanStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "HLVD") == 0) {
+        printHLVDStatus();
     }
     else if (strcmp(rx_peripheral_name, "Prefetch") == 0) {
        printPrefetchStatus();
@@ -492,6 +498,15 @@ USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
     while (POS2P8_PGOOD_PIN == LOW);
     printf("    +2.8V supply PGOOD is high\r\n");
 
+    FLIR_CLK_EN_PIN = HIGH;
+    printf("    FLIR Clock Enabled\r\n");
+    
+    nFLIR_PWR_DWN_PIN = HIGH;
+    printf("    FLIR PWR Down Signal de-asserted\r\n");
+    
+    nFLIR_RESET_PIN = HIGH;
+    printf("    FLIR Reset signal de-asserted\r\n");
+    
     printf("FLIR power supplies enabled, all PGOOD signals are high\r\n");
     terminalTextAttributesReset();
 

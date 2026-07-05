@@ -25,7 +25,33 @@
 // set this flag high to update the error LEDs the next loop through main()
 volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 
-#define ERROR_HANDLER_NUM_FLAGS  31
+// Single source of truth for every error handler flag: struct field name
+// and the string printed for it. Add/remove a flag by editing only this
+// list -- the struct, the name lookup table, and ERROR_HANDLER_NUM_FLAGS
+// are all generated from it, so they can't drift out of sync.
+#define ERROR_HANDLER_FLAG_LIST(X) \
+    X(configuration_error,             "Configuration") \
+    X(USB_general_error,               "USB General") \
+    X(USB_framing_error,               "USB Framing") \
+    X(USB_parity_error,                "USB Parity") \
+    X(USB_overrun_error,               "USB Overrun") \
+    X(USB_tx_dma_error,                "USB TX DMA") \
+    X(USB_rx_dma_error,                "USB RX DMA") \
+    X(DMT_error,                       "Deadman Timer") \
+    X(system_bus_protection_violation, "System Bus Protection Violation") \
+    X(prefetch_module_SEC,             "Prefetch Module SEC") \
+    X(clock_failure,                   "Clock Failure") \
+    X(WDT_timeout,                     "Watchdog Timer Timeout") \
+    X(DMT_timeout,                     "Deadman Timer Timeout") \
+    X(mcu_vdd_brownout,                "MCU VDD Brownout") \
+    X(ADC_reference_fault,             "ADC Reference Fault") \
+    X(ADC_configuration_error,         "ADC Configuration Error")
+
+#define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
+#define ERROR_HANDLER_FLAG_NAME(name, string)   string,
+#define ERROR_HANDLER_FLAG_COUNT(name, string)  +1
+
+#define ERROR_HANDLER_NUM_FLAGS (0 ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_COUNT))
 
 // Error handler structure
 // Follow the convention in XC32 user's guide section 8.6.2
@@ -33,82 +59,23 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 // This is used for controlling status LEDs and USB debugging
 // Access a flag like any C structure
  volatile union error_handler_u {
-    
+
     struct {
 
-        uint8_t configuration_error;    // error in device configuration at boot
-        uint8_t USB_general_error;    // Error with USB debugging interface
-        uint8_t USB_framing_error;    // usb uart framing error
-        uint8_t USB_parity_error;    // usb uart parity error
-        uint8_t USB_overrun_error;    // RX overrun error
-        uint8_t USB_tx_dma_error;    // Error with usb uart tx dma
-        uint8_t USB_rx_dma_error;    // Error with usb uart rx dma
-        uint8_t DMT_error;    // Deadman timer error
-        uint8_t system_bus_protection_violation;    // System bus protection event occurred
-        uint8_t prefetch_module_SEC;    // Prefetch module recorded an SEC event
-        uint8_t clock_failure;
-        uint8_t WDT_timeout;
-        uint8_t DMT_timeout;
-        uint8_t vdd_brownout;
-        uint8_t platform_etc;
-        uint8_t backup_rtc;
-        uint8_t pos24_mon;
-        uint8_t pos3p3_mon;
-        uint8_t pos180_mon;
-        uint8_t pos24_temp;
-        uint8_t pos3p3_temp;
-        uint8_t pos180_temp;
-        uint8_t amb_temp;
-        uint8_t ADC_reference_fault;
-        uint8_t ADC_configuration_error;
-        uint8_t in12_backlight_led_driver_1;
-        uint8_t in12_backlight_led_driver_2;
-        uint8_t in12_backlight_led_driver_3;
-        uint8_t in12_gpio_expander;
-        uint8_t carrier_board_spd;
-        uint8_t in12_etc;
-        
+        ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_FIELD)
+
     } flags;
 
     uint8_t flag_array[ERROR_HANDLER_NUM_FLAGS];
-    
-} error_handler __attribute__((persistent)) __attribute__((coherent));
-    
-// this array holds the names of error handler flags
-const char *  error_handler_flag_names[] = {
 
-    "Configuration",
-    "USB General",
-    "USB Framing",
-    "USB Parity",
-    "USB Overrun",
-    "USB TX DMA",
-    "USB RX DMA",
-    "Deadman Timer",
-    "System Bus Protection Violation",
-    "Prefetch Module SEC",
-    "Clock Failure",
-    "Watchdog Timer Timeout",
-    "Deadman Timer Timeout",
-    "MCU VDD Brownout",
-    "Platform Elapsed Time Counter",
-    "Backup Real Time Clock",
-    "POS24 Power Supply Monitor",
-    "POS3P3 Power Supply Monitor",
-    "POS180 Power Supply Monitor",
-    "POS24 Power Supply Temperature Sensor",
-    "POS3P3 Power Supply Temperature Sensor",
-    "POS180 Power Supply Temperature Sensor",
-    "Ambient Temperature Sensor",
-    "ADC Reference Fault",
-    "ADC Configuration Error",
-    "IN12 Backlight LED Driver 1",
-    "IN12 Backlight LED Driver 2",
-    "IN12 Backlight LED Driver 3",
-    "IN12 GPIO Expander",
-    "Carrier Board Serial Presence Detect",
-    "IN-12 Elapsed Time Counter"
-            
+} error_handler __attribute__((persistent)) __attribute__((coherent));
+
+// this array holds the names of error handler flags, in the same order as
+// the flags struct above
+const char * error_handler_flag_names[] = {
+
+    ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_NAME)
+
 };
 
 
