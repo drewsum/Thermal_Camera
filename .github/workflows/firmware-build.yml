@@ -58,12 +58,7 @@ jobs:
       - name: Build
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          # nbproject/Makefile-default.mk invokes bin2hex as
-          # "${MP_CC_DIR}\\xc32-bin2hex" -- MP_CC_DIR is never set on this
-          # runner, and that literal backslash isn't a path separator on
-          # Linux, so the shell strips it and falls back to a bare
-          # "xc32-bin2hex" resolved via PATH
-          export PATH="/opt/microchip/xc32/v${XC32_VERSION}/bin:$PATH"
+          set +e
           make \
             IGNORE_LOCAL=TRUE \
             MKDIR="mkdir -p" \
@@ -74,6 +69,30 @@ jobs:
             MP_AR=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-ar \
             DFP_DIR=/opt/microchip/packs/${DFP_NAME}/${DFP_VERSION} \
             CONF=default
+          make_status=$?
+          set -e
+
+          # nbproject/Makefile-default.mk's last recipe line invokes
+          # bin2hex as "${MP_CC_DIR}\\xc32-bin2hex ..." -- MP_CC_DIR is
+          # never set on this runner, so after the shell's own backslash
+          # escaping (\\ -> \) that reduces to a command literally named
+          # "\xc32-bin2hex" (a leading backslash baked into the filename),
+          # which can never resolve via PATH since the real binary has no
+          # backslash in its name. If that's the only reason make failed
+          # (the .elf was still produced by the link command that runs
+          # right before it in the same recipe), finish the job ourselves;
+          # any other failure is a genuine build error and must propagate.
+          elf_path=dist/default/production/Thermal_Camera.X.production.elf
+
+          if [ $make_status -ne 0 ]; then
+            if [ ! -f "$elf_path" ]; then
+              echo "make failed before producing $elf_path -- treating as a real build error"
+              exit $make_status
+            fi
+
+            echo "make failed only on the broken bin2hex invocation -- running xc32-bin2hex manually"
+            /opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-bin2hex "$elf_path"
+          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
