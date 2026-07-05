@@ -58,6 +58,19 @@ uint8_t hlvdCheckAndClearLatchedEvent(void) {
 
 }
 
+// This function reads the VDD18/core high/low-voltage detect flag
+// (RCONbits.HVDCORE), clears it, and returns the value it had before
+// clearing.
+uint8_t hlvdCoreCheckAndClearEvent(void) {
+
+    uint8_t previous_state = RCONbits.HVDCORE;
+
+    RCONbits.HVDCORE = 0;
+
+    return previous_state;
+
+}
+
 // This function prints the current HLVD configuration and status
 void printHLVDStatus(void) {
 
@@ -80,6 +93,10 @@ void printHLVDStatus(void) {
     if (RNMICONbits.LVD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Latched HLVD Event (RNMICON.LVD): %c\n\r", RNMICONbits.LVD ? 'T' : 'F');
+
+    if (RCONbits.HVDCORE) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    VDD18/Core HVD Event (RCON.HVDCORE, BOR companion bit): %c\n\r", RCONbits.HVDCORE ? 'T' : 'F');
 
     terminalTextAttributesReset();
 

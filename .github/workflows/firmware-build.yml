@@ -49,10 +49,10 @@ jobs:
       - name: Install device family pack (DFP)
         if: steps.cache-dfp.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          sudo mkdir -p /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
           curl -fSL -o /tmp/dfp.atpack \
             "https://packs.download.microchip.com/Microchip.${DFP_NAME}.${DFP_VERSION}.atpack"
-          unzip -q /tmp/dfp.atpack -d /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          sudo unzip -q /tmp/dfp.atpack -d /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
           rm /tmp/dfp.atpack
 
       - name: Build

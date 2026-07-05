@@ -22,6 +22,14 @@
     program flow, start a countdown, or force a reset (unlike the WDT/DMT
     timeout sources in the same register) -- it is a pure status flag. There
     is therefore no ISR for this module; it must be polled.
+
+    This file also exposes RCONbits.HVDCORE (aka HVD1V8R), a completely
+    separate piece of hardware from the HLVDCON module above: a fixed-function
+    high/low-voltage detector on the internal 1.8V core regulator rail
+    (VDD18), not the main VDD supply. Per the PIC32MZ-DA silicon errata, it is
+    set by hardware alongside a Brown-Out Reset event. It has no trip point,
+    direction, or enable bit of its own -- it cannot be configured like
+    HLVDCON, only read and cleared.
  */
 /* ************************************************************************** */
 
@@ -70,6 +78,14 @@ uint8_t hlvdCheckEvent(void);
 // this flag does not indicate a reset or NMI occurred, only that HLVD
 // tripped at some point since it was last cleared.
 uint8_t hlvdCheckAndClearLatchedEvent(void);
+
+// This function reads the VDD18/core high/low-voltage detect flag
+// (RCONbits.HVDCORE, aka HVD1V8R), clears it, and returns the value it had
+// before clearing. This is a separate, fixed-function circuit from the
+// HLVDCON module above -- see the file summary. In practice this bit is
+// only meaningful right after a Brown-Out Reset, since that's the only
+// documented way hardware sets it.
+uint8_t hlvdCoreCheckAndClearEvent(void);
 
 // This function prints the current HLVD configuration and status
 void printHLVDStatus(void);

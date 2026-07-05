@@ -44,6 +44,8 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(WDT_timeout,                     "Watchdog Timer Timeout") \
     X(DMT_timeout,                     "Deadman Timer Timeout") \
     X(mcu_vdd_brownout,                "MCU VDD Brownout") \
+    X(mcu_vdd_hlvd_brownout,           "MCU VDD HLVD Brownout") \
+    X(mcu_vdd_core_hlvd_brownout,      "MCU VDD Core HLVD Brownout") \
     X(ADC_reference_fault,             "ADC Reference Fault") \
     X(ADC_configuration_error,         "ADC Configuration Error")
 

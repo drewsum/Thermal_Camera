@@ -59,9 +59,9 @@ reset_cause_t getResetCause(void) {
         RCONbits.BOR = 0;
         //error_handler.flags.vdd_brownout = 1;
 
-        // HVDCORE is also set by hardware alongside BOR on this device
-        // (per silicon errata) and must be cleared here to avoid stale state
-        RCONbits.HVDCORE = 0;
+        // HVDCORE also sets alongside BOR on this device (per silicon
+        // errata) -- deliberately left uncleared here; hlvdCoreCheckAndClearEvent()
+        // in hlvd.c owns reading/clearing that flag
 
     }
     

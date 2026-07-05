@@ -262,7 +262,11 @@ void main(void) {
         clockFailCheck();
         
         if (hlvdCheckAndClearLatchedEvent()) {
-            error_handler.flags.mcu_vdd_brownout = 1;
+            error_handler.flags.mcu_vdd_hlvd_brownout = 1;
+        }
+        
+        if (hlvdCoreCheckAndClearEvent()) {
+            error_handler.flags.mcu_vdd_core_hlvd_brownout = 1;
         }
         
         // update error LEDs if needed
