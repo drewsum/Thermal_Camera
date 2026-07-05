@@ -114,27 +114,25 @@ void __attribute__((nomips16)) _bootstrap_exception_handler(void) {
     
 }
 
+// Expands to one print statement per flag in ERROR_HANDLER_FLAG_LIST,
+// referencing the named struct field directly instead of indexing flag_array
+#define ERROR_HANDLER_FLAG_PRINT(name, string) \
+    if (error_handler.flags.name) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT); \
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT); \
+    printf("    %s Error %s\n\r", string, error_handler.flags.name ? "has occurred" : "has not occurred");
+
 // This function prints the status of the error handler flags
 void printErrorHandlerStatus(void) {
- 
+
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-    
+
     // Print heading
     printf("Error Handler Status:\n\r");
-  
-    // loop through all error handler flags and print if they are set or not
-    uint32_t index;
-    for (index = 0; index < ERROR_HANDLER_NUM_FLAGS; index++) {
 
-        if (error_handler.flag_array[index]) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    %s Error %s\n\r", 
-                error_handler_flag_names[index],
-                error_handler.flag_array[index] ? "has occurred" : "has not occurred");
-    }
-    
-    terminalTextAttributesReset();    
-    
+    ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_PRINT)
+
+    terminalTextAttributesReset();
+
 }
 
 // This function clears the error handler flags
@@ -150,22 +148,21 @@ void clearErrorHandler(void) {
     
 }
 
+// Expands to one check per flag in ERROR_HANDLER_FLAG_LIST, referencing the
+// named struct field directly instead of indexing flag_array
+#define ERROR_HANDLER_FLAG_CHECK_LED(name, string) \
+    if (error_handler.flags.name) ERROR_LED_PIN = HIGH;
+
 // This function updates the error LEDs based on the error handler state
 void updateErrorLEDs(void) {
- 
-    // Clear error LED for now since we'll set it in the below loop if we need to
+
+    // Clear error LED for now since we'll set it below if we need to
     ERROR_LED_PIN = LOW;
-    
-    // loop through all error handler flags and set error LED based on the flags
-    uint32_t index;
-    for (index = 0; index < ERROR_HANDLER_NUM_FLAGS; index++) {
-     
-        if (error_handler.flag_array[index] == 1) ERROR_LED_PIN = HIGH;
-        
-    }
-        
+
+    ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_CHECK_LED)
+
     update_error_leds_flag = 0;
-    
+
 }
 
 // This function prints short strings during a CPU exception

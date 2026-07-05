@@ -58,6 +58,12 @@ jobs:
       - name: Build
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
+          # nbproject/Makefile-default.mk invokes bin2hex as
+          # "${MP_CC_DIR}\\xc32-bin2hex" -- MP_CC_DIR is never set on this
+          # runner, and that literal backslash isn't a path separator on
+          # Linux, so the shell strips it and falls back to a bare
+          # "xc32-bin2hex" resolved via PATH
+          export PATH="/opt/microchip/xc32/v${XC32_VERSION}/bin:$PATH"
           make \
             IGNORE_LOCAL=TRUE \
             MKDIR="mkdir -p" \
