@@ -1,0 +1,99 @@
+name: Firmware build
+
+on:
+  push:
+    paths:
+      - 'rev_a/sfw/U1701_firmware/Thermal_Camera.X/**'
+      - '.github/workflows/firmware-build.yml'
+  pull_request:
+    paths:
+      - 'rev_a/sfw/U1701_firmware/Thermal_Camera.X/**'
+      - '.github/workflows/firmware-build.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_DIR: rev_a/sfw/U1701_firmware/Thermal_Camera.X
+  XC32_VERSION: 4.45
+  DFP_VERSION: 1.5.231
+  DFP_NAME: PIC32MZ-DA_DFP
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache XC32 compiler
+        id: cache-xc32
+        uses: actions/cache@v4
+        with:
+          path: /opt/microchip/xc32
+          key: xc32-${{ env.XC32_VERSION }}
+
+      - name: Install XC32 compiler
+        if: steps.cache-xc32.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL -A "Mozilla/4.0" -o /tmp/xc32.run \
+            "https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/xc32-v${XC32_VERSION}-full-install-linux-x64-installer.run"
+          chmod +x /tmp/xc32.run
+          sudo /tmp/xc32.run --mode unattended --unattendedmodeui none --netservername localhost --LicenseType FreeMode
+          rm /tmp/xc32.run
+
+      - name: Cache device family pack (DFP)
+        id: cache-dfp
+        uses: actions/cache@v4
+        with:
+          path: /opt/microchip/packs/${{ env.DFP_NAME }}/${{ env.DFP_VERSION }}
+          key: dfp-${{ env.DFP_NAME }}-${{ env.DFP_VERSION }}
+
+      - name: Install device family pack (DFP)
+        if: steps.cache-dfp.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          curl -fSL -o /tmp/dfp.atpack \
+            "https://packs.download.microchip.com/Microchip.${DFP_NAME}.${DFP_VERSION}.atpack"
+          unzip -q /tmp/dfp.atpack -d /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          rm /tmp/dfp.atpack
+
+      - name: Build
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          make \
+            IGNORE_LOCAL=TRUE \
+            MKDIR="mkdir -p" \
+            MP_CC=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-gcc \
+            MP_CPPC=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-g++ \
+            MP_AS=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-as \
+            MP_LD=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-ld \
+            MP_AR=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-ar \
+            DFP_DIR=/opt/microchip/packs/${DFP_NAME}/${DFP_VERSION} \
+            CONF=default
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-image
+          path: |
+            ${{ env.PROJECT_DIR }}/dist/default/production/*.hex
+            ${{ env.PROJECT_DIR }}/dist/default/production/*.elf
+            ${{ env.PROJECT_DIR }}/dist/default/production/*.map
+          if-no-files-found: error
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          cppcheck \
+            --enable=warning,style,performance,portability \
+            --suppress=missingIncludeSystem \
+            --inline-suppr \
+            --force \
+            --std=c99 \
+            $(find . -maxdepth 1 -name '*.c')
