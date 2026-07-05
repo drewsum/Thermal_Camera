@@ -27,7 +27,7 @@ void PMDInitialize(void) {
     PMD1bits.CTMUMD = 1;
 
     // Disable low-voltage detect (unused)
-    PMD1bits.LVDMD = 1;
+    PMD1bits.LVDMD = 0;
 
     // Disable both comparators
     PMD2bits.CMP1MD = 1;
@@ -86,14 +86,14 @@ void PMDInitialize(void) {
     PMD5bits.SPI6MD = 1;
     #endif
     
-    // Disable all I2C Modules besides I2C5
+    // Disable all I2C Modules besides I2C1
     PMD5bits.I2C1MD = 1;
     #ifdef I2C2CON
     PMD5bits.I2C2MD = 1;
     #endif
     PMD5bits.I2C3MD = 1;
     PMD5bits.I2C4MD = 1;
-    PMD5bits.I2C5MD = 0;
+    PMD5bits.I2C5MD = 1;
     
     // Disable USB Module (UART 1 is used for USB debug)
     PMD5bits.USBMD = 1;
@@ -135,8 +135,8 @@ void PMDInitialize(void) {
     // Enable DMA
     PMD7bits.DMAMD = 0;
     
-    // Enable random number generator
-    PMD7bits.RNGMD = 0;
+    // Disable random number generator
+    PMD7bits.RNGMD = 1;
 
     // Enable DDR2 controller -- this device's 32MB DDR2 SDRAM is stacked
     // in-package, driven by ddr2.c; leaving this bit set would make the

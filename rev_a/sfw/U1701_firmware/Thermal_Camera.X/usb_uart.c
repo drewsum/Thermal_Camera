@@ -21,6 +21,13 @@
 // Printable Variables from other header files
 extern uint32_t device_on_time_counter;
 
+// Each USB_UART_COMMAND drops a pointer to its registration thunk into
+// .init_array. XC32's C runtime never calls .init_array itself, so
+// usbUartInitialize() walks it explicitly at boot. These bounds are provided by
+// the device linker script (which also KEEPs the section).
+extern void (* const __init_array_start[])(void);
+extern void (* const __init_array_end[])(void);
+
 // This function is used to setup DMA0 for UART transmit
 void usbUartTrasmitDmaInitialize(void) {
  
@@ -309,8 +316,15 @@ void usbUartInitialize(void) {
     // Setup DMA1 for USB UART Receive
     usbUartReceiveDmaInitialize();
 
-    // Note: usb_uart_commands is populated automatically by each command's
-    // USB_UART_COMMAND-generated constructor before main() runs
+    // Register every command declared with USB_UART_COMMAND by walking the
+    // .init_array thunks the linker collected from them. This populates the
+    // usb_uart_commands hash table used by usbUartRxLUTInterface().
+    void (* const *init_fn)(void);
+    for (init_fn = __init_array_start; init_fn < __init_array_end; init_fn++) {
+
+        (*init_fn)();
+
+    }
 
 }
 
@@ -445,7 +459,14 @@ void _mon_putc (char c) {
 }
 
 // this function adds a usb_uart command to the usb_uart_commands hash table
-void usbUartAddCommand(char * input_cmd_name, char * input_cmd_help_message, usb_uart_command_function_t input_cmd_func) {
+void usbUartAddCommand(const char * input_cmd_name, const char * input_cmd_help_message, usb_uart_command_function_t input_cmd_func) {
+
+    // Skip if this command is already registered. Guards against double
+    // registration if .init_array is ever also walked by the C runtime startup
+    // (uthash would otherwise store a duplicate key that shadows the original).
+    usb_uart_command_t *existing;
+    HASH_FIND_STR(usb_uart_commands, input_cmd_name, existing);
+    if (existing != NULL) return;
 
     // Add help command to hash string
     usb_uart_command_t *cmd = malloc(sizeof(usb_uart_command_t));

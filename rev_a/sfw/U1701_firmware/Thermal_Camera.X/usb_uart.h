@@ -148,7 +148,7 @@ void __ISR(_DMA0_VECTOR, IPL1SRS) usbUartTxDmaISR(void);
 void __ISR(_DMA1_VECTOR, IPL2SRS) usbUartRxDmaISR(void);
 
 // this function adds a usb_uart command to the usb_uart_commands hash table
-void usbUartAddCommand(char * input_cmd_name, char * input_cmd_help_message, usb_uart_command_function_t input_cmd_func);
+void usbUartAddCommand(const char * input_cmd_name, const char * input_cmd_help_message, usb_uart_command_function_t input_cmd_func);
 
 // This function is what interprets strings sent over USB Virtual COM Port
 void usbUartRxLUTInterface(char * cmd_string);

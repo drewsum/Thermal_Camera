@@ -1,1 +1,0 @@
- $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common   -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  C:\Users\Drew Maatman\Documents\KiCad Projects\Projects\Thermal_Camera\rev_a\sfw\U1701_firmware\Thermal_Camera.X\ddr2.c

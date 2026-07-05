@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c adc.c adc_channels.c telemetry.c plib_i2c.c hlvd.c ddr2.c
+SOURCEFILES_QUOTED_IF_SPACED=power_saving.c error_handler.c heartbeat_services.c pgood_monitor.c adc_channels.c telemetry.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c rtcc.c adc.c plib_i2c.c hlvd.c ddr2.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o ${OBJECTDIR}/plib_i2c.o ${OBJECTDIR}/hlvd.o ${OBJECTDIR}/ddr2.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/cause_of_reset.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d ${OBJECTDIR}/error_handler.o.d ${OBJECTDIR}/rtcc.o.d ${OBJECTDIR}/heartbeat_services.o.d ${OBJECTDIR}/pgood_monitor.o.d ${OBJECTDIR}/adc.o.d ${OBJECTDIR}/adc_channels.o.d ${OBJECTDIR}/telemetry.o.d ${OBJECTDIR}/plib_i2c.o.d ${OBJECTDIR}/hlvd.o.d ${OBJECTDIR}/ddr2.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/plib_i2c.o ${OBJECTDIR}/hlvd.o ${OBJECTDIR}/ddr2.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/power_saving.o.d ${OBJECTDIR}/error_handler.o.d ${OBJECTDIR}/heartbeat_services.o.d ${OBJECTDIR}/pgood_monitor.o.d ${OBJECTDIR}/adc_channels.o.d ${OBJECTDIR}/telemetry.o.d ${OBJECTDIR}/device_control.o.d ${OBJECTDIR}/32mzda_interrupt_control.o.d ${OBJECTDIR}/heartbeat_timer.o.d ${OBJECTDIR}/prefetch.o.d ${OBJECTDIR}/watchdog_timer.o.d ${OBJECTDIR}/cause_of_reset.o.d ${OBJECTDIR}/rtcc.o.d ${OBJECTDIR}/adc.o.d ${OBJECTDIR}/plib_i2c.o.d ${OBJECTDIR}/hlvd.o.d ${OBJECTDIR}/ddr2.o.d ${OBJECTDIR}/pic32mzda_gpio_setup.o.d ${OBJECTDIR}/terminal_control.o.d ${OBJECTDIR}/usb_uart.o.d ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d ${OBJECTDIR}/main.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o ${OBJECTDIR}/plib_i2c.o ${OBJECTDIR}/hlvd.o ${OBJECTDIR}/ddr2.o
+OBJECTFILES=${OBJECTDIR}/power_saving.o ${OBJECTDIR}/error_handler.o ${OBJECTDIR}/heartbeat_services.o ${OBJECTDIR}/pgood_monitor.o ${OBJECTDIR}/adc_channels.o ${OBJECTDIR}/telemetry.o ${OBJECTDIR}/device_control.o ${OBJECTDIR}/32mzda_interrupt_control.o ${OBJECTDIR}/heartbeat_timer.o ${OBJECTDIR}/prefetch.o ${OBJECTDIR}/watchdog_timer.o ${OBJECTDIR}/cause_of_reset.o ${OBJECTDIR}/rtcc.o ${OBJECTDIR}/adc.o ${OBJECTDIR}/plib_i2c.o ${OBJECTDIR}/hlvd.o ${OBJECTDIR}/ddr2.o ${OBJECTDIR}/pic32mzda_gpio_setup.o ${OBJECTDIR}/terminal_control.o ${OBJECTDIR}/usb_uart.o ${OBJECTDIR}/usb_uart_rx_lookup_table.o ${OBJECTDIR}/main.o
 
 # Source Files
-SOURCEFILES=power_saving.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c error_handler.c rtcc.c heartbeat_services.c pgood_monitor.c adc.c adc_channels.c telemetry.c plib_i2c.c hlvd.c ddr2.c
+SOURCEFILES=power_saving.c error_handler.c heartbeat_services.c pgood_monitor.c adc_channels.c telemetry.c device_control.c 32mzda_interrupt_control.c heartbeat_timer.c prefetch.c watchdog_timer.c cause_of_reset.c rtcc.c adc.c plib_i2c.c hlvd.c ddr2.c pic32mzda_gpio_setup.c terminal_control.c usb_uart.c usb_uart_rx_lookup_table.c main.c
 
 
 
@@ -101,270 +101,270 @@ endif
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: compile
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/944d6921c4d58245b887ca532ef064e363c72fd .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/fadd6ed20721176acfa38152c220d35fa7976111 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/power_saving.o.d 
 	@${RM} ${OBJECTDIR}/power_saving.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/power_saving.o.d" -o ${OBJECTDIR}/power_saving.o power_saving.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/device_control.o: device_control.c  .generated_files/flags/default/100ee46b4ee13835656a98c62964bbb1c775c7ab .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/device_control.o.d 
-	@${RM} ${OBJECTDIR}/device_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/device_control.o.d" -o ${OBJECTDIR}/device_control.o device_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/32mzda_interrupt_control.o: 32mzda_interrupt_control.c  .generated_files/flags/default/28718f41ad31ae00dc6dd63e33fcfd246740d318 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o.d 
-	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/32mzda_interrupt_control.o.d" -o ${OBJECTDIR}/32mzda_interrupt_control.o 32mzda_interrupt_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/heartbeat_timer.o: heartbeat_timer.c  .generated_files/flags/default/aa2d957abbbd63ddf2268b0288fdf834e1617ce6 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/heartbeat_timer.o.d 
-	@${RM} ${OBJECTDIR}/heartbeat_timer.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_timer.o.d" -o ${OBJECTDIR}/heartbeat_timer.o heartbeat_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/ea5e85e2651e2a2e3cb37c0a1e6d7279713db782 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/prefetch.o.d 
-	@${RM} ${OBJECTDIR}/prefetch.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/abd9a42a09f19f773f059c4ab28bd13876c86545 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
-	@${RM} ${OBJECTDIR}/watchdog_timer.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/54e2765656e4886682167903dcc2850725f38087 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
-	@${RM} ${OBJECTDIR}/cause_of_reset.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/pic32mzda_gpio_setup.o: pic32mzda_gpio_setup.c  .generated_files/flags/default/2b30816e9b0d197ccad865139fda6ada528bf3ab .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o.d 
-	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pic32mzda_gpio_setup.o.d" -o ${OBJECTDIR}/pic32mzda_gpio_setup.o pic32mzda_gpio_setup.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/terminal_control.o: terminal_control.c  .generated_files/flags/default/cee14b27ed042b5ba25ab9bd5aa5d7b933fca12 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/terminal_control.o.d 
-	@${RM} ${OBJECTDIR}/terminal_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/terminal_control.o.d" -o ${OBJECTDIR}/terminal_control.o terminal_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/usb_uart.o: usb_uart.c  .generated_files/flags/default/5f7f92d57f830d838e247353b01c8e8ae21070e2 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/usb_uart.o.d 
-	@${RM} ${OBJECTDIR}/usb_uart.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart.o.d" -o ${OBJECTDIR}/usb_uart.o usb_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/usb_uart_rx_lookup_table.o: usb_uart_rx_lookup_table.c  .generated_files/flags/default/e48977b100ebaf29816d5029cf32d942e653b046 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d 
-	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart_rx_lookup_table.o.d" -o ${OBJECTDIR}/usb_uart_rx_lookup_table.o usb_uart_rx_lookup_table.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/4f65087b5f4f0812e45c5b94374b023d16e686c9 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/main.o.d 
-	@${RM} ${OBJECTDIR}/main.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/error_handler.o: error_handler.c  .generated_files/flags/default/49020bec36170070191c436cbce0bb504b2ea2b0 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/error_handler.o: error_handler.c  .generated_files/flags/default/6ef64c2b03eaeb8bafef8978d80ee68dc87e9f55 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/error_handler.o.d 
 	@${RM} ${OBJECTDIR}/error_handler.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/error_handler.o.d" -o ${OBJECTDIR}/error_handler.o error_handler.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/rtcc.o: rtcc.c  .generated_files/flags/default/b8c818b9f00222182874b2c27bf1c908d25473ea .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/rtcc.o.d 
-	@${RM} ${OBJECTDIR}/rtcc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/rtcc.o.d" -o ${OBJECTDIR}/rtcc.o rtcc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/heartbeat_services.o: heartbeat_services.c  .generated_files/flags/default/6950678ddf8949ce4929dddeb67c01aee36125da .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/heartbeat_services.o: heartbeat_services.c  .generated_files/flags/default/92b8b1afd11baae3c627adfad85be168f0919560 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/heartbeat_services.o.d 
 	@${RM} ${OBJECTDIR}/heartbeat_services.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_services.o.d" -o ${OBJECTDIR}/heartbeat_services.o heartbeat_services.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/eb98b8f09ec22380a8915fc02f64cf459384cf73 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/8192c5740961bae21196f2e848e30592d2d0f01b .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/pgood_monitor.o.d 
 	@${RM} ${OBJECTDIR}/pgood_monitor.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pgood_monitor.o.d" -o ${OBJECTDIR}/pgood_monitor.o pgood_monitor.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/dbd3f0eb8e5b511760683c8ee33ea95d0a489831 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/adc.o.d 
-	@${RM} ${OBJECTDIR}/adc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/e4c4d39347e760f341448310e86f263e6025cca5 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/3f657503986938470eec0bb7e5d97f6dbc1d3f64 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/adc_channels.o.d 
 	@${RM} ${OBJECTDIR}/adc_channels.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc_channels.o.d" -o ${OBJECTDIR}/adc_channels.o adc_channels.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/d8a181d4e84b8901916ae4cb01fa8ac102595c0d .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/de2c992248a6c62ef11e2a3fb599b7a623db1edd .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/telemetry.o.d 
 	@${RM} ${OBJECTDIR}/telemetry.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/telemetry.o.d" -o ${OBJECTDIR}/telemetry.o telemetry.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/plib_i2c.o: plib_i2c.c  .generated_files/flags/default/bb72e47a9bd1f77cef544e27261e20874094d702 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/device_control.o: device_control.c  .generated_files/flags/default/b4e5cc58df19fb85d29abdf4c51652ff3a4741d7 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/device_control.o.d 
+	@${RM} ${OBJECTDIR}/device_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/device_control.o.d" -o ${OBJECTDIR}/device_control.o device_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/32mzda_interrupt_control.o: 32mzda_interrupt_control.c  .generated_files/flags/default/81cee489233c474178199362506b32d751088707 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o.d 
+	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/32mzda_interrupt_control.o.d" -o ${OBJECTDIR}/32mzda_interrupt_control.o 32mzda_interrupt_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/heartbeat_timer.o: heartbeat_timer.c  .generated_files/flags/default/210bcee69e21f326ca21c64baf0a694b11542ddf .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/heartbeat_timer.o.d 
+	@${RM} ${OBJECTDIR}/heartbeat_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_timer.o.d" -o ${OBJECTDIR}/heartbeat_timer.o heartbeat_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/c349aaede5d14ae17725160ec3a04368c5dce7b6 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/prefetch.o.d 
+	@${RM} ${OBJECTDIR}/prefetch.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/b123bd4cd95388ba145b15d86c6558e545d03ca .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/d50e5d9c4cafcc931352d14343d3f6396d6a3ce5 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/rtcc.o: rtcc.c  .generated_files/flags/default/f050c7420427815748a793e89a2708aa0332f0e5 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/rtcc.o.d 
+	@${RM} ${OBJECTDIR}/rtcc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/rtcc.o.d" -o ${OBJECTDIR}/rtcc.o rtcc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/17c40fd6a17ce7d8a2fc5692a43f3ff7d011c74f .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc.o.d 
+	@${RM} ${OBJECTDIR}/adc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/plib_i2c.o: plib_i2c.c  .generated_files/flags/default/c84e023f0465f632f3717a36e1dea57e74558bf2 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/plib_i2c.o.d 
 	@${RM} ${OBJECTDIR}/plib_i2c.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/plib_i2c.o.d" -o ${OBJECTDIR}/plib_i2c.o plib_i2c.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/hlvd.o: hlvd.c  .generated_files/flags/default/72c1a1d87dec76990f1a6e9a1020506f54a423bb .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/hlvd.o: hlvd.c  .generated_files/flags/default/a32b61d1172f0a0042823b7c6bdee83edcf0b9ea .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/hlvd.o.d 
 	@${RM} ${OBJECTDIR}/hlvd.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/hlvd.o.d" -o ${OBJECTDIR}/hlvd.o hlvd.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/ddr2.o: ddr2.c  .generated_files/flags/default/e1d5306643a0cb5368db4103d20e1a2fed06f619 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/ddr2.o: ddr2.c  .generated_files/flags/default/7effce03803f9c8a6081ca79d16e229718cf1727 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/ddr2.o.d 
 	@${RM} ${OBJECTDIR}/ddr2.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/ddr2.o.d" -o ${OBJECTDIR}/ddr2.o ddr2.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
+${OBJECTDIR}/pic32mzda_gpio_setup.o: pic32mzda_gpio_setup.c  .generated_files/flags/default/1191cd1a46a88e9fdfd3bc508d864b45116088de .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o.d 
+	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pic32mzda_gpio_setup.o.d" -o ${OBJECTDIR}/pic32mzda_gpio_setup.o pic32mzda_gpio_setup.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/terminal_control.o: terminal_control.c  .generated_files/flags/default/ed7bbf1c7b874788b8d35514fe5583372ec5715a .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/terminal_control.o.d 
+	@${RM} ${OBJECTDIR}/terminal_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/terminal_control.o.d" -o ${OBJECTDIR}/terminal_control.o terminal_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/usb_uart.o: usb_uart.c  .generated_files/flags/default/47e2f862396124d7a79e8e9639ef484ca89cf946 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/usb_uart.o.d 
+	@${RM} ${OBJECTDIR}/usb_uart.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart.o.d" -o ${OBJECTDIR}/usb_uart.o usb_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/usb_uart_rx_lookup_table.o: usb_uart_rx_lookup_table.c  .generated_files/flags/default/4399f66f21228abd5f6a37e54645a6556bab39d6 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d 
+	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart_rx_lookup_table.o.d" -o ${OBJECTDIR}/usb_uart_rx_lookup_table.o usb_uart_rx_lookup_table.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/31e0b3cadd61977be7f4046bc35c9123ff98c784 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/main.o.d 
+	@${RM} ${OBJECTDIR}/main.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
 else
-${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/c9836cd3f014a5ca4c46819c8d6282887c57ad38 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/power_saving.o: power_saving.c  .generated_files/flags/default/51c5a206a765ea00d37f8729f0f9c5b51a8a9f6a .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/power_saving.o.d 
 	@${RM} ${OBJECTDIR}/power_saving.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/power_saving.o.d" -o ${OBJECTDIR}/power_saving.o power_saving.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/device_control.o: device_control.c  .generated_files/flags/default/fa0d693f81ad4d044bd4d1ca599d1e95ced2c5bc .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/device_control.o.d 
-	@${RM} ${OBJECTDIR}/device_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/device_control.o.d" -o ${OBJECTDIR}/device_control.o device_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/32mzda_interrupt_control.o: 32mzda_interrupt_control.c  .generated_files/flags/default/9492b8b0f1a16d456b065e3cb095374de9ad794c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o.d 
-	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/32mzda_interrupt_control.o.d" -o ${OBJECTDIR}/32mzda_interrupt_control.o 32mzda_interrupt_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/heartbeat_timer.o: heartbeat_timer.c  .generated_files/flags/default/c9a0aa58107ad6d8b9f4c5945e0bf5c4d29ae1e3 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/heartbeat_timer.o.d 
-	@${RM} ${OBJECTDIR}/heartbeat_timer.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_timer.o.d" -o ${OBJECTDIR}/heartbeat_timer.o heartbeat_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/68c08c1ab4723763bf63e59d8b11c0e11585b721 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/prefetch.o.d 
-	@${RM} ${OBJECTDIR}/prefetch.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/99c8bfd809d2ddab2e8966f69cfad89003bf2a7e .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
-	@${RM} ${OBJECTDIR}/watchdog_timer.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/b905dc6fcfe7710b810ac62d3bdec4faea8de89c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
-	@${RM} ${OBJECTDIR}/cause_of_reset.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/pic32mzda_gpio_setup.o: pic32mzda_gpio_setup.c  .generated_files/flags/default/c1944300a366899e25e9b5dad75a1d5b4c44f2a .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o.d 
-	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pic32mzda_gpio_setup.o.d" -o ${OBJECTDIR}/pic32mzda_gpio_setup.o pic32mzda_gpio_setup.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/terminal_control.o: terminal_control.c  .generated_files/flags/default/a9b367a09368484b70279aaddab45d9786b35c96 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/terminal_control.o.d 
-	@${RM} ${OBJECTDIR}/terminal_control.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/terminal_control.o.d" -o ${OBJECTDIR}/terminal_control.o terminal_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/usb_uart.o: usb_uart.c  .generated_files/flags/default/8808c84c00cf8f286dd08d97635650d87b873431 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/usb_uart.o.d 
-	@${RM} ${OBJECTDIR}/usb_uart.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart.o.d" -o ${OBJECTDIR}/usb_uart.o usb_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/usb_uart_rx_lookup_table.o: usb_uart_rx_lookup_table.c  .generated_files/flags/default/a3a375498aed51ce08946e053e9a05d027d00d4b .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d 
-	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart_rx_lookup_table.o.d" -o ${OBJECTDIR}/usb_uart_rx_lookup_table.o usb_uart_rx_lookup_table.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/b1ff88ac7e41d90d4363f36efa1fb2e6c40b7d73 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/main.o.d 
-	@${RM} ${OBJECTDIR}/main.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/error_handler.o: error_handler.c  .generated_files/flags/default/954d96e3f3ba2f73e027654ff8eca16b59fdc363 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/error_handler.o: error_handler.c  .generated_files/flags/default/5806439e873370a1263fda5399df80b3c9a858ef .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/error_handler.o.d 
 	@${RM} ${OBJECTDIR}/error_handler.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/error_handler.o.d" -o ${OBJECTDIR}/error_handler.o error_handler.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/rtcc.o: rtcc.c  .generated_files/flags/default/bcdd584b4d3bbda9d910f55a43bad27017ed09e0 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/rtcc.o.d 
-	@${RM} ${OBJECTDIR}/rtcc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/rtcc.o.d" -o ${OBJECTDIR}/rtcc.o rtcc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/heartbeat_services.o: heartbeat_services.c  .generated_files/flags/default/681d237e3b1f23cde72c05422952ffe813d4604a .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/heartbeat_services.o: heartbeat_services.c  .generated_files/flags/default/7488a77289de6eb1f4866efc21ade86c5434c0bf .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/heartbeat_services.o.d 
 	@${RM} ${OBJECTDIR}/heartbeat_services.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_services.o.d" -o ${OBJECTDIR}/heartbeat_services.o heartbeat_services.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/f21fb7dd624586212d59b10224bc63ced8a34c4d .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/pgood_monitor.o: pgood_monitor.c  .generated_files/flags/default/575b37cf97477c1c6137820a229a9e328a4884e9 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/pgood_monitor.o.d 
 	@${RM} ${OBJECTDIR}/pgood_monitor.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pgood_monitor.o.d" -o ${OBJECTDIR}/pgood_monitor.o pgood_monitor.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/6a9508d810911cc569313db862c6d3bd06da7ef8 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}" 
-	@${RM} ${OBJECTDIR}/adc.o.d 
-	@${RM} ${OBJECTDIR}/adc.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
-	
-${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/da44e7d15e34bf114d837ebb0a40c44c6f098b8b .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/adc_channels.o: adc_channels.c  .generated_files/flags/default/7d166a69baa6e4b7c68c592e5c296b4c6f63b78e .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/adc_channels.o.d 
 	@${RM} ${OBJECTDIR}/adc_channels.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc_channels.o.d" -o ${OBJECTDIR}/adc_channels.o adc_channels.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/41a75971b04c5d556329ba622e2697c27264124c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/telemetry.o: telemetry.c  .generated_files/flags/default/e99a6cfd93c6744b000c4d4ffd1a5e47a5612d5e .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/telemetry.o.d 
 	@${RM} ${OBJECTDIR}/telemetry.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/telemetry.o.d" -o ${OBJECTDIR}/telemetry.o telemetry.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/plib_i2c.o: plib_i2c.c  .generated_files/flags/default/ffc3def3e9f4e9f92d032b82ac54506d256df6e .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/device_control.o: device_control.c  .generated_files/flags/default/f5477048153662f25e2c45a92420aa6d89a291dd .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/device_control.o.d 
+	@${RM} ${OBJECTDIR}/device_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/device_control.o.d" -o ${OBJECTDIR}/device_control.o device_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/32mzda_interrupt_control.o: 32mzda_interrupt_control.c  .generated_files/flags/default/2ee21efa8fd4bab967e77baf0d7858dd8472e7e9 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o.d 
+	@${RM} ${OBJECTDIR}/32mzda_interrupt_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/32mzda_interrupt_control.o.d" -o ${OBJECTDIR}/32mzda_interrupt_control.o 32mzda_interrupt_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/heartbeat_timer.o: heartbeat_timer.c  .generated_files/flags/default/e354c997100507b3fa252fcfcaf9b8792eb804ac .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/heartbeat_timer.o.d 
+	@${RM} ${OBJECTDIR}/heartbeat_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/heartbeat_timer.o.d" -o ${OBJECTDIR}/heartbeat_timer.o heartbeat_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/prefetch.o: prefetch.c  .generated_files/flags/default/6bc4783ab660f2897d0bf8f6fdb1ac48be30939 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/prefetch.o.d 
+	@${RM} ${OBJECTDIR}/prefetch.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/prefetch.o.d" -o ${OBJECTDIR}/prefetch.o prefetch.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/watchdog_timer.o: watchdog_timer.c  .generated_files/flags/default/7ea1086ed2dfafd6ed69409c9b06c1335c235d84 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o.d 
+	@${RM} ${OBJECTDIR}/watchdog_timer.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/watchdog_timer.o.d" -o ${OBJECTDIR}/watchdog_timer.o watchdog_timer.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/cause_of_reset.o: cause_of_reset.c  .generated_files/flags/default/65aa9326302b75de2e6da1434550c710c53d04d9 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o.d 
+	@${RM} ${OBJECTDIR}/cause_of_reset.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/cause_of_reset.o.d" -o ${OBJECTDIR}/cause_of_reset.o cause_of_reset.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/rtcc.o: rtcc.c  .generated_files/flags/default/4562ef848356834ceedc27bd692d6d989c928493 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/rtcc.o.d 
+	@${RM} ${OBJECTDIR}/rtcc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/rtcc.o.d" -o ${OBJECTDIR}/rtcc.o rtcc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/adc.o: adc.c  .generated_files/flags/default/b1d3ea0702e6e26ea800beba5f5635fe16927fa .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/adc.o.d 
+	@${RM} ${OBJECTDIR}/adc.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/adc.o.d" -o ${OBJECTDIR}/adc.o adc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/plib_i2c.o: plib_i2c.c  .generated_files/flags/default/67d62104c27edb08c249578b718ba321275e0e7 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/plib_i2c.o.d 
 	@${RM} ${OBJECTDIR}/plib_i2c.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/plib_i2c.o.d" -o ${OBJECTDIR}/plib_i2c.o plib_i2c.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/hlvd.o: hlvd.c  .generated_files/flags/default/86dee2898211e699ee15363035450666ce5f923c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/hlvd.o: hlvd.c  .generated_files/flags/default/e22da10739b1b5c2ec4cd5700950d9cf95eb04dd .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/hlvd.o.d 
 	@${RM} ${OBJECTDIR}/hlvd.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/hlvd.o.d" -o ${OBJECTDIR}/hlvd.o hlvd.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
-${OBJECTDIR}/ddr2.o: ddr2.c  .generated_files/flags/default/13fbd9024bae074fc4ccec0185d5208a3e93128c .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+${OBJECTDIR}/ddr2.o: ddr2.c  .generated_files/flags/default/7725e8552813b535cb513f5734cb3f744d772936 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/ddr2.o.d 
 	@${RM} ${OBJECTDIR}/ddr2.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/ddr2.o.d" -o ${OBJECTDIR}/ddr2.o ddr2.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/pic32mzda_gpio_setup.o: pic32mzda_gpio_setup.c  .generated_files/flags/default/5fc6877b4e60257f5bc2ce5defbe9582097658f .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o.d 
+	@${RM} ${OBJECTDIR}/pic32mzda_gpio_setup.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/pic32mzda_gpio_setup.o.d" -o ${OBJECTDIR}/pic32mzda_gpio_setup.o pic32mzda_gpio_setup.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/terminal_control.o: terminal_control.c  .generated_files/flags/default/fc1c44a788dea4691d698a313470e0f8c991467a .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/terminal_control.o.d 
+	@${RM} ${OBJECTDIR}/terminal_control.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/terminal_control.o.d" -o ${OBJECTDIR}/terminal_control.o terminal_control.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/usb_uart.o: usb_uart.c  .generated_files/flags/default/b0d8761a2968e9822f018d59059ec5eca63c6b08 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/usb_uart.o.d 
+	@${RM} ${OBJECTDIR}/usb_uart.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart.o.d" -o ${OBJECTDIR}/usb_uart.o usb_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/usb_uart_rx_lookup_table.o: usb_uart_rx_lookup_table.c  .generated_files/flags/default/90d401b23cc7476fbca386285f82a2e453dd7134 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o.d 
+	@${RM} ${OBJECTDIR}/usb_uart_rx_lookup_table.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/usb_uart_rx_lookup_table.o.d" -o ${OBJECTDIR}/usb_uart_rx_lookup_table.o usb_uart_rx_lookup_table.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
+	
+${OBJECTDIR}/main.o: main.c  .generated_files/flags/default/fc73d924d6018087c56d6c74b6d33c8721496684 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/main.o.d 
+	@${RM} ${OBJECTDIR}/main.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -fno-common -MP -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wno-incompatible-pointer-types -mdfp="${DFP_DIR}"  
 	
 endif
 
