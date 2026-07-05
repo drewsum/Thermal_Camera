@@ -22,6 +22,10 @@
 #include "pin_macros.h"
 #include "pgood_monitor.h"
 #include "telemetry.h"
+#include "plib_i2c.h"
+#include "plib_i2c_master.h"
+#include "adc.h"
+#include "adc_channels.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -189,22 +193,20 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "DMA") == 0) {
         printDMAStatus();
     }
-    #warning "Fix status"
-//    else if (strcmp(rx_peripheral_name, "ADC Channels") == 0) {
-//        printADCChannelStatus();
-//    }
-//    else if (strcmp(rx_peripheral_name, "ADC") == 0) {
-//        printADCStatus();
-//    }
+    else if (strcmp(rx_peripheral_name, "ADC Channels") == 0) {
+        printADCChannelStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "ADC") == 0) {
+        printADCStatus();
+    }
     else if (strcmp(rx_peripheral_name, "RTCC") == 0) {
         printRTCCStatus();
     }
-#warning "fix status"
-//    else if (strcmp(rx_peripheral_name, "I2C Master") == 0) {    
-//        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-//        printf("I2C Bus Master Controller Status:\r\n");
-//        printI2CMasterStatus();
-//    }
+    else if (strcmp(rx_peripheral_name, "I2C Master") == 0) {    
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("I2C Bus Master Controller Status:\r\n");
+        printI2CMasterStatus();
+    }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
         sscanf(rx_peripheral_name, "Timer %u", &read_timer_number);

@@ -517,6 +517,8 @@ void I2CMaster_CallbackRegister(I2C_CALLBACK callback, uintptr_t contextHandle);
 bool I2CMaster_TransferSetup(I2C_TRANSFER_SETUP* setup, uint32_t srcClkFreq );
 
 
+void printI2CMasterStatus(void);
+
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
 }
