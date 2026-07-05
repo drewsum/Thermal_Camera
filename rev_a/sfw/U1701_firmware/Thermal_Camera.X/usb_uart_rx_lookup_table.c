@@ -27,6 +27,7 @@
 #include "adc.h"
 #include "adc_channels.h"
 #include "hlvd.h"
+#include "ddr2.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -193,6 +194,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "HLVD") == 0) {
         printHLVDStatus();
     }
+    else if (strcmp(rx_peripheral_name, "DDR2") == 0) {
+        printDDR2Status();
+    }
     else if (strcmp(rx_peripheral_name, "Prefetch") == 0) {
        printPrefetchStatus();
     }
@@ -234,6 +238,8 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   PMD\r\n"
                 "   WDT\r\n"
                 "   DMT\r\n"
+                "   HLVD\r\n"
+                "   DDR2\r\n"
                 "   ADC\r\n"
                 "   ADC Channels\r\n"
                 "   Prefetch\r\n"

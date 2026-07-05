@@ -26,6 +26,7 @@
         <itemPath>plib_i2c.h</itemPath>
         <itemPath>plib_i2c_master.h</itemPath>
         <itemPath>hlvd.h</itemPath>
+        <itemPath>ddr2.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="GPIO" projectFiles="true">
         <itemPath>pin_macros.h</itemPath>
@@ -69,6 +70,7 @@
         <itemPath>adc.c</itemPath>
         <itemPath>plib_i2c.c</itemPath>
         <itemPath>hlvd.c</itemPath>
+        <itemPath>ddr2.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="GPIO" projectFiles="true">
         <itemPath>pic32mzda_gpio_setup.c</itemPath>

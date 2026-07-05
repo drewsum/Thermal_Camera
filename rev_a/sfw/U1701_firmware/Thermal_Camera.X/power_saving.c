@@ -138,8 +138,10 @@ void PMDInitialize(void) {
     // Enable random number generator
     PMD7bits.RNGMD = 0;
 
-    // Disable DDR2 controller (unused)
-    PMD7bits.DDR2CMD = 1;
+    // Enable DDR2 controller -- this device's 32MB DDR2 SDRAM is stacked
+    // in-package, driven by ddr2.c; leaving this bit set would make the
+    // controller inaccessible
+    PMD7bits.DDR2CMD = 0;
 
     // Lock PMD
     PMDLock();

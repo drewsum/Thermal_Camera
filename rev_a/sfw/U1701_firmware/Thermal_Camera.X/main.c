@@ -19,6 +19,7 @@
 #include "cause_of_reset.h"
 #include "rtcc.h"
 #include "hlvd.h"
+#include "ddr2.h"
 
 // GPIO
 #include "pin_macros.h"
@@ -179,7 +180,12 @@ void main(void) {
     PMDInitialize();
     printf("    Unused Peripheral Modules Disabled\n\r");
     while(usbUartCheckIfBusy());
-    
+
+    // Initialize the 32MB DDR2 SDRAM stacked in this device's package
+    ddr2Initialize();
+    printf("    DDR2 SDRAM Controller Initialized\n\r");
+    while(usbUartCheckIfBusy());
+
     // setup watchdog timer
     watchdogTimerInitialize();
     printf("    Watchdog Timer Initialized\n\r");
