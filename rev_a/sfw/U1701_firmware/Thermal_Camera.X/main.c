@@ -35,8 +35,8 @@
 
 
 ////// I2C
-//#include "plib_i2c.h"
-//#include "plib_i2c_master.h"
+#include "plib_i2c.h"
+#include "plib_i2c_master.h"
 //#include "temperature_sensors.h"
 //#include "power_monitors.h"
 //#include "misc_i2c_devices.h"
@@ -184,6 +184,11 @@ void main(void) {
     // Enable ADC
     ADCInitialize();
     printf("    Analog to Digital Converter Initialized\n\r");
+    while(usbUartCheckIfBusy());
+    
+    // setup I2C
+    I2CMaster_Initialize();
+    printf("    I2C Bus Master Initialized\r\n");
     while(usbUartCheckIfBusy());
     
     // Disable reset LED
