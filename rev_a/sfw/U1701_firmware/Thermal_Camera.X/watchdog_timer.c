@@ -10,7 +10,7 @@
 
 // This function initializes the watchdog timer for a timeout period of 
 // 2 seconds, and no window (window always open)
-void watchdogTimerInitialize(void) {
+bool watchdogTimerInitialize(void) {
  
     // Disable watchdog during setup
     WDTCONbits.ON = 0;
@@ -20,7 +20,10 @@ void watchdogTimerInitialize(void) {
     
     // Start the watchdog timer
     WDTCONbits.ON = 1;
-    
+
+    // Report success if the watchdog is running
+    return (WDTCONbits.ON == 1);
+
 }
 
 // This function starts the watchdog timer

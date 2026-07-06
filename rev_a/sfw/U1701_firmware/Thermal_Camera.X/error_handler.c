@@ -14,7 +14,7 @@
 #include "watchdog_timer.h"
 
 // This function initializes the error handler structure to detect fault conditions
-void errorHandlerInitialize(void) {
+bool errorHandlerInitialize(void) {
  
     // Setup system bus protection violation interrupt
     disableInterrupt(system_bus_protection_violation);
@@ -22,7 +22,10 @@ void errorHandlerInitialize(void) {
     setInterruptSubpriority(system_bus_protection_violation, 1);
     clearInterruptFlag(system_bus_protection_violation);
     enableInterrupt(system_bus_protection_violation);
-    
+
+    // No software-detectable failure mode for error handler setup
+    return true;
+
 }
 
 // System Bus Protection Violation interrupt service routine

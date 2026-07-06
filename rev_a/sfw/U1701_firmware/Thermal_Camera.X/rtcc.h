@@ -19,6 +19,7 @@
 #define _RTCC_H
 
 #include <xc.h>
+#include <stdbool.h>
 #include <time.h>
 
 // These are macros needed for defining ISRs, included in XC32
@@ -81,7 +82,7 @@ void rtccUnlock(void);
 void rtccLock(void);
 
 // This function initializes the RTCC on reset
-void rtccInitialize(void);
+bool rtccInitialize(void);
 
 // This function clears all values in the RTCC
 void rtccClear(void);

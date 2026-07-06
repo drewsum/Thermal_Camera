@@ -8,7 +8,7 @@
 // This function disables the module, applies the requested trip point and
 // direction, then re-enables the module. Per the HLVD setup procedure,
 // settings may only be changed while the module is off.
-void hlvdInitialize(uint8_t trip_point, hlvd_direction_t direction) {
+bool hlvdInitialize(uint8_t trip_point, hlvd_direction_t direction) {
 
     HLVDCONbits.ON = 0;
 
@@ -19,6 +19,11 @@ void hlvdInitialize(uint8_t trip_point, hlvd_direction_t direction) {
     HLVDCONbits.SIDL = 0;
 
     HLVDCONbits.ON = 1;
+
+    // Report success if the module is enabled. Bandgap-reference readiness
+    // (HLVDCONbits.BGVST) is a separate, slightly-later condition -- callers
+    // that need it should also poll hlvdIsReady().
+    return (HLVDCONbits.ON == 1);
 
 }
 

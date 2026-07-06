@@ -19,6 +19,7 @@
 #define _GPIO_SETUP_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 #include "device_control.h"
 
@@ -164,7 +165,7 @@ void gpioPinSetup(port_name_t port_name,
         uint8_t analog_setting);
 
 // initializes all GPIO ports on microcontroller
-void gpioInitialize (void);
+bool gpioInitialize (void);
 
 // initializes port A GPIO pins
 void portAGPIOInitialize (void);

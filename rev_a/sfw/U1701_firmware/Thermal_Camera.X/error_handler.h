@@ -18,6 +18,7 @@
 #define _ERROR_HANDLER_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
@@ -51,7 +52,18 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(DDR2_mpll_vreg_timeout,          "DDR2 MPLL Voltage Regulator Timeout") \
     X(DDR2_mpll_lock_timeout,          "DDR2 MPLL Lock Timeout") \
     X(DDR2_init_sequence_timeout,      "DDR2 Init Command Sequence Timeout") \
-    X(DDR2_calibration_timeout,        "DDR2 Self-Calibration Timeout")
+    X(DDR2_calibration_timeout,        "DDR2 Self-Calibration Timeout") \
+    X(clock_init_error,                "System Clock Init") \
+    X(heartbeat_timer_init_error,      "Heartbeat Timer Init") \
+    X(usb_uart_init_error,             "USB UART Init") \
+    X(prefetch_init_error,             "Prefetch Init") \
+    X(pmd_init_error,                  "Peripheral Module Disable Init") \
+    X(watchdog_init_error,             "Watchdog Timer Init") \
+    X(rtcc_init_error,                 "RTCC Init") \
+    X(adc_init_error,                  "ADC Init") \
+    X(i2c_init_error,                  "I2C Master Init") \
+    X(hlvd_init_error,                 "HLVD Init") \
+    X(ddr2_init_error,                 "DDR2 Init")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,
@@ -86,7 +98,7 @@ const char * error_handler_flag_names[] = {
 
 
 // This function initializes the error handler structure to detect fault conditions
-void errorHandlerInitialize(void);
+bool errorHandlerInitialize(void);
 
 // System Bus Protection Violation interrupt service routine
 void __ISR(_SYSTEM_BUS_PROTECTION_VECTOR, ipl1SRS) systemBusProtectionISR(void);

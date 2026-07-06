@@ -119,7 +119,7 @@ volatile I2C_OBJ i2cMasterObj;
     Stops the I2C if it was already running and reinitializes it.
 */
 
-void I2CMaster_Initialize(void);
+bool I2CMaster_Initialize(void);
 
 // *****************************************************************************
 /* Function:

@@ -14,7 +14,7 @@
 #include "terminal_control.h"
 
 // This function initializes the ADC modules
-void ADCInitialize(void) {
+bool ADCInitialize(void) {
 
     // setup ADC fault interrupt
     disableInterrupt(adc_fault);
@@ -159,7 +159,10 @@ void ADCInitialize(void) {
     ADCCON2bits.REFFLTIEN = 1;
     enableInterrupt(adc_fault);
 
-    
+    // Report success if the ADC is on, its voltage reference is ready, and no
+    // reference fault was recorded during bring-up
+    return (ADCCON1bits.ON && ADCCON2bits.BGVRRDY && !ADCCON2bits.REFFLT);
+
 }
 
 // this is the ADC fault interrupt service routine

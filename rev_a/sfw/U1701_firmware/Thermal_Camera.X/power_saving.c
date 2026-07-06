@@ -11,7 +11,7 @@
 
 // This function disables unused peripherals on startup for power savings
 // THIS FUNCTION CAN ONLY BE CALLED ONCE DUE TO PMD LOCKOUT AFTER ONE WRITE SESSION
-void PMDInitialize(void) {
+bool PMDInitialize(void) {
 
     // Unlock PMD
     PMDUnlock();
@@ -145,7 +145,11 @@ void PMDInitialize(void) {
 
     // Lock PMD
     PMDLock();
-    
+
+    // Report success only if the DDR2 controller was left enabled -- disabling
+    // it here would freeze all DDR2 SFR accesses in ddr2Initialize()
+    return (PMD7bits.DDR2CMD == 0);
+
 }
 
 

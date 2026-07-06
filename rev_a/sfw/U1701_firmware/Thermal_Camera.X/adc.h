@@ -17,6 +17,7 @@
 #define _ADC_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
@@ -30,7 +31,7 @@
 volatile double adc_cal_gain = 1.0;
 
 // This function initializes the ADC modules
-void ADCInitialize(void);
+bool ADCInitialize(void);
 
 // this is the ADC fault interrupt service routine
 void __ISR(_ADC_FAULT_VECTOR, IPL3SRS) ADCFaultISR(void);

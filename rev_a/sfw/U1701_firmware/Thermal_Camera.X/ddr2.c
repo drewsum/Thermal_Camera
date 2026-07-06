@@ -277,9 +277,9 @@ static void ddr2DelayNanoseconds(uint32_t nanoseconds);
 // This function starts the dedicated Memory PLL (MPLL) to clock the DDR2
 // PHY at 200MHz, then runs the controller/PHY/SDRAM bring-up sequence.
 // Blocks until the SDRAM is ready for normal reads/writes.
-void ddr2Initialize(void) {
+bool ddr2Initialize(void) {
 
-    if (ddr2_ready) return;
+    if (ddr2_ready) return true;
 
     // Each stage below flags the error handler and aborts (rather than
     // spinning forever) if its hardware wait times out, so a DDR2 bring-up
@@ -288,7 +288,7 @@ void ddr2Initialize(void) {
     // "Error Status?" / "Peripheral Status? DDR2" serial commands.
     bool wait_ok;
 
-    if (!ddr2MPLLInitialize()) return;
+    if (!ddr2MPLLInitialize()) return false;
 
     // The DDR2 clock must be stable for >=200us before any initialization
     // command is issued (PIC32 FRM 55.5.1, step 1)
@@ -306,7 +306,7 @@ void ddr2Initialize(void) {
     if (!wait_ok) {
 
         error_handler.flags.DDR2_init_sequence_timeout = 1;
-        return;
+        return false;
 
     }
 
@@ -318,11 +318,13 @@ void ddr2Initialize(void) {
     if (!ddr2RunSelfCalibration()) {
 
         error_handler.flags.DDR2_calibration_timeout = 1;
-        return;
+        return false;
 
     }
 
     ddr2_ready = true;
+
+    return true;
 
 }
 

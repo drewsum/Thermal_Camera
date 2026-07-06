@@ -17,6 +17,7 @@
 #define _WATCHDOG_TIMER_H
 
 #include <xc.h>
+#include <stdbool.h>
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
@@ -26,7 +27,7 @@
 
 // This function initializes the watchdog timer for a timeout period of 
 // 2 seconds, and no window (window always open)
-void watchdogTimerInitialize(void);
+bool watchdogTimerInitialize(void);
 
 // This function starts the watchdog timer
 void startWatchdogTimer(void);

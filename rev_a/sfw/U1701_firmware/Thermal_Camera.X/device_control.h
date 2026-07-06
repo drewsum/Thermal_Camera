@@ -19,6 +19,7 @@
 #define _DEVICE_CONTROL_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 #include "32mzda_interrupt_control.h"
 
@@ -49,7 +50,7 @@ void deviceReset(void);
 void softwareDelay(uint32_t inputDelay);
 
 // This function initializes the system clocks
-void clockInitialize(void);
+bool clockInitialize(void);
 
 // This function returns a formatted string of a given clock setting from an integer
 char * stringFromClockSetting(uint32_t clock_integer);

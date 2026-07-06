@@ -8,7 +8,7 @@
 #include "terminal_control.h"
 
 // This function initializes the prefetch module
-void prefetchInitialize(void) {
+bool prefetchInitialize(void) {
 
     // configure prefetch module SEC interrupt
     disableInterrupt(prefetch_module_sec_event);
@@ -27,7 +27,10 @@ void prefetchInitialize(void) {
     
     // Enable prefetch SEC interrupt
     enableInterrupt(prefetch_module_sec_event);
-    
+
+    // Report success if predictive prefetch is enabled
+    return (PRECONbits.PREFEN != 0);
+
 }
 
 // This is the prefetch SEC event interrupt service routine

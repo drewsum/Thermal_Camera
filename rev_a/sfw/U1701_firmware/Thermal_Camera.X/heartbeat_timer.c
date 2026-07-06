@@ -8,7 +8,7 @@
 #include "pin_macros.h"
 
 // This function initializes the heartbeat timer (100Hz)
-void heartbeatTimerInitialize(void) {
+bool heartbeatTimerInitialize(void) {
     
     // Stop timer 1
     T1CONbits.ON = 0;
@@ -96,7 +96,10 @@ void heartbeatTimerInitialize(void) {
     
     // Start timer 2
     T2CONbits.ON = 1;
-    
+
+    // Report success if both timers and the heartbeat PWM output are running
+    return (T1CONbits.ON && T2CONbits.ON && OC4CONbits.ON);
+
 }
 
 // This function starts the heartbeat timer

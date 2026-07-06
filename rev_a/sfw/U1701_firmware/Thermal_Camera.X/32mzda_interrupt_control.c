@@ -7,7 +7,7 @@
 
 // This function configures the system for multi-interrupt operation and
 // assigns shadow registers sets to priority level ISRs
-void interruptControllerInitialize(void) {
+bool interruptControllerInitialize(void) {
  
     // Enable multi-vector interrupt mode
     INTCONbits.MVEC = 1;
@@ -15,6 +15,9 @@ void interruptControllerInitialize(void) {
     // Assign shadow register sets to interrupt priorities
     // assign shadow set #7-#1 to priority level #7-#1 ISRs
     PRISS = 0x76543210;
+
+    // Report success if multi-vector interrupt mode is enabled
+    return (INTCONbits.MVEC == 1);
 
 }
 

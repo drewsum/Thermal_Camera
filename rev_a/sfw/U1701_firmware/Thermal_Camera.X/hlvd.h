@@ -37,6 +37,7 @@
 #define _HLVD_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 // HLVDCON.VDIR: selects which direction of VDD crossing generates an event
 typedef enum {
@@ -59,7 +60,7 @@ typedef enum {
 // Band gap stabilization (and therefore a trustworthy HLEVT reading) is
 // not instantaneous after this call -- poll hlvdIsReady() before trusting
 // hlvdCheckEvent().
-void hlvdInitialize(uint8_t trip_point, hlvd_direction_t direction);
+bool hlvdInitialize(uint8_t trip_point, hlvd_direction_t direction);
 
 // This function disables the HLVD module
 void hlvdDisable(void);

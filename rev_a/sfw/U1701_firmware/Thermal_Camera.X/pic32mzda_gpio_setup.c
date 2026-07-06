@@ -400,7 +400,7 @@ void gpioPinSetup(port_name_t port_name,
 }
 
 // initializes GPIO ports on microcontroller
-void gpioInitialize (void) {
+bool gpioInitialize (void) {
     
     // Unlock peripheral pin select
     PPSUnlock();
@@ -418,5 +418,8 @@ void gpioInitialize (void) {
     
     // Lock PPS
     PPSLock();
+
+    // Pin configuration has no software-detectable failure mode
+    return true;
     
 }

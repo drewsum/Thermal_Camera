@@ -20,6 +20,7 @@
 #define _32MZDA_INTERRUPT_CONTROL_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 #include "sys/attribs.h"
 
@@ -242,7 +243,7 @@ typedef enum {
 
 // This function configures the system for multi-interrupt operation and
 // assigns shadow registers sets to priority level ISRs
-void interruptControllerInitialize(void);
+bool interruptControllerInitialize(void);
 
 // This function enables global interrupts
 void enableGlobalInterrupts(void);

@@ -82,7 +82,7 @@
 // for normal reads/writes. Must run after PMDInitialize() has cleared
 // PMD7bits.DDR2CMD (see power_saving.c) -- the controller is clock-gated
 // off by default.
-void ddr2Initialize(void);
+bool ddr2Initialize(void);
 
 // This function returns true once ddr2Initialize() has completed and the
 // SDRAM is ready for normal reads/writes (DDRMEMCONbits.INITDN)

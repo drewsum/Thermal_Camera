@@ -67,7 +67,7 @@
 // *****************************************************************************
 
 
-void I2CMaster_Initialize(void)
+bool I2CMaster_Initialize(void)
 {
     /* Disable the I2C Master interrupt */
     disableInterrupt(I2C_MASTER_INT_SOURCE);
@@ -95,6 +95,9 @@ void I2CMaster_Initialize(void)
 
     /* Set the initial state of the I2C state machine */
     i2cMasterObj.state = I2C_STATE_IDLE;
+
+    /* Report success if the I2C master module is enabled */
+    return (I2C_MASTER_CON_BITFIELD.ON == 1);
 }
 
 /* I2C state machine */

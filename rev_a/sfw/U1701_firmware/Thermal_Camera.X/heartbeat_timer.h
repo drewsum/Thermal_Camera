@@ -18,6 +18,7 @@
 #define _HEARTBEAT_TIMER_H
 
 #include <xc.h>
+#include <stdbool.h>
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
@@ -44,7 +45,7 @@ volatile uint32_t heartbeat_systick = 0;
 
 // API Functions
 // This function initializes the heartbeat timer
-void heartbeatTimerInitialize(void);
+bool heartbeatTimerInitialize(void);
 
 // This function starts the heartbeat timer
 void heartbeatTimerStart(void);

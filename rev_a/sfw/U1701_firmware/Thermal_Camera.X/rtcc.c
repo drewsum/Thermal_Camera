@@ -72,7 +72,7 @@ void rtccLock(void) {
 }
 
 // This function initializes the RTCC on reset
-void rtccInitialize(void) {
+bool rtccInitialize(void) {
     
     // configure RTCC for writing
     rtccUnlock();
@@ -132,7 +132,10 @@ void rtccInitialize(void) {
     
     // Lock RTCC
     rtccLock();
-    
+
+    // Report success if the RTCC is enabled
+    return (RTCCONbits.ON == 1);
+
 }
 
 // This function clears all values in the RTCC

@@ -19,6 +19,7 @@
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
+#include <stdbool.h>
 
 #include "usb_uart_rx_lookup_table.h"
 #include "32mzda_interrupt_control.h"
@@ -137,7 +138,7 @@ void usbUartTransmitInitialize(void);
 void usbUartReceiveInitialize(void);
 
 // This function initializes the TX and RX UART modules for USB debugging
-void usbUartInitialize(void);
+bool usbUartInitialize(void);
 
 // These are the USB UART fault Interrupt Service Routines
 void __ISR(USB_UART_TX_FAULT_INT_VECTOR, ipl1SRS) usbUartTxFaultISR(void);

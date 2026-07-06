@@ -132,7 +132,7 @@ void softwareDelay(uint32_t inputDelay) {
 // PBCLK4: 66.6 MHz
 // PBCLK5: 66.6 MHz
 // PBCLK7: 200 MHz
-void clockInitialize(void) {
+bool clockInitialize(void) {
  
     // unlock the device
     deviceUnlock();
@@ -179,7 +179,11 @@ void clockInitialize(void) {
     
     // re-lock the device
     deviceLock();
-    
+
+    // Report success only if the SPLL locked and the CPU actually switched
+    // onto it (COSC = 0b001 = SPLL)
+    return (CLKSTATbits.SPLLRDY && OSCCONbits.COSC == 0b001);
+
 }
 
 // this function sets up the PLL

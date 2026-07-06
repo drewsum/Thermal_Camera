@@ -302,7 +302,7 @@ void usbUartReceiveInitialize(void) {
 }
 
 // This function initializes the TX and RX UART modules for USB debugging
-void usbUartInitialize(void) {
+bool usbUartInitialize(void) {
 
     // Configure UART5 for USB UART Transmit
     usbUartTransmitInitialize();
@@ -325,6 +325,11 @@ void usbUartInitialize(void) {
         (*init_fn)();
 
     }
+
+    // Report success if both UART modules are enabled and at least one command
+    // registered into the hash table
+    return (USB_UART_TX_MODE_BITFIELD.ON && USB_UART_RX_MODE_BITFIELD.ON &&
+            HASH_COUNT(usb_uart_commands) > 0);
 
 }
 

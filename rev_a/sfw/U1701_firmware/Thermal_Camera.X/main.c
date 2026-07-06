@@ -54,6 +54,33 @@
 #include "adc_channels.h"
 
 
+// Prints a boot initialization result line and records failures. On success it
+// prints "    <label> Initialized" in green; on failure it prints
+// "    <label> FAILED to initialize" in bold red and sets *error_flag (pass
+// NULL for subsystems with no dedicated init flag). Returns ok unchanged so it
+// can wrap an init call inline. Leaves the terminal in green/normal afterward.
+static bool reportInit(const char *label, bool ok, volatile uint8_t *error_flag) {
+
+    if (ok) {
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    %s Initialized\r\n", label);
+
+    }
+
+    else {
+
+        if (error_flag != NULL) *error_flag = 1;
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("    %s FAILED to initialize\r\n", label);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+    }
+
+    return ok;
+
+}
+
 void main(void) {
 
     
@@ -139,8 +166,7 @@ void main(void) {
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     
      // setup GPIO pins
-    gpioInitialize();
-    printf("    GPIO Pins Initialized\n\r");
+    reportInit("GPIO Pins", gpioInitialize(), NULL);
 
     // block on POS3P0 and POS1P8 power stability
     while(POS3P0_PGOOD_PIN == LOW);
@@ -151,69 +177,70 @@ void main(void) {
     disableGlobalInterrupts();
     
     // Initialize system clocks
-    clockInitialize();
-    printf("    Oscillators, Phase-Locked Loop, and System Clocks Initialized\n\r");
+    reportInit("Oscillators, PLL, and System Clocks", clockInitialize(),
+            &error_handler.flags.clock_init_error);
         
     // Enable Global Interrupts
-    interruptControllerInitialize();
+    bool interrupts_ok = interruptControllerInitialize();
     enableGlobalInterrupts();
-    printf("    Interrupt Controller Initialized, Global Interrupts Enabled\n\r");
+    reportInit("Interrupt Controller", interrupts_ok, NULL);
     
     // Setup error handling
-    errorHandlerInitialize();
-    printf("    Error Handler Initialized\n\r");
+    reportInit("Error Handler", errorHandlerInitialize(), NULL);
     
     // Setup heartbeat timer
-    heartbeatTimerInitialize();
-    printf("    Heartbeat Timer Initialized\n\r");
+    reportInit("Heartbeat Timer", heartbeatTimerInitialize(),
+            &error_handler.flags.heartbeat_timer_init_error);
         
     // Setup USB UART debugging
-    usbUartInitialize();
-    printf("    USB UART Initialized, DMA buffer method used, USB UART command hash table configured\n\r");
+    reportInit("USB UART", usbUartInitialize(),
+            &error_handler.flags.usb_uart_init_error);
     
     // Setup prefetch module
-    prefetchInitialize();
-    printf("    CPU Instruction Prefetch Module Enabled\r\n");
+    reportInit("CPU Instruction Prefetch Module", prefetchInitialize(),
+            &error_handler.flags.prefetch_init_error);
     while(usbUartCheckIfBusy());
     
     // Disable unused peripherals for power savings
-    PMDInitialize();
-    printf("    Unused Peripheral Modules Disabled\n\r");
+    reportInit("Peripheral Module Disable (PMD)", PMDInitialize(),
+            &error_handler.flags.pmd_init_error);
     while(usbUartCheckIfBusy());
 
     // setup watchdog timer
-    watchdogTimerInitialize();
-    printf("    Watchdog Timer Initialized\n\r");
+    reportInit("Watchdog Timer", watchdogTimerInitialize(),
+            &error_handler.flags.watchdog_init_error);
     while(usbUartCheckIfBusy());
     
-    rtccInitialize();
+    bool rtcc_ok = rtccInitialize();
     // Deep_Sleep_Reset and VBAT_Wake keep the RTCC running across the event
     // specifically so its time doesn't need to be cleared here -- only clear
     // it when the time was never reliably set (POR) or the backup battery
     // that was supposed to maintain it is missing/depleted (VBAT_POR)
     if (reset_cause == POR_Reset || reset_cause == VBAT_POR) rtccClear();
-    printf("    Real Time Clock-Calendar Initialized\r\n");
+    reportInit("Real Time Clock-Calendar", rtcc_ok,
+            &error_handler.flags.rtcc_init_error);
     while(usbUartCheckIfBusy());
     
     // Enable ADC
-    ADCInitialize();
-    printf("    Analog to Digital Converter Initialized\n\r");
+    reportInit("Analog to Digital Converter", ADCInitialize(),
+            &error_handler.flags.adc_init_error);
     while(usbUartCheckIfBusy());
     
     // setup I2C
-    I2CMaster_Initialize();
-    printf("    I2C Bus Master Initialized\r\n");
+    reportInit("I2C Bus Master", I2CMaster_Initialize(),
+            &error_handler.flags.i2c_init_error);
     while(usbUartCheckIfBusy());
     
     // setup HLVD
-    hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
+    bool hlvd_ok = hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
     while(!hlvdIsReady());
-    printf("    HLVD Initialized, bandgap stable\r\n");
+    reportInit("HLVD", hlvd_ok && hlvdIsReady(),
+            &error_handler.flags.hlvd_init_error);
     while(usbUartCheckIfBusy());
     
     // Initialize the 32MB DDR2 SDRAM stacked in this device's package
-    ddr2Initialize();
-    printf("    DDR2 SDRAM Controller Initialized\n\r");
+    reportInit("DDR2 SDRAM Controller", ddr2Initialize(),
+            &error_handler.flags.ddr2_init_error);
     while(usbUartCheckIfBusy());
     
     // Disable reset LED
