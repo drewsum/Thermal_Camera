@@ -163,6 +163,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       WDT\r\n"
         "       DMT\r\n"
         "       HLVD\r\n"
+        "       DDR2\r\n"
         "       Prefetch\r\n"
         "       DMA\r\n"
         "       ADC\r\n"

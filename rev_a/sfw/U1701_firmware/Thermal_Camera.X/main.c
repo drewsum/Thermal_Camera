@@ -181,11 +181,6 @@ void main(void) {
     printf("    Unused Peripheral Modules Disabled\n\r");
     while(usbUartCheckIfBusy());
 
-    // Initialize the 32MB DDR2 SDRAM stacked in this device's package
-    ddr2Initialize();
-    printf("    DDR2 SDRAM Controller Initialized\n\r");
-    while(usbUartCheckIfBusy());
-
     // setup watchdog timer
     watchdogTimerInitialize();
     printf("    Watchdog Timer Initialized\n\r");
@@ -210,9 +205,15 @@ void main(void) {
     printf("    I2C Bus Master Initialized\r\n");
     while(usbUartCheckIfBusy());
     
+    // setup HLVD
     hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
     while(!hlvdIsReady());
     printf("    HLVD Initialized, bandgap stable\r\n");
+    while(usbUartCheckIfBusy());
+    
+    // Initialize the 32MB DDR2 SDRAM stacked in this device's package
+    ddr2Initialize();
+    printf("    DDR2 SDRAM Controller Initialized\n\r");
     while(usbUartCheckIfBusy());
     
     // Disable reset LED

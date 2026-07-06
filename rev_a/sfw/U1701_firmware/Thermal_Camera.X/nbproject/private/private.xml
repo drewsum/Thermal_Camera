@@ -5,6 +5,7 @@
         <group>
             <file>file:/C:/Users/drewm/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/main.c</file>
             <file>file:/C:/Users/drewm/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/32mzda_interrupt_control.c</file>
+            <file>file:/C:/Users/drewm/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/power_saving.c</file>
             <file>file:/C:/Users/drewm/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/usb_uart_rx_lookup_table.c</file>
             <file>file:/C:/Users/drewm/Documents/KiCad%20Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/usb_uart.c</file>
         </group>

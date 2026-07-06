@@ -40,6 +40,7 @@
 #include "ddr2.h"
 #include "device_control.h"
 #include "terminal_control.h"
+#include "error_handler.h"
 
 // ---- SDRAM timing parameters, from the PIC32MZ-DA family data sheet
 // (DS60001565) Table 44-55 "DDR2 SDRAM Timing Specifications" -- these
@@ -91,6 +92,32 @@
 
 #define CEIL_DIV(numerator, denominator)  (((numerator) + (denominator) - 1) / (denominator))
 #define MAX2(a, b)  ((a) > (b) ? (a) : (b))
+
+// Upper time bound for any single DDR2 bring-up hardware wait. Every one of
+// these (MPLL regulator/lock, host command issue, self-calibration) completes
+// in well under a millisecond on healthy hardware; 100ms is a generous ceiling
+// that still guarantees boot proceeds if a stage never completes.
+#define DDR2_SPIN_TIMEOUT_US    100000u
+
+// Busy-wait until `condition` is true, giving up after DDR2_SPIN_TIMEOUT_US
+// using the CP0 core timer (same time base as ddr2DelayNanoseconds). Sets the
+// bool `success_result` to true if the condition was met, false on timeout, so
+// callers can flag the failing stage and let main() keep booting instead of
+// hanging forever.
+#define DDR2_WAIT_UNTIL(condition, success_result)                             \
+    do {                                                                       \
+        uint32_t _ns_per_tick = 2000000000u / SYSCLK_INT;                      \
+        uint32_t _timeout_ticks =                                              \
+            ((uint32_t)DDR2_SPIN_TIMEOUT_US * 1000u) / _ns_per_tick;           \
+        uint32_t _wait_start = _CP0_GET_COUNT();                               \
+        (success_result) = true;                                               \
+        while (!(condition)) {                                                 \
+            if ((uint32_t)(_CP0_GET_COUNT() - _wait_start) >= _timeout_ticks) {\
+                (success_result) = false;                                      \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+    } while (0)
 
 // ---- Delay register fields, PIC32 FRM Table 55-4 formulas ----
 #define DDR2_REFDLY         (CEIL_DIV(DDR2_TRFC_NS, DDR2_CTL_CLK_PERIOD_NS) - 1)
@@ -240,11 +267,11 @@ static const ddr2_init_command_t ddr2_init_sequence[] = {
 static bool ddr2_ready = false;
 
 // private function prototypes
-static void ddr2MPLLInitialize(void);
+static bool ddr2MPLLInitialize(void);
 static void ddr2ControllerConfigure(void);
 static void ddr2PHYConfigure(void);
 static void ddr2LoadInitCommands(void);
-static void ddr2RunSelfCalibration(void);
+static bool ddr2RunSelfCalibration(void);
 static void ddr2DelayNanoseconds(uint32_t nanoseconds);
 
 // This function starts the dedicated Memory PLL (MPLL) to clock the DDR2
@@ -254,7 +281,14 @@ void ddr2Initialize(void) {
 
     if (ddr2_ready) return;
 
-    ddr2MPLLInitialize();
+    // Each stage below flags the error handler and aborts (rather than
+    // spinning forever) if its hardware wait times out, so a DDR2 bring-up
+    // failure leaves ddr2_ready false and lets main() continue booting. The
+    // specific flag identifies which stage failed -- inspect it with the
+    // "Error Status?" / "Peripheral Status? DDR2" serial commands.
+    bool wait_ok;
+
+    if (!ddr2MPLLInitialize()) return;
 
     // The DDR2 clock must be stable for >=200us before any initialization
     // command is issued (PIC32 FRM 55.5.1, step 1)
@@ -268,14 +302,25 @@ void ddr2Initialize(void) {
     // VALID once every command (and its individual inter-command wait) has
     // been transmitted (PIC32 FRM 55.5.1, steps 5-6)
     DDRMEMCONbits.STINIT = 1;
-    while (DDRCMDISSUEbits.VALID == 1);
+    DDR2_WAIT_UNTIL(DDRCMDISSUEbits.VALID == 0, wait_ok);
+    if (!wait_ok) {
+
+        error_handler.flags.DDR2_init_sequence_timeout = 1;
+        return;
+
+    }
 
     // Enable the controller for normal operation (PIC32 FRM 55.5.1, step 7)
     DDRMEMCONbits.INITDN = 1;
 
     // Calibrate read-capture and write-alignment timing now that the SDRAM
     // can service the read/write bursts SCL uses internally to calibrate
-    ddr2RunSelfCalibration();
+    if (!ddr2RunSelfCalibration()) {
+
+        error_handler.flags.DDR2_calibration_timeout = 1;
+        return;
+
+    }
 
     ddr2_ready = true;
 
@@ -292,7 +337,9 @@ bool ddr2IsReady(void) {
 // this function sets up the dedicated Memory PLL (MPLL) that clocks the
 // DDR2 PHY, independent of SYSCLK/PBCLKx -- see the CFGMPLL bit
 // descriptions in the PIC32MZ-DA family data sheet, Register 41-14
-static void ddr2MPLLInitialize(void) {
+static bool ddr2MPLLInitialize(void) {
+
+    bool wait_ok;
 
     deviceUnlock();
 
@@ -303,20 +350,42 @@ static void ddr2MPLLInitialize(void) {
     CFGMPLLbits.MPLLODIV1 = DDR2_MPLL_OUTPUT_DIVIDER1;
     CFGMPLLbits.MPLLODIV2 = DDR2_MPLL_OUTPUT_DIVIDER2;
 
-    // Drive DDRVREF internally at VDDR1V8/2 -- this board decouples the
-    // DDRVREF pin with capacitors rather than providing its own external
-    // reference divider network
-    CFGMPLLbits.INTVREFCON = 0b11;
+    // Disable the internal DDRVREF divider (INTVREFCON = 0b00). Silicon
+    // erratum #21 (DS80000736, module DDR2C) states the internal DDRVREF
+    // circuit is NON-FUNCTIONAL on this part: it must be left off and an
+    // external resistor divider on the DDRVREF pin must supply VDDR1V8/2.
+    // Enabling it (0b11) leaves the DDR2 PHY without a valid read reference,
+    // so self-calibration (ddr2RunSelfCalibration) never passes and
+    // ddr2Initialize() hangs.
+    // NOTE: this requires an external VDDR1V8/2 divider on DDRVREF -- confirm
+    // it is populated on the board, otherwise DDR2 will still not calibrate.
+    CFGMPLLbits.INTVREFCON = 0b00;
 
     // Enable the MPLL voltage regulator, then the MPLL itself -- the
     // regulator must be ready before MPLLDIS is cleared
     CFGMPLLbits.MPLLVREGDIS = 0;
-    while (CFGMPLLbits.MPLLVREGRDY == 0);
+    DDR2_WAIT_UNTIL(CFGMPLLbits.MPLLVREGRDY != 0, wait_ok);
+    if (!wait_ok) {
+
+        deviceLock();
+        error_handler.flags.DDR2_mpll_vreg_timeout = 1;
+        return false;
+
+    }
 
     CFGMPLLbits.MPLLDIS = 0;
-    while (CFGMPLLbits.MPLLRDY == 0);
+    DDR2_WAIT_UNTIL(CFGMPLLbits.MPLLRDY != 0, wait_ok);
+    if (!wait_ok) {
+
+        deviceLock();
+        error_handler.flags.DDR2_mpll_lock_timeout = 1;
+        return false;
+
+    }
 
     deviceLock();
+
+    return true;
 
 }
 
@@ -510,7 +579,9 @@ static void ddr2LoadInitCommands(void) {
 
 // this function triggers PHY self-calibration (read-capture and write-
 // alignment timing) and blocks until both byte lanes report a pass
-static void ddr2RunSelfCalibration(void) {
+static bool ddr2RunSelfCalibration(void) {
+
+    bool wait_ok;
 
     // DDRSCLSTART bit 29 (SCLPHCAL) + bit 28 (SCLSTART): start phase and
     // amplitude calibration (PIC32 FRM Register 55-24). Dynamic/continuous
@@ -520,7 +591,9 @@ static void ddr2RunSelfCalibration(void) {
     DDRSCLSTART = (1u << 29) | (1u << 28);
 
     // Bits 1 (SCLUBPASS) and 0 (SCLLBPASS): upper/lower byte lane pass status
-    while ((DDRSCLSTART & 0x3u) != 0x3u);
+    DDR2_WAIT_UNTIL((DDRSCLSTART & 0x3u) == 0x3u, wait_ok);
+
+    return wait_ok;
 
 }
 
@@ -570,33 +643,136 @@ void printDDR2Status(void) {
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("DDR2 SDRAM Controller Status:\r\n");
 
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    // ---- Overall readiness ----
+    if (ddr2IsReady()) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Overall State: %s\r\n",
+            ddr2IsReady() ? "Ready for reads/writes" : "NOT ready");
+
+    // ---- Clocks and PLL ----
+    // MFVCO = (12MHz POSC / MPLLIDIV) * MPLLMULT; DDR clock = MFVCO / (ODIV1 * ODIV2).
+    // These fields are direct-encoded on this part (unlike the SYSPLL).
+    uint32_t mpll_idiv  = CFGMPLLbits.MPLLIDIV  ? CFGMPLLbits.MPLLIDIV  : 1;
+    uint32_t mpll_mult  = CFGMPLLbits.MPLLMULT;
+    uint32_t mpll_odiv1 = CFGMPLLbits.MPLLODIV1 ? CFGMPLLbits.MPLLODIV1 : 1;
+    uint32_t mpll_odiv2 = CFGMPLLbits.MPLLODIV2 ? CFGMPLLbits.MPLLODIV2 : 1;
+    uint32_t mpll_vco_mhz = (12u * mpll_mult) / mpll_idiv;
+    uint32_t ddr_clk_mhz  = mpll_vco_mhz / (mpll_odiv1 * mpll_odiv2);
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Clocks and PLL:\r\n");
+
     if (CFGMPLLbits.MPLLRDY) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Memory PLL (MPLL): %s\r\n", CFGMPLLbits.MPLLRDY ? "Locked" : "Not Ready");
+    printf("        Memory PLL (MPLL): %s\r\n", CFGMPLLbits.MPLLRDY ? "Locked" : "Not Ready");
+
+    if (CFGMPLLbits.MPLLVREGRDY) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("        MPLL Voltage Regulator: %s\r\n", CFGMPLLbits.MPLLVREGRDY ? "Ready" : "Not Ready");
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    // MFMPLL = (12MHz POSC / MPLLIDIV) * MPLLMULT / (MPLLODIV1 * MPLLODIV2)
-    printf("    DDR2 Clock: %d MHz (input div %d, mult %d, output div %d x %d)\r\n",
-            (int)((12 * CFGMPLLbits.MPLLMULT) /
-                (CFGMPLLbits.MPLLIDIV * CFGMPLLbits.MPLLODIV1 * CFGMPLLbits.MPLLODIV2)),
-            CFGMPLLbits.MPLLIDIV, CFGMPLLbits.MPLLMULT, CFGMPLLbits.MPLLODIV1, CFGMPLLbits.MPLLODIV2);
+    printf("        MPLL VCO: %u MHz (12 MHz POSC / %u x %u)\r\n", mpll_vco_mhz, mpll_idiv, mpll_mult);
+    printf("        DDR2 (DRAM) Clock: %u MHz (VCO / %u / %u)\r\n", ddr_clk_mhz, mpll_odiv1, mpll_odiv2);
+    printf("        Controller Clock: %u MHz (half-rate, DRAM clock / 2)\r\n", ddr_clk_mhz / 2);
+    printf("        Data Rate: %u MT/s (DDR, both clock edges)\r\n", ddr_clk_mhz * 2);
+
+    // DDRVREF: the internal divider is non-functional on this silicon (erratum
+    // #21). INTVREFCON must read 0 and an external divider must supply VDDR1V8/2.
+    if (CFGMPLLbits.INTVREFCON == 0) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("        DDRVREF Source: %s (INTVREFCON=%u)\r\n",
+            CFGMPLLbits.INTVREFCON == 0
+                ? "External divider (internal disabled per erratum #21)"
+                : "Internal (NON-FUNCTIONAL, see erratum #21)",
+            (unsigned)CFGMPLLbits.INTVREFCON);
+
+    // ---- Controller / operation ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Controller:\r\n");
 
     if (DDRMEMCONbits.INITDN) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Controller: %s\r\n", DDRMEMCONbits.INITDN ? "Initialized, normal operation" : "Not Initialized");
+    printf("        Initialization: %s\r\n",
+            DDRMEMCONbits.INITDN ? "Done (normal operation)" : "Not complete");
 
     if ((DDRSCLSTART & 0x3) == 0x3) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Self-Calibration (SCL): lower byte lane %s, upper byte lane %s\r\n",
+    printf("        Self-Calibration (SCL): lower lane %s, upper lane %s\r\n",
             (DDRSCLSTART & 0x1) ? "Passed" : "Failed/Not Run",
             (DDRSCLSTART & 0x2) ? "Passed" : "Failed/Not Run");
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    CAS Latency: %d, Write Latency: %d, Burst Length: 8\r\n", DDR2_CAS_LATENCY, DDR2_WRITE_LATENCY);
-    printf("    Capacity: 32MB (4,194,304 locations x 4 banks x 16 bits)\r\n");
-    printf("    Physical Address: 0x%08X, KSEG0 (cached): 0x%08X, KSEG1 (uncached): 0x%08X\r\n",
+    printf("        Transfer Mode: %s\r\n", DDRMEMWIDTHbits.HALFRATE ? "Half-rate" : "Full-rate");
+    printf("        Auto-Precharge: %s\r\n",
+            DDRMEMCFG0bits.APCHRGEN ? "Enabled (every access)" : "Disabled");
+    printf("        On-Die Termination (ODT): %s\r\n",
+            (DDRODTCFG == 0 && DDRPHYPADCONbits.ODTEN == 0) ? "Disabled" : "Enabled");
+    printf("        Data Endianness: %s\r\n",
+            DDRXFERCFGbits.BIGENDIAN ? "Big-endian" : "Little-endian");
+
+    // ---- Timing ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Timing:\r\n");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("        CAS Latency (CL): %d, Read Latency (RL): %d, Write Latency (WL): %d\r\n",
+            DDR2_CAS_LATENCY, DDR2_READ_LATENCY, DDR2_WRITE_LATENCY);
+    printf("        Burst Length: 8\r\n");
+    printf("        DRAM Period (tCK): %d ns, Controller Period: %d ns\r\n",
+            DDR2_TCK_NS, DDR2_CTL_CLK_PERIOD_NS);
+    printf("        Datasheet params (ns): tRCD %d, tRP %d, tRAS %d, tRC %d, tRFC %d, tWR %d\r\n",
+            DDR2_TRCD_NS, DDR2_TRP_NS, DDR2_TRAS_NS, DDR2_TRC_NS, DDR2_TRFC_NS, DDR2_TWR_NS);
+    printf("        Refresh Interval (tREFI): %d ns  [REFCNT=%u, REFDLY=%u, MAXREFS=%u]\r\n",
+            DDR2_TREFI_NS, (unsigned)DDRREFCFGbits.REFCNT,
+            (unsigned)DDRREFCFGbits.REFDLY, (unsigned)DDRREFCFGbits.MAXREFS);
+
+    // ---- Geometry / capacity / address map ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Geometry and Address Map:\r\n");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("        Organization: 13 row / 2 bank / 9 column bits, 16-bit data, 1 chip select\r\n");
+    printf("        Capacity: 32 MB (4,194,304 locations x 4 banks x 16 bits)\r\n");
+    printf("        Physical: 0x%08X   KSEG0 (cached): 0x%08X   KSEG1 (uncached): 0x%08X\r\n",
             DDR2_PHYSICAL_BASE_ADDRESS, DDR2_KSEG0_BASE_ADDRESS, DDR2_KSEG1_BASE_ADDRESS);
+
+    // ---- Raw register snapshot (for bring-up debugging) ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Raw Registers:\r\n");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("        CFGMPLL=0x%08X  DDRMEMCON=0x%08X  DDRSCLSTART=0x%08X\r\n",
+            (unsigned)CFGMPLL, (unsigned)DDRMEMCON, (unsigned)DDRSCLSTART);
+    printf("        DDRMEMCFG0=0x%08X  DDRREFCFG=0x%08X  DDRXFERCFG=0x%08X\r\n",
+            (unsigned)DDRMEMCFG0, (unsigned)DDRREFCFG, (unsigned)DDRXFERCFG);
+    printf("        DDRDLYCFG 0=0x%08X 1=0x%08X 2=0x%08X 3=0x%08X\r\n",
+            (unsigned)DDRDLYCFG0, (unsigned)DDRDLYCFG1, (unsigned)DDRDLYCFG2, (unsigned)DDRDLYCFG3);
+    printf("        DDRPHYPADCON=0x%08X\r\n", (unsigned)DDRPHYPADCON);
+
+    // ---- Bring-up error flags ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Bring-up Errors:\r\n");
+
+    if (error_handler.flags.DDR2_mpll_vreg_timeout ||
+            error_handler.flags.DDR2_mpll_lock_timeout ||
+            error_handler.flags.DDR2_init_sequence_timeout ||
+            error_handler.flags.DDR2_calibration_timeout) {
+
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        if (error_handler.flags.DDR2_mpll_vreg_timeout)
+            printf("        MPLL voltage regulator ready timeout\r\n");
+        if (error_handler.flags.DDR2_mpll_lock_timeout)
+            printf("        MPLL lock timeout\r\n");
+        if (error_handler.flags.DDR2_init_sequence_timeout)
+            printf("        Init command sequence timeout\r\n");
+        if (error_handler.flags.DDR2_calibration_timeout)
+            printf("        Self-calibration timeout (check external MEM_VREF divider)\r\n");
+
+    }
+
+    else {
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("        None\r\n");
+
+    }
 
     terminalTextAttributesReset();
 

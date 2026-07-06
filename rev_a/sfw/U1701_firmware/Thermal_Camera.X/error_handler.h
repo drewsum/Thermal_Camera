@@ -47,7 +47,11 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(mcu_vdd_hlvd_brownout,           "MCU VDD HLVD Brownout") \
     X(mcu_vdd_core_hlvd_brownout,      "MCU VDD Core HLVD Brownout") \
     X(ADC_reference_fault,             "ADC Reference Fault") \
-    X(ADC_configuration_error,         "ADC Configuration Error")
+    X(ADC_configuration_error,         "ADC Configuration Error") \
+    X(DDR2_mpll_vreg_timeout,          "DDR2 MPLL Voltage Regulator Timeout") \
+    X(DDR2_mpll_lock_timeout,          "DDR2 MPLL Lock Timeout") \
+    X(DDR2_init_sequence_timeout,      "DDR2 Init Command Sequence Timeout") \
+    X(DDR2_calibration_timeout,        "DDR2 Self-Calibration Timeout")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,
