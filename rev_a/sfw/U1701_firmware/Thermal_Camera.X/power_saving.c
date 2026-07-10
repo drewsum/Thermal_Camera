@@ -87,7 +87,7 @@ bool PMDInitialize(void) {
     #endif
     
     // Disable all I2C Modules besides I2C1
-    PMD5bits.I2C1MD = 1;
+    PMD5bits.I2C1MD = 0;
     #ifdef I2C2CON
     PMD5bits.I2C2MD = 1;
     #endif
@@ -332,7 +332,7 @@ void printPMDStatus(void) {
     if (PMD5bits.I2C3MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("   I2C 3 Enabled:                            %s\n\r", PMD5bits.I2C3MD ? "F" : "T");
-    if (PMD5bits.I2C3MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    if (PMD5bits.I2C4MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("   I2C 4 Enabled:                            %s\n\r", PMD5bits.I2C4MD ? "F" : "T");
     if (PMD5bits.I2C5MD) terminalTextAttributes(RED_COLOR, BLACK_COLOR, REVERSE_FONT);
