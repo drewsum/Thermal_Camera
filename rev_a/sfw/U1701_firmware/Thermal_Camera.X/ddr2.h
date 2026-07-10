@@ -106,6 +106,54 @@ void ddr2Write(uint32_t offset, const void *source, uint32_t length);
 // the definition in ddr2.c for details.
 bool ddr2SelfTest(void);
 
+// This function sweeps the read-data-return delay (NXTDATAVDLY) across its
+// range, printing the 4-word burst read-back for each value, to find the
+// setting that reads a full BL8 burst back correctly. Bring-up diagnostic for
+// the "burst read collapses to one word" fault; restores read timing on exit.
+// Destructive to the first 16 bytes of DDR2 only.
+void ddr2ReadTimingSweep(void);
+
+// This function sweeps the PHY SCL latency register (DDRSCLLAT: DDRCLKDLY x
+// CAPCLKDLY) LIVE -- no SCL re-run, since SCL is one-shot-at-boot on this
+// silicon (any runtime re-trigger wedges it; see ddr2.c) -- probing a
+// one-burst (4-word) write/read at each point. Determines whether DDRSCLLAT
+// feeds the active read-capture datapath (grid varies, look for 'O') or is
+// only an SCL-algorithm input (grid uniform). Bring-up diagnostic for the
+// "burst read collapses to word 2" fault. Destructive to the first 16 bytes
+// of DDR2 only; restores DDRSCLLAT and re-probes on exit.
+void ddr2SCLLatencySweep(void);
+
+// This function probes the structural transfer-config knobs LIVE (no SCL/
+// re-init): DDRXFERCFG MAXBURST + undocumented bits 30:28, and DDRMEMCFG0
+// bit 29 (all always-set in Microchip's reference init), printing a burst
+// read-back grid per combination. Attribution/walk-back tool for the
+// structural word-2 burst-read collapse. Destructive to the first 16 bytes
+// of DDR2 only; restores both registers on exit.
+void ddr2XferConfigProbe(void);
+
+// This function reprograms the DRAM mode register from BL8 to BL4 at runtime
+// (host-command precharge-all + Load Mode) and probes a 4-word burst. SCL
+// needs BL8 to calibrate at boot, but the controller's read word-select may
+// be wired for BL4 (Microchip's reference runs BL4) -- this tests that
+// without breaking boot. Reboot restores the BL8 baseline. Nothing may be
+// using DDR2 when this runs.
+void ddr2SwapBurstLength4(void);
+
+// This function live-tests the last structural deltas vs Microchip's working
+// reference init: the target-agent arbiter (DDRTSEL/DDRMINLIM/DDRRQPER/
+// DDRMINCMD -- per-agent minimum BURST limit, never configured here) and
+// auto-precharge off (reference runs AP off), probing the read burst at each
+// point of the {arbiter default/reference} x {AP on/off} matrix. Destructive
+// to the first 16 bytes of DDR2 only; restores everything on exit.
+void ddr2ArbiterProbe(void);
+
+// This function probes the read fault along the ACCESS PATH instead of the
+// DDR config space: reads the marker burst back as CPU 8/16/32-bit accesses
+// and as a DMA transfer (a different system-bus initiator). DMA-correct +
+// CPU-wrong localizes the fault to the CPU<->DDR bus path; both wrong pins
+// it in the DDR controller. Destructive to the first 16 bytes of DDR2 only.
+void ddr2AccessProbe(void);
+
 // This function prints the DDR2 controller/PHY configuration and status
 void printDDR2Status(void);
 
