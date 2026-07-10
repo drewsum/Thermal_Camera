@@ -19,7 +19,7 @@
 #ifndef _MAIN_H    /* Guard against multiple inclusion */
 #define _MAIN_H
 
-#define FIRMWARE_VERSION_STR        "0.1"
+#define FIRMWARE_VERSION_STR        "0.2"
 #define PLATFORM_REVISION_STR       "A"
 #define PROJECT_DATE_STR            "December 2024"
 #define PROJECT_NAME_STR            "Thermal Camera"

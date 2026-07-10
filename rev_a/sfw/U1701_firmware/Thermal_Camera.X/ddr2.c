@@ -41,6 +41,7 @@
 #include "device_control.h"
 #include "terminal_control.h"
 #include "error_handler.h"
+#include "watchdog_timer.h"   // kickTheDog() -- serviced during the long self-test pass
 
 // ---- SDRAM timing parameters, from the PIC32MZ-DA family data sheet
 // (DS60001565) Table 44-55 "DDR2 SDRAM Timing Specifications" -- these
@@ -498,16 +499,17 @@ static void ddr2PHYConfigure(void) {
     DDRPHYPADCONbits.WRCMDDLY   = 1;    // required whenever WL (write latency) is even -- WL = 2 here
     DDRPHYPADCONbits.RCVREN     = 1;    // enable input receivers, needed for reads
     DDRPHYPADCONbits.PREAMBDLY  = 0b00; // 2-cycle write preamble (conservative default)
-    // PHY I/O-pad on-die termination, ENABLED at 150 ohm per PIC32 FRM
-    // Table 55-8. With the DRAM clock corrected to 200MHz, self-calibration
-    // starts and engages phase calibration but stalls converging on a read-
-    // capture point (DDRSCLSTART holds SCLPHCAL + internal status bits, pass
-    // bits never set) -- the signature of an unterminated read eye. Enabling
-    // read-side pad termination gives SCL a clean eye to lock onto. (This is
-    // separate from the controller-scheduled DRAM Rtt in DDRODTCFG/
-    // DDRODTENCFG, which remains off.)
-    DDRPHYPADCONbits.ODTEN      = 1;    // ODT enabled (Table 55-8)
-    DDRPHYPADCONbits.ODTSEL     = 1;    // 150 ohm termination (Table 55-8)
+    // PHY I/O-pad on-die termination left disabled for this in-package DDR2
+    // (very short internal die-to-die traces, negligible reflections). The
+    // PIC32 FRM Table 55-8 *recommends* ODT enabled at 150 ohm, and it was
+    // enabled during bring-up debugging, but it was not what got the SDRAM to
+    // train -- self-calibration passes with ODT off once the DRAM clock is
+    // correct (200MHz) and phase calibration is not force-started (see
+    // ddr2RunSelfCalibration). If signal-integrity trouble appears under
+    // sustained/hot operation, re-enabling ODT here (ODTEN=1, ODTSEL=1) is the
+    // first thing to try.
+    DDRPHYPADCONbits.ODTEN      = 0;    // ODT disabled (in-package short traces)
+    DDRPHYPADCONbits.ODTSEL     = 0;
     DDRPHYPADCONbits.ODTPUCAL   = 0b10; // PIC32 FRM Table 55-8 calibration setting
     DDRPHYPADCONbits.ODTPDCAL   = 0b10; // PIC32 FRM Table 55-8 calibration setting
     // Pad drive strength: the PIC32 FRM gives no device-specific
@@ -651,6 +653,161 @@ void ddr2Write(uint32_t offset, const void *source, uint32_t length) {
     if (length > DDR2_SIZE_BYTES - offset) length = DDR2_SIZE_BYTES - offset;
 
     memcpy((void *)(DDR2_KSEG1_BASE_ADDRESS + offset), source, length);
+
+}
+
+// This function exercises the DDR2 SDRAM to verify real data integrity (a
+// passing self-calibration only proves the PHY captured one test address, not
+// that the whole array stores and returns data). It runs three standard
+// memory tests and prints a colored pass/fail for each, returning true only
+// if all pass:
+//   1. Data-bus walking-1s at one address  -> catches stuck/shorted DQ lines
+//   2. Address-bus test (power-of-two aliasing) -> catches stuck/shorted address lines
+//   3. Full-array cell test (pattern / inverted-pattern) -> catches stuck cells
+//
+// WARNING: this OVERWRITES the entire 32MB of DDR2. It is a bring-up/diagnostic
+// tool -- do not run it once anything (framebuffer, heap, buffers) is using
+// DDR2. Accesses go through the uncached (KSEG1) alias so the cache cannot
+// hide a DRAM fault. The full-array pass takes a few seconds; the watchdog is
+// kicked as it runs.
+bool ddr2SelfTest(void) {
+
+    volatile uint32_t *ddr = (volatile uint32_t *)DDR2_KSEG1_BASE_ADDRESS;
+    const uint32_t num_words = DDR2_SIZE_BYTES / sizeof(uint32_t);
+    const uint32_t seed = 0xA5A5A5A5u;   // XORed with the word index for a non-trivial per-cell value
+    bool overall_pass = true;
+    uint32_t i;
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("DDR2 SDRAM Self-Test:\r\n");
+
+    if (!ddr2IsReady()) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    DDR2 is not initialized/ready -- aborting.\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
+
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    WARNING: this overwrites all 32MB of DDR2. Do not run if\r\n"
+           "    anything (framebuffer, heap) is using it.\r\n");
+
+    // ---- Test 1: Data bus, walking-1s at a single address ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [1/3] Data bus (walking-1s)........ ");
+    {
+        uint32_t stuck_bits = 0;
+        uint8_t bit;
+        for (bit = 0; bit < 32; bit++) {
+            uint32_t pattern = (uint32_t)1u << bit;
+            ddr[0] = pattern;
+            stuck_bits |= (ddr[0] ^ pattern);   // any differing bit is a fault
+        }
+        if (stuck_bits == 0) {
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("PASS\r\n");
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("FAIL (faulty data bits: 0x%08X)\r\n", (unsigned)stuck_bits);
+            overall_pass = false;
+        }
+    }
+
+    // ---- Test 2: Address bus, power-of-two aliasing (Barr algorithm) ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [2/3] Address bus.................. ");
+    {
+        const uint32_t pattern = 0xAAAAAAAAu;
+        const uint32_t antipattern = 0x55555555u;
+        uint32_t offset, test;
+        bool addr_pass = true;
+
+        // Seed every power-of-two word address with the pattern.
+        for (offset = 1u; offset < num_words; offset <<= 1) ddr[offset] = pattern;
+
+        // Write the antipattern to the base; any power-of-two address that now
+        // reads the antipattern is aliased to base (address bit stuck high).
+        ddr[0] = antipattern;
+        for (offset = 1u; offset < num_words; offset <<= 1) {
+            if (ddr[offset] != pattern) { addr_pass = false; break; }
+        }
+        ddr[0] = pattern;
+
+        // Walk the antipattern across each power-of-two address; base or any
+        // other power-of-two address changing reveals a shorted/stuck address bit.
+        for (test = 1u; addr_pass && test < num_words; test <<= 1) {
+            ddr[test] = antipattern;
+            if (ddr[0] != pattern) { addr_pass = false; break; }
+            for (offset = 1u; offset < num_words; offset <<= 1) {
+                if (offset != test && ddr[offset] != pattern) { addr_pass = false; break; }
+            }
+            ddr[test] = pattern;
+        }
+
+        if (addr_pass) {
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("PASS\r\n");
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("FAIL (address line aliasing)\r\n");
+            overall_pass = false;
+        }
+    }
+
+    // ---- Test 3: Full-array cell test ----
+    // Fill with an address-derived pattern, verify, rewrite inverted, verify --
+    // proves every cell holds both a 0 and a 1. One dot printed per ~1MB.
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [3/3] Full 32MB cell test (a few seconds):\r\n        ");
+    {
+        bool cell_pass = true;
+        uint32_t fail_addr = 0, fail_exp = 0, fail_got = 0;
+
+        // Pass A: write pattern
+        for (i = 0; i < num_words; i++) {
+            ddr[i] = i ^ seed;
+            if ((i & 0x0000FFFFu) == 0u) kickTheDog();  // ~every 256KB (WDT ~250ms)
+            if ((i & 0x0003FFFFu) == 0u) printf(".");   // ~every 1MB progress dot
+        }
+        // Pass B: verify pattern, then write inverted
+        for (i = 0; cell_pass && i < num_words; i++) {
+            uint32_t expect = i ^ seed;
+            uint32_t got = ddr[i];
+            if (got != expect) { cell_pass = false; fail_addr = i; fail_exp = expect; fail_got = got; break; }
+            ddr[i] = ~expect;
+            if ((i & 0x0000FFFFu) == 0u) kickTheDog();  // ~every 256KB (WDT ~250ms)
+            if ((i & 0x0003FFFFu) == 0u) printf(".");   // ~every 1MB progress dot
+        }
+        // Pass C: verify inverted
+        for (i = 0; cell_pass && i < num_words; i++) {
+            uint32_t expect = ~(i ^ seed);
+            uint32_t got = ddr[i];
+            if (got != expect) { cell_pass = false; fail_addr = i; fail_exp = expect; fail_got = got; break; }
+            if ((i & 0x0000FFFFu) == 0u) kickTheDog();  // ~every 256KB (WDT ~250ms)
+            if ((i & 0x0003FFFFu) == 0u) printf(".");   // ~every 1MB progress dot
+        }
+
+        printf("\r\n");
+        if (cell_pass) {
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("        PASS (%u words / 32MB verified)\r\n", (unsigned)num_words);
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("        FAIL at word %u (byte offset 0x%08X): expected 0x%08X, got 0x%08X\r\n",
+                    (unsigned)fail_addr, (unsigned)(fail_addr * 4u),
+                    (unsigned)fail_exp, (unsigned)fail_got);
+            overall_pass = false;
+        }
+    }
+
+    // ---- Summary ----
+    if (overall_pass) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Overall: %s\r\n", overall_pass ? "PASS" : "FAIL");
+    terminalTextAttributesReset();
+
+    return overall_pass;
 
 }
 

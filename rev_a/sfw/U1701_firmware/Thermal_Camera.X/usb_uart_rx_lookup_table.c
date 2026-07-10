@@ -253,6 +253,17 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
 
 }
 
+USB_UART_COMMAND(ddr2SelfTestCommand, "DDR2 Self Test",
+        "Runs a DESTRUCTIVE read/write integrity test over all 32MB of DDR2 (data bus, address bus, full-array) and prints pass/fail") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+    ddr2SelfTest();
+    terminalTextAttributesReset();
+
+}
+
 USB_UART_COMMAND(errorStatusCommand, "Error Status?", "Prints the status of various error handler flags") {
  
     // Print error handler status

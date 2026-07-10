@@ -99,6 +99,13 @@ void ddr2Read(uint32_t offset, void *destination, uint32_t length);
 // are silently truncated to fit.
 void ddr2Write(uint32_t offset, const void *source, uint32_t length);
 
+// This function runs a destructive read/write integrity test over the full
+// 32MB of DDR2 (data-bus, address-bus, and full-array cell tests), printing a
+// colored pass/fail per test and returning true only if all pass. WARNING: it
+// overwrites all DDR2 contents -- do not call once anything is using it. See
+// the definition in ddr2.c for details.
+bool ddr2SelfTest(void);
+
 // This function prints the DDR2 controller/PHY configuration and status
 void printDDR2Status(void);
 
