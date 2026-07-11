@@ -15,8 +15,5 @@ cmake/
 # MPLAB X debug trace logs
 defmplabxtrace.log*
 
-# MPLAB X VS Code integration (auto-generated per machine)
-.vscode/
-
 # nbproject: keep the shared project/config files, ignore per-user IDE state
 nbproject/private/

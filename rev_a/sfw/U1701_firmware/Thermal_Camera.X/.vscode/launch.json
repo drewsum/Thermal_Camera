@@ -1,0 +1,30 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Note: Properties here can override MPLAB project settings
+      "name": "Launch Thermal_Camera: default",
+      "type": "mplab-core-da",
+      "request": "launch",
+      "project": "Thermal_Camera",
+      "configuration": "default",
+      "stopOnEntry": true,
+      "preLaunchTask": "Thermal_Camera: default - Build",
+      "program": "${workspaceFolder}/out/Thermal_Camera/default.elf"
+    },
+    {
+      // Note: Properties here can override MPLAB project settings
+      "name": "Program Thermal_Camera: default - Production",
+      "type": "mplab-core-da",
+      "request": "launch",
+      "project": "Thermal_Camera",
+      "configuration": "default",
+      "noDebug": true,
+      "preLaunchTask": "Thermal_Camera: default - Build",
+      "program": "${workspaceFolder}/out/Thermal_Camera/default.hex"
+    }
+  ]
+}
