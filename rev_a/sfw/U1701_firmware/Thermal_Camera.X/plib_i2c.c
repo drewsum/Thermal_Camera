@@ -89,10 +89,12 @@ bool I2C_Initialize(void)
     /* Disable the I2C Bus collision interrupt */
     disableInterrupt(i2c1_bus_collision_event);
 
-    I2C1BRG = 0x055;
+    // BRG = (Pbclk/2) * (1/Fscl - Tpgd) - 1, for Fscl = 100 kHz -> ~100.1 kHz actual
+    I2C1BRG = 0x147;
 
     I2C1CONbits.SIDL = 0;
-    I2C1CONbits.DISSLW = 0;
+    // Slew rate control is only needed for 400 kHz/1 MHz; disable it for 100 kHz Standard mode
+    I2C1CONbits.DISSLW = 1;
     I2C1CONbits.SMEN = 0;
 
     setInterruptPriority(i2c1_bus_collision_event, 4);
