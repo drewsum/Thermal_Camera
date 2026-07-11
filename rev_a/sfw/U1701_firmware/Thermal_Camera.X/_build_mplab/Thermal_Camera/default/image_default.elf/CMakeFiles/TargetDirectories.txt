@@ -1,5 +1,0 @@
-C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/compile.dir
-C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/default.elf.dir
-C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/Bin2Hex.dir
-C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/edit_cache.dir
-C:/Users/drewm/OneDrive/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera.X/_build_mplab/Thermal_Camera/default/image_default.elf/CMakeFiles/rebuild_cache.dir
