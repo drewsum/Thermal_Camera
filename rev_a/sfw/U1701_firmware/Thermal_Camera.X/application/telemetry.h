@@ -54,6 +54,13 @@ volatile __attribute__((coherent)) uint8_t live_telemetry_print_request;
 // This prints all telemetry data in an easily digested format
 void printCurrentTelemetry(void);
 
+// Reads every I2C temperature sensor (via i2c_devices.h) and updates the
+// PSU/ambient temperature fields above. Blocking (I2C transactions) -- call
+// from main()'s loop, not from ISR/heartbeat context. A sensor that fails to
+// respond leaves its previous telemetry value untouched rather than
+// clobbering it with a bad reading.
+void updateTemperatureTelemetry(void);
+
 
 #endif /* _TELEMETRY_H */
 

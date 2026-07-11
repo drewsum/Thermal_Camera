@@ -3,7 +3,6 @@
 
 #include "application/main.h"
 #include "application/error_handler.h"
-//#include "i2c/i2c_devices.h"
 #include "application/telemetry.h"
 #include "core/device_control.h"
 #include "usb_uart/terminal_control.h"
@@ -16,13 +15,11 @@ void heartbeatServices(void) {
 
     if (live_telemetry_enable) {
 
-        // NOTE: temp_sense_data_request and power_monitor_data_request are
-        // not implemented yet (i2c_devices.h has I2CDevices_ReadAllTemperatures()
-        // for the temp side; power monitor kind/reads don't exist yet) -
-        // re-enable once those land
-//        // get new telemetry data every 200ms
-//        if ((heartbeat_systick + 5) % 20 == 0) temp_sense_data_request = 1;
-//
+        // get new temperature telemetry data every 200ms
+        if ((heartbeat_systick + 5) % 20 == 0) temp_sense_data_request = 1;
+
+        // NOTE: power_monitor_data_request is not implemented yet (no power
+        // monitor I2C_DEVICE_KIND/driver exists yet) -- re-enable once it lands
 //        // get new telemetry data every 200ms
 //        if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
 

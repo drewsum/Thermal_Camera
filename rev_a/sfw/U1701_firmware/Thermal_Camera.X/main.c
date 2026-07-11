@@ -271,8 +271,13 @@ void main(void) {
             // clear rx buffer
             memset(usb_uart_rx_buffer, 0, strlen(usb_uart_rx_buffer));
         }
-    
-        
+
+        // refresh I2C temperature sensor telemetry if heartbeatServices() requested it
+        if (temp_sense_data_request) {
+            updateTemperatureTelemetry();
+            temp_sense_data_request = 0;
+        }
+
         if (live_telemetry_print_request && live_telemetry_enable) {
             
             // Clear the terminal
