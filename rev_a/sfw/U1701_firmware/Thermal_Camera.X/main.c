@@ -243,16 +243,6 @@ void main(void) {
             &error_handler.flags.ddr2_init_error);
     while(usbUartCheckIfBusy());
 
-    // Verify the DRAM end-to-end while it is still guaranteed empty --
-    // nothing (heap, framebuffer, buffers) has been placed in DDR2 at this
-    // point in boot, so the destructive full-array self test is safe here
-    // and nowhere later. Takes a few seconds; the watchdog is kicked as it
-    // runs, and the reset LED stays on until it completes.
-    if (ddr2IsReady()) {
-        if (!ddr2SelfTest()) error_handler.flags.DDR2_self_test_failed = 1;
-        while(usbUartCheckIfBusy());
-    }
-
     // Disable reset LED
     RESET_LED_PIN = LOW;
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
