@@ -24,7 +24,6 @@
         <itemPath>rtcc.h</itemPath>
         <itemPath>adc.h</itemPath>
         <itemPath>plib_i2c.h</itemPath>
-        <itemPath>plib_i2c_master.h</itemPath>
         <itemPath>hlvd.h</itemPath>
         <itemPath>ddr2.h</itemPath>
       </logicalFolder>

@@ -38,7 +38,6 @@
 
 ////// I2C
 #include "plib_i2c.h"
-#include "plib_i2c_master.h"
 //#include "temperature_sensors.h"
 //#include "power_monitors.h"
 //#include "misc_i2c_devices.h"
@@ -227,7 +226,7 @@ void main(void) {
     while(usbUartCheckIfBusy());
     
     // setup I2C
-    reportInit("I2C Bus Master", I2CMaster_Initialize(),
+    reportInit("I2C Bus Master", I2C_Initialize(),
             &error_handler.flags.i2c_init_error);
     while(usbUartCheckIfBusy());
     

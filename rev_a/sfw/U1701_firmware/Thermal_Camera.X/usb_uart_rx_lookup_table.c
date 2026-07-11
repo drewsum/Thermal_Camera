@@ -23,7 +23,6 @@
 #include "pgood_monitor.h"
 #include "telemetry.h"
 #include "plib_i2c.h"
-#include "plib_i2c_master.h"
 #include "adc.h"
 #include "adc_channels.h"
 #include "hlvd.h"
@@ -216,7 +215,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "I2C Master") == 0) {    
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
         printf("I2C Bus Master Controller Status:\r\n");
-        printI2CMasterStatus();
+        I2C_PrintStatus();
     }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;

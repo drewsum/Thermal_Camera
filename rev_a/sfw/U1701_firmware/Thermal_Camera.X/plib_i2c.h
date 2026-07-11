@@ -1,528 +1,106 @@
 /*******************************************************************************
-  Serial Communication Interface Inter-Integrated Circuit (I2C) Library
-  Instance Header File
-
-  Company:
-    Microchip Technology Inc.
+  I2C1 Master Driver
 
   File Name:
-    plib_i2c5_i2c.h
+    plib_i2c.h
 
   Summary:
-    I2C PLIB Header file
+    Interrupt-driven driver for the I2C1 peripheral in master mode.
 
   Description:
-    This file defines the interface to the I2C peripheral library. This
-    library provides access to and control of the associated peripheral
-    instance.
+    I2C_ReadAsync/WriteAsync/WriteReadAsync are non-blocking: they start bus
+    activity in the I2C1 interrupt and report completion through a
+    registered callback. Built on top of those, I2C_Read/Write/WriteRead
+    block (with a timeout) until the transfer finishes, and
+    I2C_ReadRegister/WriteRegister add the usual register-address framing
+    for simple I2C devices. Device drivers should generally use the
+    Register-level functions; drop to the Async primitives only if a driver
+    needs to do other work while a transfer is in flight.
 *******************************************************************************/
-// DOM-IGNORE-BEGIN
-/*******************************************************************************
-* Copyright (C) 2018-2019 Microchip Technology Inc. and its subsidiaries.
-*
-* Subject to your compliance with these terms, you may use Microchip software
-* and any derivatives exclusively with Microchip products. It is your
-* responsibility to comply with third party license terms applicable to your
-* use of third party software (including open source software) that may
-* accompany Microchip software.
-*
-* THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS". NO WARRANTIES, WHETHER
-* EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
-* WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
-* PARTICULAR PURPOSE.
-*
-* IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
-* INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
-* WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
-* BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE. TO THE
-* FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS IN
-* ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF ANY,
-* THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
-*******************************************************************************/
-// DOM-IGNORE-END
 
-#ifndef PLIB_I2CMaster_H
-#define PLIB_I2CMaster_H
+#ifndef PLIB_I2C_H
+#define PLIB_I2C_H
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: Included Files
-// *****************************************************************************
-// *****************************************************************************
-/* This section lists the other files that are included in this file.
-*/
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
-#include "plib_i2c_master.h"
-
-// DOM-IGNORE-BEGIN
-#ifdef __cplusplus // Provide C++ Compatibility
-
-    extern "C" {
-
+#ifdef __cplusplus
+extern "C" {
 #endif
-        
-volatile I2C_OBJ i2cMasterObj;
-
-
-// These macros set which I2C peripheral is used
-#define I2C_MASTER_INT_SOURCE                   i2c1_host_event
-#define I2C_BUS_COL_INT_SOURCE                  i2c1_bus_collision_event
-#define I2C_MASTER_BRG_REG                      I2C1BRG
-#define I2C_MASTER_CON_BITFIELD                 I2C1CONbits
-#define I2C_MASTER_CON_REG                      I2C1CON
-#define I2C_MASTER_STAT_BITFIELD                I2C1STATbits
-#define I2C_MASTER_TRN_REG                      I2C1TRN
-#define I2C_MASTER_RCV_REG                      I2C1RCV
-#define I2C_MASTER_BUS_COL_VECTOR               _I2C1_BUS_VECTOR
-#define I2C_MASTER_INT_VECTOR                   _I2C1_MASTER_VECTOR
-
-// DOM-IGNORE-END
-
-// *****************************************************************************
-// *****************************************************************************
-// Section: Interface Routines
-// *****************************************************************************
-// *****************************************************************************
-
-/*
- * The following functions make up the methods (set of possible operations) of
- * this interface.
- */
-
-// *****************************************************************************
-/* Function:
-    void I2CMaster_Initialize(void)
-
-  Summary:
-    Initializes the instance of the I2C peripheral operating in I2C mode.
-
-  Description:
-    This function initializes the given instance of the I2C peripheral as
-    configured by the user from the MHC.
-
-  Precondition:
-    The Generic Clock Generator should have been assigned to the I2Cx
-    Peripheral Clock Channel.
-
-  Parameters:
-    None.
-
-  Returns:
-    None.
-
-  Example:
-    <code>
-        I2CMaster_Initialize();
-    </code>
-
-  Remarks:
-    Stops the I2C if it was already running and reinitializes it.
-*/
-
-bool I2CMaster_Initialize(void);
-
-// *****************************************************************************
-/* Function:
-    bool I2CMaster_Read(uint16_t address, uint8_t *pdata, size_t length)
-
-  Summary:
-    Reads data from the slave.
-
-  Description:
-    This function reads the data from a slave on the bus. The function will
-    attempt to read length number of bytes into pdata buffer from a slave whose
-    address is specified as address. The I2C Master generate a Start condition,
-    read the data and then generate a Stop Condition.
-    If the slave NAKs the request or a bus error is encountered on the bus, the
-    transfer is terminated. The application can call I2CMaster_ErrorGet()
-    function to know that cause of the error.
-
-    The function is non-blocking. It initiates bus activity and returns
-    immediately. The transfer is completed in the peripheral interrupt. A
-    transfer request cannot be placed when another transfer is in progress.
-    Calling the read function when another function is already in progress will
-    cause the function to return false.
-
-    The library will call the registered callback function when the transfer has
-    terminated if callback is registered.
-
-  Precondition:
-    I2CMaster_Initialize must have been called for the associated
-    I2C instance.
-
-  Parameters:
-    address - 7-bit / 10-bit slave address.
-
-    data    - pointer to destination data buffer where the received data should
-              be stored.
-
-    length  - length of data buffer in number of bytes. Also the number of bytes
-              to be read.
-
-  Returns:
-    true  - The request was placed successfully and the bus activity was
-            initiated.
-
-    false - The request fails,if there was already a transfer in progress when this
-            function was called.
 
-  Example:
-    <code>
-        uint8_t myData [NUM_BYTES];
-        uint8_t myData [NUM_BYTES];
-        void MyI2CCallback(uintptr_t context)
-        {
-            // This function will be called when the transfer completes. Note
-            // that this functioin executes in the context of the I2C interrupt.
-        }
+typedef enum
+{
+    I2C_ERROR_NONE = 0,
+    I2C_ERROR_NACK,
+    I2C_ERROR_BUS_COLLISION,
+    I2C_ERROR_TIMEOUT,
+    I2C_ERROR_INVALID_PARAMETER,
+} I2C_ERROR;
 
-        I2CMaster_Initialize();
-        I2CMaster_CallbackRegister(MyI2CCallback, NULL);
-
-        if(!I2CMaster_Read( SLAVE_ADDR, &myData[0], NUM_BYTES ))
-        {
-            // error handling
-        }
-
-
-    </code>
-
-  Remarks:
-    None.
-*/
-
-bool I2CMaster_Read(uint16_t address, uint8_t *pdata, size_t length);
-
-// *****************************************************************************
-/* Function:
-    bool I2CMaster_Write(uint16_t address, uint8_t *pdata, size_t length)
-
-  Summary:
-    Writes data to the slave.
-
-  Description:
-    This function writes data to a slave on the bus. The function will attempt
-    to write length number of bytes from pdata buffer to a slave whose address
-    is specified by address. The I2C Master will generate a Start condition,
-    write the data and then generate a Stop Condition. If the slave NAKs the request
-    or a bus error was encountered on the bus, the transfer is terminated. The
-    application can call the I2CMaster_ErrorGet() function to know that
-    cause of the error.
+typedef void (*I2C_CALLBACK)(uintptr_t contextHandle);
 
-    The function is non-blocking. It initiates bus activity and returns
-    immediately. The transfer is then completed in the peripheral interrupt. A
-    transfer request cannot be placed when another transfer is in progress.
-    Calling the write function when another function is already in progress will
-    cause the function to return false.
+typedef struct
+{
+    uint32_t clkSpeed;
+} I2C_TRANSFER_SETUP;
 
-    The library will call the registered callback function when the transfer has
-    terminated.
+// Enables I2C1 and its interrupts. Must be called before any other I2C_* function.
+bool I2C_Initialize(void);
 
-  Precondition:
-    I2CMaster_Initialize must have been called for the associated
-    I2C instance.
+// Reconfigures the bus clock speed (Hz). Do not call while I2C_IsBusy(). Pass
+// srcClkFreq = 0 to use the default peripheral clock assumption.
+bool I2C_TransferSetup(I2C_TRANSFER_SETUP *setup, uint32_t srcClkFreq);
 
-  Parameters:
-    address - 7-bit / 10-bit slave address.
+// True while a transfer started with one of the *Async functions (or a
+// blocking wrapper) is still in progress.
+bool I2C_IsBusy(void);
 
-    pdata   - pointer to source data buffer that contains the data to be
-              transmitted.
+// Returns the error latched by the most recently completed transfer, then clears it.
+I2C_ERROR I2C_ErrorGet(void);
 
-    length  - length of data buffer in number of bytes. Also the number of bytes
-              to be written.
+// Registers a callback fired (from interrupt context) when an *Async transfer completes.
+void I2C_CallbackRegister(I2C_CALLBACK callback, uintptr_t contextHandle);
 
-  Returns:
-    true  - The request was placed successfully and the bus activity was
-    initiated.
+// --- Low-level async transfers ------------------------------------------
+// Non-blocking: each call starts bus activity and returns immediately,
+// returning false only if a transfer was already in progress. Completion
+// (success or error) is reported through the registered callback and
+// I2C_ErrorGet().
 
-    false - The request fails,if there was already a transfer in progress when this function
-            was called. .
+bool I2C_ReadAsync(uint16_t address, uint8_t *rdata, size_t rlength);
+bool I2C_WriteAsync(uint16_t address, const uint8_t *wdata, size_t wlength);
+bool I2C_WriteReadAsync(uint16_t address, const uint8_t *wdata, size_t wlength, uint8_t *rdata, size_t rlength);
 
-  Example:
-    <code>
-        uint8_t myData [NUM_BYTES];
-        void MyI2CCallback(uintptr_t context)
-        {
-            // This function will be called when the transfer completes. Note
-            // that this functioin executes in the context of the I2C interrupt.
-        }
+// --- Blocking transfers (recommended default for device drivers) --------
+// Each function starts the transfer and polls until it completes or times
+// out. Returns true on success; on false, call I2C_ErrorGet() for the reason.
 
-        I2CMaster_Initialize();
-        I2CMaster_CallbackRegister(MyI2CCallback, NULL);
+bool I2C_Write(uint16_t address, const uint8_t *data, size_t length);
+bool I2C_Read(uint16_t address, uint8_t *data, size_t length);
+bool I2C_WriteRead(uint16_t address, const uint8_t *wdata, size_t wlength, uint8_t *rdata, size_t rlength);
 
-        if(!I2CMaster_Write( SLAVE_ADDR, &myData[0], NUM_BYTES ))
-        {
-            // error handling
-        }
+// --- Register-oriented helpers -------------------------------------------
+// For the common case of an 8-bit-register-addressed device: writes/reads
+// `length` bytes starting at register `reg`, using a repeated start for the
+// read. WriteRegister stages `reg` and `data` into a single write
+// transaction and so accepts at most I2C_REG_WRITE_MAX_PAYLOAD data bytes.
 
-    </code>
+#define I2C_REG_WRITE_MAX_PAYLOAD   32u
 
-  Remarks:
-    None.
-*/
+bool I2C_WriteRegister(uint16_t address, uint8_t reg, const uint8_t *data, size_t length);
+bool I2C_ReadRegister(uint16_t address, uint8_t reg, uint8_t *data, size_t length);
 
-bool I2CMaster_Write(uint16_t address, uint8_t *pdata, size_t length);
+// Returns the I2C1 bus clock speed (Hz) actually produced by the current
+// I2C1BRG setting, computed from the peripheral clock feeding I2C1.
+uint32_t I2C_GetBusSpeed(void);
 
+// Prints I2C1 driver state, calculated bus speed, and controller/status
+// register state to the terminal.
+void I2C_PrintStatus(void);
 
-// *****************************************************************************
-/* Function:
-    bool I2CMaster_WriteRead(uint16_t address, uint8_t* wdata,
-                               size_t wlength, uint8_t* rdata, size_t rlength)
-
-  Summary:
-    Write and Read data from Slave.
-
-  Description:
-    This function writes data from the wdata to the bus and then reads data from
-    the slave and stores the received in the rdata. The function generates a
-    Start condition on the bus and will then send wlength number of bytes
-    contained in wdata. The function will then insert a Repeated start condition
-    and proceeed to read rlength number of bytes from the slave. The received
-    bytes are stored in rdata buffer. A Stop condition is generated after the
-    last byte has been received.
-
-    If the slave NAKs the request or a bus error was encountered on the bus,
-    the transfer is terminated. The application can call I2CMaster_ErrorGet()
-    function to know that cause of the error.
-
-    The function is non-blocking. It initiates bus activity and returns
-    immediately. The transfer is then completed in the peripheral interrupt. A
-    transfer request cannot be placed when another transfer is in progress.
-    Calling this function when another function is already in progress will
-    cause the function to return false.
-
-    The library will call the registered callback function when the transfer has
-    terminated.
-
-  Precondition:
-    I2CMaster_Initialize must have been called for the associated
-    I2C instance.
-
-  Parameters:
-    address - 7-bit / 10-bit slave address.
-
-    wdata   - pointer to write data buffer
-
-    wlength - write data length in bytes.
-
-    rdata   - pointer to read data buffer.
-
-    rlength - read data length in bytes.
-
-  Returns:
-    true  - The request was placed successfully and the bus activity was
-    initiated.
-
-    false - The request fails, if there was already a transfer in progress when this
-    function was called.
-
-  Example:
-    <code>
-        uint8_t myTxData [NUM_BYTES] = {'1', '0', ' ', 'B', 'Y', 'T', 'E', 'S'};
-        uint8_t myRxData [NUM_BYTES] = {0};
-
-        void MyI2CCallback(uintptr_t context)
-        {
-            // This function will be called when the transfer completes. Note
-            // that this functioin executes in the context of the I2C interrupt.
-        }
-
-        I2CMaster_Initialize();
-        I2CMaster_CallbackRegister(MyI2CCallback, NULL);
-        if(!I2CMaster_WriteRead( SLAVE_ADDR, &myTxData[0], NUM_BYTES, myRxData, NUM_BYTES ))
-        {
-            // error handling
-        }
-
-
-    </code>
-
-  Remarks:
-    Calling this function is not the same as calling the I2CMaster_Write()
-    function and then calling the I2CMaster_Read() function.
-    The I2CMaster_WriteRead function will insert a Repeated Start
-    condition between the Write and the Read stages. The I2CMaster_Write()
-    and the I2CMaster_Read() function insert a stop condtion after
-    the write and the read has completed.
-*/
-
-bool I2CMaster_WriteRead(uint16_t address, uint8_t* wdata, size_t wlength, uint8_t* rdata, size_t rlength);
-
-
-// *****************************************************************************
-/* Function:
-    bool I2CMaster_IsBusy(void)
-
-  Summary:
-    Returns the Peripheral busy status.
-
-  Description:
-    This function ture if the I2C I2C5I2C module is busy with a
-    transfer. The application can use the function to check if I2C
-    I2C5I2C module is busy before calling any of the data transfer
-    functions. The library does not allow a data transfer operation if another
-    transfer operation is already in progress.
-
-  Precondition:
-    I2CMaster_Initialize must have been called for the
-    associated I2C instance.
-
-  Parameters:
-    None.
-
-  Returns:
-    true - Busy.
-    false - Not busy.
-
-  Example:
-    <code>
-        uint8_t myData [NUM_BYTES] = {'1', '0', ' ', 'B', 'Y', 'T', 'E', 'S', '!', '!'};
-
-        // wait for the current transfer to complete
-        while(I2CMaster_IsBusy( ));
-
-        // perform the next transfer
-        if(!I2CMaster_Write( SLAVE_ADDR, &myData[0], NUM_BYTES ))
-        {
-            // error handling
-        }
-
-    </code>
-
-  Remarks:
-    None.
-*/
-
-bool I2CMaster_IsBusy(void);
-
-// *****************************************************************************
-/* Function:
-    I2C_ERROR I2CMaster_ErrorGet(void)
-
-  Summary:
-    Returns the error occured during transfer.
-
-  Description:
-    This function returns the error during transfer.
-
-  Precondition:
-    I2CMaster_Initialize must have been called for the
-    associated I2C instance.
-
-  Parameters:
-    None.
-
-  Returns:
-    Returns a I2C_ERROR type of status identifying the error that has
-    occurred.
-
-    Example:
-    <code>
-    if(I2C_ERROR_NONE == I2CMaster_ErrorGet())
-    {
-        //I2C transfer is completed, go to next state.
-    }
-    </code>
-
-  Remarks:
-    None.
-*/
-
-I2C_ERROR I2CMaster_ErrorGet(void);
-
-// *****************************************************************************
-/* Function:
-    void I2CMaster_CallbackRegister(I2C_CALLBACK callback,
-                                                              uintptr_t context)
-
-   Summary:
-    Sets the pointer to the function (and it's context) to be called when the
-    given I2C's transfer events occur.
-
-  Description:
-    This function sets the pointer to a client function to be called "back" when
-    the given I2C's transfer events occur. It also passes a context value
-    (usually a pointer to a context structure) that is passed into the function
-    when it is called. The specified callback function will be called from the
-    peripheral interrupt context.
-
-  Precondition:
-    I2CMaster_Initialize must have been called for the associated
-    I2C instance.
-
-  Parameters:
-    callback      - A pointer to a function with a calling signature defined by
-                    the I2C_CALLBACK data type. Setting this to NULL
-                    disables the callback feature.
-
-    contextHandle - A value (usually a pointer) passed (unused) into the
-                    function identified by the callback parameter.
-
-  Returns:
-    None.
-
-  Example:
-    <code>
-        // Refer to the description of the I2C_CALLBACK data type for
-        // example usage.
-    </code>
-
-  Remarks:
-    None.
-*/
-
-void I2CMaster_CallbackRegister(I2C_CALLBACK callback, uintptr_t contextHandle);
-
-// *****************************************************************************
-/* Function:
-    bool I2CMaster_TransferSetup(I2C_TRANSFER_SETUP* setup, uint52_t srcClkFreq)
-
-   Summary:
-    Dynamic setup of I2C Peripheral.
-
-   Precondition:
-    I2CMaster_Initialize must have been called for the associated I2C instance.
-	The transfer status should not be busy.
-
-   Parameters:
-    setup - Pointer to the structure containing the transfer setup.
-    srcClkFreq - I2C Peripheral Clock Source Frequency.
-
-   Returns:
-    true - Transfer setup was updated Successfully.
-    false - Failure while updating transfer setup.
-
-   Example:
-    <code>
-
-    I2C_TRANSFER_SETUP setup;
-
-    setup.clkSpeed = 400000;
-
-    // Make sure that the I2C is not busy before changing the I2C clock frequency
-    if (I2CMaster_IsBusy() == false)
-    {
-        if (I2CMaster_TransferSetup( &setup, 0 ) == true)
-        {
-            // Transfer Setup updated successfully
-        }
-    }
-    </code>
-
-   Remarks:
-    srcClkFreq overrides any change in the peripheral clock frequency.
-    If configured to zero PLib takes the peripheral clock frequency from MHC.
-*/
-
-bool I2CMaster_TransferSetup(I2C_TRANSFER_SETUP* setup, uint32_t srcClkFreq );
-
-
-void printI2CMasterStatus(void);
-
-// DOM-IGNORE-BEGIN
-#ifdef __cplusplus  // Provide C++ Compatibility
+#ifdef __cplusplus
 }
 #endif
-// DOM-IGNORE-END
 
-#endif /* PLIB_I2CMaster_H */
+#endif /* PLIB_I2C_H */
