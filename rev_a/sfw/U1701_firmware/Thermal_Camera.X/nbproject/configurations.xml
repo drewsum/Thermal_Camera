@@ -12,7 +12,7 @@
         <itemPath>pgood_monitor.h</itemPath>
         <itemPath>adc_channels.h</itemPath>
         <itemPath>telemetry.h</itemPath>
-        <itemPath>temperature_sensors.h</itemPath>
+        <itemPath>i2c_devices.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Core" projectFiles="true">
         <itemPath>pic32mzda_configuration.h</itemPath>
@@ -59,7 +59,7 @@
         <itemPath>pgood_monitor.c</itemPath>
         <itemPath>adc_channels.c</itemPath>
         <itemPath>telemetry.c</itemPath>
-        <itemPath>temperature_sensors.c</itemPath>
+        <itemPath>i2c_devices.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Core" projectFiles="true">
         <itemPath>device_control.c</itemPath>

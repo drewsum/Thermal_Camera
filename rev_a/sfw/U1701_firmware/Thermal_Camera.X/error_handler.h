@@ -65,7 +65,7 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(i2c_init_error,                  "I2C Master Init") \
     X(hlvd_init_error,                 "HLVD Init") \
     X(ddr2_init_error,                 "DDR2 Init") \
-    X(temp_sensors_init_error,         "Temperature Sensors Init")
+    X(i2c_devices_init_error,          "I2C Devices Init")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,

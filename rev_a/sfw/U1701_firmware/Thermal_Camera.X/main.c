@@ -38,10 +38,7 @@
 
 ////// I2C
 #include "plib_i2c.h"
-#include "temperature_sensors.h"
-//#include "power_monitors.h"
-//#include "misc_i2c_devices.h"
-//
+#include "i2c_devices.h"
 //// USB
 #include "terminal_control.h"
 #include "uthash.h"
@@ -242,9 +239,9 @@ void main(void) {
             &error_handler.flags.ddr2_init_error);
     while(usbUartCheckIfBusy());
 
-    // setup temperature sensors (7x MCP9804 on the I2C bus)
-    reportInit("Temperature Sensors", TemperatureSensors_Initialize(),
-            &error_handler.flags.temp_sensors_init_error);
+    // probe every device in I2C_DEVICE_LIST (currently 7x MCP9804 temp sensors)
+    reportInit("I2C Devices", I2CDevices_Initialize(),
+            &error_handler.flags.i2c_devices_init_error);
     while(usbUartCheckIfBusy());
 
     // Disable reset LED

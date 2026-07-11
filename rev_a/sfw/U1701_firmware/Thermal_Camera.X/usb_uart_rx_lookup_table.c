@@ -27,7 +27,7 @@
 #include "adc_channels.h"
 #include "hlvd.h"
 #include "ddr2.h"
-#include "temperature_sensors.h"
+#include "i2c_devices.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -305,10 +305,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
     printf("\r\nI2C Bus Slave Device Status:\r\n");
     terminalTextAttributesReset();
-    TemperatureSensors_PrintStatus();
-    // printPowerMonitorStatus();
-    // miscI2CDevicesPrintStatus();
-    
+    I2CDevices_PrintStatus();
+
 }
 
 USB_UART_COMMAND(liveTelemetryCommand, "Live Telemetry", "Toggles live updates of system level telemetry") {

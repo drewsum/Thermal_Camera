@@ -47,7 +47,7 @@ typedef struct
 } MCP9804_ALERT_STATUS;
 
 // Confirms a device at `address` responds and identifies as an MCP9804
-// family part (Manufacturer ID 0x0054, Device ID upper byte 0x04).
+// family part (Manufacturer ID 0x0054, Device ID upper byte 0x02).
 bool MCP9804_Verify(uint16_t address);
 
 // Reads ambient temperature in degrees Celsius. Returns false (and leaves

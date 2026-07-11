@@ -3,8 +3,7 @@
 
 #include "main.h"
 #include "error_handler.h"
-//#include "temperature_sensors.h"
-//#include "power_monitors.h"
+//#include "i2c_devices.h"
 #include "telemetry.h"
 #include "device_control.h"
 #include "terminal_control.h"
@@ -18,8 +17,9 @@ void heartbeatServices(void) {
     if (live_telemetry_enable) {
 
         // NOTE: temp_sense_data_request and power_monitor_data_request are
-        // not implemented yet (temperature_sensors.h / power_monitors.h
-        // don't exist in this project yet) - re-enable once those land
+        // not implemented yet (i2c_devices.h has I2CDevices_ReadAllTemperatures()
+        // for the temp side; power monitor kind/reads don't exist yet) -
+        // re-enable once those land
 //        // get new telemetry data every 200ms
 //        if ((heartbeat_systick + 5) % 20 == 0) temp_sense_data_request = 1;
 //

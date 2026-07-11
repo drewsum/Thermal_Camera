@@ -30,7 +30,7 @@
 #define MCP9804_REG_RESOLUTION    0x08u
 
 #define MCP9804_MANUFACTURER_ID   0x0054u
-#define MCP9804_DEVICE_ID         0x04u   // upper byte of the Device ID/Revision register
+#define MCP9804_DEVICE_ID         0x02u   // upper byte of the Device ID/Revision register
 
 // CONFIG register (0x01) bit fields used by this driver; the rest (alert
 // pin behavior, hysteresis, register locks) are left at their power-on
