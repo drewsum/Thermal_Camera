@@ -6,7 +6,7 @@
 
   Summary:
     Driver for the Texas Instruments INA231A bidirectional current-shunt and
-    power monitor, built on plib_i2c.h.
+    power monitor, built on i2c_master.h.
 
   Description:
     Unlike MCP9804, the INA231A has no documented manufacturer/device ID
@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "i2c/i2c_master.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +78,25 @@ bool INA231A_ReadPower(uint16_t address, float currentLSB, float *watts);
 // Reads bus voltage, shunt voltage, current, and power together. Requires
 // INA231A_Configure() first for the current/power fields to be meaningful.
 bool INA231A_ReadAll(uint16_t address, float currentLSB, INA231A_READING *reading);
+
+// Queue a non-blocking read of the raw Bus Voltage / Current / Power
+// register into raw[2] (MSB first) and return immediately; `callback` fires
+// from I2C interrupt context on completion. `raw` must stay valid until
+// then. Decode the bytes afterwards (from thread context) with the helpers
+// below.
+bool INA231A_QueueReadBusVoltage(uint16_t address, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool INA231A_QueueReadCurrent(uint16_t address, uint8_t raw[2],
+                              I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool INA231A_QueueReadPower(uint16_t address, uint8_t raw[2],
+                            I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+
+// Convert raw register images (as filled in by the QueueRead functions
+// above) to engineering units. `currentLSB` is the value returned by
+// INA231A_Configure() for that device.
+float INA231A_DecodeBusVoltageRaw(const uint8_t raw[2]);
+float INA231A_DecodeCurrentRaw(const uint8_t raw[2], float currentLSB);
+float INA231A_DecodePowerRaw(const uint8_t raw[2], float currentLSB);
 
 // Prints the device's configuration/calibration registers and measurements
 // to the terminal. Current/Power are shown as raw register codes (not

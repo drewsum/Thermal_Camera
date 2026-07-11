@@ -6,7 +6,7 @@
 
   Summary:
     Driver for the Microchip MCP9804 (and register-compatible MCP9805/9808
-    family) I2C digital temperature sensor, built on plib_i2c.h.
+    family) I2C digital temperature sensor, built on i2c_master.h.
 
   Description:
     There is no per-device "instance" state here -- every function takes the
@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "i2c/i2c_master.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,6 +58,18 @@ bool MCP9804_ReadTemperature(uint16_t address, float *celsius);
 
 // Reads ambient temperature and the three limit-comparison alert flags together.
 bool MCP9804_ReadTemperatureAndStatus(uint16_t address, float *celsius, MCP9804_ALERT_STATUS *status);
+
+// Queues a non-blocking read of the raw T_A register into raw[2] (MSB
+// first) and returns immediately; `callback` fires from I2C interrupt
+// context on completion. `raw` must stay valid until then. Decode the bytes
+// afterwards (from thread context) with the helpers below.
+bool MCP9804_QueueReadTemperature(uint16_t address, uint8_t raw[2],
+                                  I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+
+// Converts a raw T_A register image (as filled in by
+// MCP9804_QueueReadTemperature()) to degrees Celsius / alert flags.
+float MCP9804_DecodeTemperatureRaw(const uint8_t raw[2]);
+void MCP9804_DecodeAlertFlagsRaw(const uint8_t raw[2], MCP9804_ALERT_STATUS *status);
 
 // Sets the ADC resolution used for the T_A conversion.
 bool MCP9804_SetResolution(uint16_t address, MCP9804_RESOLUTION resolution);

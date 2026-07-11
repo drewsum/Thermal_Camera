@@ -6,11 +6,11 @@
 
   Summary:
     Driver for the Microchip MCP9804 (and register-compatible MCP9805/9808
-    family) I2C digital temperature sensor, built on plib_i2c.h.
+    family) I2C digital temperature sensor, built on i2c_master.h.
 *******************************************************************************/
 
 #include "i2c/device_driver/mcp9804.h"
-#include "i2c/plib_i2c.h"
+#include "i2c/i2c_master.h"
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
@@ -163,6 +163,22 @@ bool MCP9804_ReadTemperatureAndStatus(uint16_t address, float *celsius, MCP9804_
     *celsius = MCP9804_DecodeTemperature(raw);
     MCP9804_DecodeAlertFlags(raw, status);
     return true;
+}
+
+bool MCP9804_QueueReadTemperature(uint16_t address, uint8_t raw[2],
+                                  I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    return I2C_QueueReadRegister(address, MCP9804_REG_T_AMBIENT, raw, 2, callback, context);
+}
+
+float MCP9804_DecodeTemperatureRaw(const uint8_t raw[2])
+{
+    return MCP9804_DecodeTemperature(((uint16_t)raw[0] << 8) | raw[1]);
+}
+
+void MCP9804_DecodeAlertFlagsRaw(const uint8_t raw[2], MCP9804_ALERT_STATUS *status)
+{
+    MCP9804_DecodeAlertFlags(((uint16_t)raw[0] << 8) | raw[1], status);
 }
 
 bool MCP9804_SetResolution(uint16_t address, MCP9804_RESOLUTION resolution)

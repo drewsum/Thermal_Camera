@@ -18,9 +18,7 @@ void heartbeatServices(void) {
         // get new temperature telemetry data every 200ms
         if ((heartbeat_systick + 5) % 20 == 0) temp_sense_data_request = 1;
 
-        // NOTE: power_monitor_data_request is not implemented yet (no power
-        // monitor I2C_DEVICE_KIND/driver exists yet) -- re-enable once it lands
-        // get new telemetry data every 200ms
+        // get new power monitor telemetry data every 200ms
         if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
 
         /* Trigger an ADC conversion scan */

@@ -246,3 +246,99 @@ bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts)
 
     return INA231A_ReadPower(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], watts);
 }
+
+static bool I2CDevices_IdIsKind(I2C_DEVICE_ID id, I2C_DEVICE_KIND kind)
+{
+    return I2CDevices_IdIsValid(id) && (i2cDeviceKinds[id] == kind);
+}
+
+bool I2CDevices_QueueTemperatureRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                     I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_MCP9804))
+    {
+        return false;
+    }
+
+    return MCP9804_QueueReadTemperature(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueVoltageRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_QueueReadBusVoltage(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueCurrentRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_QueueReadCurrent(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueuePowerRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                               I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_QueueReadPower(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_DecodeTemperature(I2C_DEVICE_ID id, const uint8_t raw[2],
+                                  I2C_DEVICE_TEMP_READING *reading)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_MCP9804))
+    {
+        return false;
+    }
+
+    reading->present = true;
+    reading->celsius = MCP9804_DecodeTemperatureRaw(raw);
+    MCP9804_DecodeAlertFlagsRaw(raw, &reading->alerts);
+    return true;
+}
+
+bool I2CDevices_DecodeVoltage(I2C_DEVICE_ID id, const uint8_t raw[2], float *volts)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    *volts = INA231A_DecodeBusVoltageRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeCurrent(I2C_DEVICE_ID id, const uint8_t raw[2], float *amps)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    *amps = INA231A_DecodeCurrentRaw(raw, i2cDeviceCurrentLSB[id]);
+    return true;
+}
+
+bool I2CDevices_DecodePower(I2C_DEVICE_ID id, const uint8_t raw[2], float *watts)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    *watts = INA231A_DecodePowerRaw(raw, i2cDeviceCurrentLSB[id]);
+    return true;
+}

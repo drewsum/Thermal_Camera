@@ -22,7 +22,7 @@
 #include "gpio/pin_macros.h"
 #include "application/pgood_monitor.h"
 #include "application/telemetry.h"
-#include "i2c/plib_i2c.h"
+#include "i2c/i2c_master.h"
 #include "adc/adc.h"
 #include "application/adc_channels.h"
 #include "core/hlvd.h"

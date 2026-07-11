@@ -124,6 +124,30 @@ bool I2CDevices_ReadCurrent(I2C_DEVICE_ID id, float *amps);
 // I2CDevices_ReadCurrent().
 bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts);
 
+// --- Queued (non-blocking) reads ------------------------------------------
+// Each call queues one register read for `id` and returns immediately;
+// false means the device kind doesn't match, or the I2C queue was full
+// (nothing queued). `callback` fires from I2C interrupt context when the
+// read completes; raw[2] (MSB first) must stay valid until then. Decode the
+// bytes afterwards -- from thread context, since decoding does float math --
+// with the matching Decode function, which also returns false on a kind
+// mismatch.
+
+bool I2CDevices_QueueTemperatureRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                     I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueVoltageRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueCurrentRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueuePowerRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                               I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+
+bool I2CDevices_DecodeTemperature(I2C_DEVICE_ID id, const uint8_t raw[2],
+                                  I2C_DEVICE_TEMP_READING *reading);
+bool I2CDevices_DecodeVoltage(I2C_DEVICE_ID id, const uint8_t raw[2], float *volts);
+bool I2CDevices_DecodeCurrent(I2C_DEVICE_ID id, const uint8_t raw[2], float *amps);
+bool I2CDevices_DecodePower(I2C_DEVICE_ID id, const uint8_t raw[2], float *watts);
+
 #ifdef __cplusplus
 }
 #endif

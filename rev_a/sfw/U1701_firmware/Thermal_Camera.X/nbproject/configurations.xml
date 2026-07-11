@@ -36,7 +36,7 @@
         <itemPath>usb_uart/usb_uart.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f5" displayName="I2C" projectFiles="true">
-        <itemPath>i2c/plib_i2c.h</itemPath>
+        <itemPath>i2c/i2c_master.h</itemPath>
         <itemPath>i2c/i2c_devices.h</itemPath>
         <itemPath>i2c/device_driver/mcp9804.h</itemPath>
         <itemPath>i2c/device_driver/ina231a.h</itemPath>
@@ -85,7 +85,7 @@
         <itemPath>usb_uart/usb_uart_rx_lookup_table.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f5" displayName="I2C" projectFiles="true">
-        <itemPath>i2c/plib_i2c.c</itemPath>
+        <itemPath>i2c/i2c_master.c</itemPath>
         <itemPath>i2c/i2c_devices.c</itemPath>
         <itemPath>i2c/device_driver/mcp9804.c</itemPath>
         <itemPath>i2c/device_driver/ina231a.c</itemPath>

@@ -37,7 +37,7 @@
 
 
 ////// I2C
-#include "i2c/plib_i2c.h"
+#include "i2c/i2c_master.h"
 #include "i2c/i2c_devices.h"
 //// USB UART
 #include "usb_uart/terminal_control.h"
@@ -272,17 +272,24 @@ void main(void) {
             memset(usb_uart_rx_buffer, 0, strlen(usb_uart_rx_buffer));
         }
 
-        // refresh I2C temperature sensor telemetry if heartbeatServices() requested it
+        // queue I2C temperature sensor reads if heartbeatServices() requested it
+        // (non-blocking: the I2C interrupt clocks the transfers out in the background)
         if (temp_sense_data_request) {
             updateTemperatureTelemetry();
             temp_sense_data_request = 0;
         }
 
-        // refresh I2C power monitor telemetry if heartbeatServices() requested it
+        // queue I2C power monitor reads if heartbeatServices() requested it
         if (power_monitor_data_request) {
             updatePowerMonitorTelemetry();
             power_monitor_data_request = 0;
         }
+
+        // time out wedged I2C transfers and restart the queue after a bus error
+        I2C_Tasks();
+
+        // fold any finished I2C telemetry reads into the telemetry struct
+        telemetryTasks();
 
         if (live_telemetry_print_request && live_telemetry_enable) {
             

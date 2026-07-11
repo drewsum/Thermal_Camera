@@ -6,11 +6,11 @@
 
   Summary:
     Driver for the Texas Instruments INA231A bidirectional current-shunt and
-    power monitor, built on plib_i2c.h.
+    power monitor, built on i2c_master.h.
 *******************************************************************************/
 
 #include "i2c/device_driver/ina231a.h"
-#include "i2c/plib_i2c.h"
+#include "i2c/i2c_master.h"
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
@@ -182,6 +182,39 @@ bool INA231A_ReadPower(uint16_t address, float currentLSB, float *watts)
 
     *watts = INA231A_DecodePower(raw, currentLSB);
     return true;
+}
+
+bool INA231A_QueueReadBusVoltage(uint16_t address, uint8_t raw[2],
+                                 I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    return I2C_QueueReadRegister(address, INA231A_REG_BUS_VOLTAGE, raw, 2, callback, context);
+}
+
+bool INA231A_QueueReadCurrent(uint16_t address, uint8_t raw[2],
+                              I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    return I2C_QueueReadRegister(address, INA231A_REG_CURRENT, raw, 2, callback, context);
+}
+
+bool INA231A_QueueReadPower(uint16_t address, uint8_t raw[2],
+                            I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    return I2C_QueueReadRegister(address, INA231A_REG_POWER, raw, 2, callback, context);
+}
+
+float INA231A_DecodeBusVoltageRaw(const uint8_t raw[2])
+{
+    return INA231A_DecodeBusVoltage(((uint16_t)raw[0] << 8) | raw[1]);
+}
+
+float INA231A_DecodeCurrentRaw(const uint8_t raw[2], float currentLSB)
+{
+    return INA231A_DecodeCurrent(((uint16_t)raw[0] << 8) | raw[1], currentLSB);
+}
+
+float INA231A_DecodePowerRaw(const uint8_t raw[2], float currentLSB)
+{
+    return INA231A_DecodePower(((uint16_t)raw[0] << 8) | raw[1], currentLSB);
 }
 
 bool INA231A_ReadAll(uint16_t address, float currentLSB, INA231A_READING *reading)
