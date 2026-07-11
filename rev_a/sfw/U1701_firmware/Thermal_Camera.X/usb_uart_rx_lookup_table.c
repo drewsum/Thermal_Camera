@@ -27,6 +27,7 @@
 #include "adc_channels.h"
 #include "hlvd.h"
 #include "ddr2.h"
+#include "temperature_sensors.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -301,12 +302,12 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
 
     terminalTextAttributesReset();
     
-//    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
-//    printf("\r\nI2C Bus Slave Device Status:\r\n");
-//    terminalTextAttributesReset();
-//    printTemperatureSensorStatus();
-//    printPowerMonitorStatus();
-//    miscI2CDevicesPrintStatus();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+    printf("\r\nI2C Bus Slave Device Status:\r\n");
+    terminalTextAttributesReset();
+    TemperatureSensors_PrintStatus();
+    // printPowerMonitorStatus();
+    // miscI2CDevicesPrintStatus();
     
 }
 
