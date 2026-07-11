@@ -23,7 +23,7 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
-#include "adc.h"
+#include "adc/adc.h"
 
 // VBAT (AN41), internal VREF (AN42), and internal die temp sensor (AN43)
 // are wired directly into the ADC7 shared mux with no external attenuation

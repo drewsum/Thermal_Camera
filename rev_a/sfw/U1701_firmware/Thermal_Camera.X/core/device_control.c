@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "device_control.h"
-#include "terminal_control.h"
+#include "core/device_control.h"
+#include "usb_uart/terminal_control.h"
 
 // private function prototype
 

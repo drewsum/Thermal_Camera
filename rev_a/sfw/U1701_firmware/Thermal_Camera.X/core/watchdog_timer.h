@@ -22,8 +22,8 @@
 #include <sys/attribs.h>
 
 
-// #include "error_handler.h"
-#include "32mzda_interrupt_control.h"
+// #include "application/error_handler.h"
+#include "core/32mzda_interrupt_control.h"
 
 // This function initializes the watchdog timer for a timeout period of 
 // 2 seconds, and no window (window always open)

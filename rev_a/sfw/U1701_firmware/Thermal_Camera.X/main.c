@@ -10,44 +10,44 @@
 #include <string.h>
 
 // Core Drivers
-#include "pic32mzda_configuration.h"
-#include "device_control.h"
-#include "32mzda_interrupt_control.h"
-#include "heartbeat_timer.h"
-#include "watchdog_timer.h"
-#include "prefetch.h"
-#include "cause_of_reset.h"
-#include "rtcc.h"
-#include "hlvd.h"
-#include "ddr2.h"
+#include "core/pic32mzda_configuration.h"
+#include "core/device_control.h"
+#include "core/32mzda_interrupt_control.h"
+#include "core/heartbeat_timer.h"
+#include "core/watchdog_timer.h"
+#include "core/prefetch.h"
+#include "core/cause_of_reset.h"
+#include "core/rtcc.h"
+#include "core/hlvd.h"
+#include "core/ddr2.h"
 
 // GPIO
-#include "pin_macros.h"
-#include "pic32mzda_gpio_setup.h"
+#include "gpio/pin_macros.h"
+#include "gpio/pic32mzda_gpio_setup.h"
 
 
 //
 //// Application
-#include "error_handler.h"
-#include "main.h"
-#include "power_saving.h"
-#include "heartbeat_services.h"
-#include "telemetry.h"
-#include "pgood_monitor.h"
+#include "application/error_handler.h"
+#include "application/main.h"
+#include "application/power_saving.h"
+#include "application/heartbeat_services.h"
+#include "application/telemetry.h"
+#include "application/pgood_monitor.h"
 
 
 ////// I2C
-#include "plib_i2c.h"
-#include "i2c_devices.h"
-//// USB
-#include "terminal_control.h"
-#include "uthash.h"
-#include "usb_uart.h"
-#include "usb_uart_rx_lookup_table.h"
+#include "i2c/plib_i2c.h"
+#include "i2c/i2c_devices.h"
+//// USB UART
+#include "usb_uart/terminal_control.h"
+#include "usb_uart/uthash.h"
+#include "usb_uart/usb_uart.h"
+#include "usb_uart/usb_uart_rx_lookup_table.h"
 //
 ////// ADC
-#include "adc.h"
-#include "adc_channels.h"
+#include "adc/adc.h"
+#include "application/adc_channels.h"
 
 
 // Prints a boot initialization result line and records failures. On success it

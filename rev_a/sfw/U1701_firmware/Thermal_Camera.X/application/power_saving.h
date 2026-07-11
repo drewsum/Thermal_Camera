@@ -19,7 +19,7 @@
 #include <xc.h>
 #include <stdbool.h>
 
-#include "device_control.h"
+#include "core/device_control.h"
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>

@@ -3,10 +3,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "watchdog_timer.h"
-#include "terminal_control.h"
-#include "pin_macros.h"
-#include "error_handler.h"
+#include "core/watchdog_timer.h"
+#include "usb_uart/terminal_control.h"
+#include "gpio/pin_macros.h"
+#include "application/error_handler.h"
 
 // This function initializes the watchdog timer for a timeout period of 
 // 2 seconds, and no window (window always open)

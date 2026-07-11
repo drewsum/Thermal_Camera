@@ -11,12 +11,12 @@
 // These macros are needed for switching between physical and virtual memory locations
 #include <sys/kmem.h>
 
-#include "32mzda_interrupt_control.h"
-#include "pin_macros.h"
-#include "device_control.h"
-#include "usb_uart.h"
-#include "terminal_control.h"
-#include "error_handler.h"
+#include "core/32mzda_interrupt_control.h"
+#include "gpio/pin_macros.h"
+#include "core/device_control.h"
+#include "usb_uart/usb_uart.h"
+#include "usb_uart/terminal_control.h"
+#include "application/error_handler.h"
 
 // Printable Variables from other header files
 extern uint32_t device_on_time_counter;

@@ -1,7 +1,7 @@
 
 #include <xc.h>
 
-#include "pic32mzda_gpio_setup.h"
+#include "gpio/pic32mzda_gpio_setup.h"
 
 // initializes port A GPIO pins
 void portAGPIOInitialize (void) {

@@ -7,11 +7,11 @@
 #include <sys/attribs.h>
 
 
-#include "adc.h"
-#include "32mzda_interrupt_control.h"
-#include "error_handler.h"
-#include "pin_macros.h"
-#include "terminal_control.h"
+#include "adc/adc.h"
+#include "core/32mzda_interrupt_control.h"
+#include "application/error_handler.h"
+#include "gpio/pin_macros.h"
+#include "usb_uart/terminal_control.h"
 
 // This function initializes the ADC modules
 bool ADCInitialize(void) {

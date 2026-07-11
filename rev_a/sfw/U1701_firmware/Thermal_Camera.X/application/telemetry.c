@@ -1,13 +1,13 @@
 
 
-#include "telemetry.h"
+#include "application/telemetry.h"
 
 #include <xc.h>
 #include <stdio.h>
 
-#include "terminal_control.h"
-#include "pin_macros.h"
-#include "pgood_monitor.h"
+#include "usb_uart/terminal_control.h"
+#include "gpio/pin_macros.h"
+#include "application/pgood_monitor.h"
 
 // This prints all telemetry data in an easily digested format
 void printCurrentTelemetry(void) {

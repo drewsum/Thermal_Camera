@@ -22,7 +22,7 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
-#include "adc_channels.h"
+#include "application/adc_channels.h"
 
 // ADC constants macros
 #define ADC_VOLTS_PER_LSB           805.664e-6

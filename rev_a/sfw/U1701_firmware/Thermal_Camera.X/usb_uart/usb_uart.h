@@ -21,9 +21,9 @@
 #include <sys/attribs.h>
 #include <stdbool.h>
 
-#include "usb_uart_rx_lookup_table.h"
-#include "32mzda_interrupt_control.h"
-#include "uthash.h"
+#include "usb_uart/usb_uart_rx_lookup_table.h"
+#include "core/32mzda_interrupt_control.h"
+#include "usb_uart/uthash.h"
 
 
 // Sizes of TX and RX ring buffers

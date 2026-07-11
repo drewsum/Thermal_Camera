@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "power_saving.h"
-#include "terminal_control.h"
+#include "application/power_saving.h"
+#include "usb_uart/terminal_control.h"
 
-#include "device_control.h"
-#include "pin_macros.h"
+#include "core/device_control.h"
+#include "gpio/pin_macros.h"
 
 // This function disables unused peripherals on startup for power savings
 // THIS FUNCTION CAN ONLY BE CALLED ONCE DUE TO PMD LOCKOUT AFTER ONE WRITE SESSION

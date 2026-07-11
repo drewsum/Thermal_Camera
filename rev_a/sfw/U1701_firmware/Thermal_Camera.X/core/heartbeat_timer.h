@@ -23,9 +23,9 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
-#include "32mzda_interrupt_control.h"
+#include "core/32mzda_interrupt_control.h"
 
-#include "pin_macros.h"
+#include "gpio/pin_macros.h"
 
 // This flag is set when we want to clear the watchdog timer
 volatile __attribute__((coherent)) uint8_t wdt_clear_request = 0;

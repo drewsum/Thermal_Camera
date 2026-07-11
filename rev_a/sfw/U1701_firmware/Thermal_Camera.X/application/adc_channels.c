@@ -1,11 +1,11 @@
 
-#include "adc_channels.h"
+#include "application/adc_channels.h"
 
 #include <stdio.h>
 
-#include "32mzda_interrupt_control.h"
-#include "telemetry.h"
-#include "terminal_control.h"
+#include "core/32mzda_interrupt_control.h"
+#include "application/telemetry.h"
+#include "usb_uart/terminal_control.h"
 
 /*
  *

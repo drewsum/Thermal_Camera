@@ -6,12 +6,12 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
-#include "error_handler.h"
-#include "32mzda_interrupt_control.h"
-#include "pin_macros.h"
-#include "terminal_control.h"
-#include "usb_uart.h"
-#include "watchdog_timer.h"
+#include "application/error_handler.h"
+#include "core/32mzda_interrupt_control.h"
+#include "gpio/pin_macros.h"
+#include "usb_uart/terminal_control.h"
+#include "usb_uart/usb_uart.h"
+#include "core/watchdog_timer.h"
 
 // This function initializes the error handler structure to detect fault conditions
 bool errorHandlerInitialize(void) {

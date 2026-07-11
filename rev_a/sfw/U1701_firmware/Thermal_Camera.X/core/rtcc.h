@@ -25,9 +25,9 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
-#include "32mzda_interrupt_control.h"
+#include "core/32mzda_interrupt_control.h"
 
-#include "pin_macros.h"
+#include "gpio/pin_macros.h"
 
 // This is a typedef for the day of the week
 typedef enum {

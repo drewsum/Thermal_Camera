@@ -5,39 +5,43 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="f4" displayName="Application" projectFiles="true">
-        <itemPath>power_saving.h</itemPath>
-        <itemPath>main.h</itemPath>
-        <itemPath>error_handler.h</itemPath>
-        <itemPath>heartbeat_services.h</itemPath>
-        <itemPath>pgood_monitor.h</itemPath>
-        <itemPath>adc_channels.h</itemPath>
-        <itemPath>telemetry.h</itemPath>
-        <itemPath>i2c_devices.h</itemPath>
+        <itemPath>application/power_saving.h</itemPath>
+        <itemPath>application/main.h</itemPath>
+        <itemPath>application/error_handler.h</itemPath>
+        <itemPath>application/heartbeat_services.h</itemPath>
+        <itemPath>application/pgood_monitor.h</itemPath>
+        <itemPath>application/adc_channels.h</itemPath>
+        <itemPath>application/telemetry.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Core" projectFiles="true">
-        <itemPath>pic32mzda_configuration.h</itemPath>
-        <itemPath>device_control.h</itemPath>
-        <itemPath>32mzda_interrupt_control.h</itemPath>
-        <itemPath>heartbeat_timer.h</itemPath>
-        <itemPath>prefetch.h</itemPath>
-        <itemPath>watchdog_timer.h</itemPath>
-        <itemPath>cause_of_reset.h</itemPath>
-        <itemPath>rtcc.h</itemPath>
-        <itemPath>adc.h</itemPath>
-        <itemPath>plib_i2c.h</itemPath>
-        <itemPath>mcp9804.h</itemPath>
-        <itemPath>hlvd.h</itemPath>
-        <itemPath>ddr2.h</itemPath>
+        <itemPath>core/pic32mzda_configuration.h</itemPath>
+        <itemPath>core/device_control.h</itemPath>
+        <itemPath>core/32mzda_interrupt_control.h</itemPath>
+        <itemPath>core/heartbeat_timer.h</itemPath>
+        <itemPath>core/prefetch.h</itemPath>
+        <itemPath>core/watchdog_timer.h</itemPath>
+        <itemPath>core/cause_of_reset.h</itemPath>
+        <itemPath>core/rtcc.h</itemPath>
+        <itemPath>core/hlvd.h</itemPath>
+        <itemPath>core/ddr2.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="GPIO" projectFiles="true">
-        <itemPath>pin_macros.h</itemPath>
-        <itemPath>pic32mzda_gpio_setup.h</itemPath>
+        <itemPath>gpio/pin_macros.h</itemPath>
+        <itemPath>gpio/pic32mzda_gpio_setup.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="USB UART" projectFiles="true">
-        <itemPath>terminal_control.h</itemPath>
-        <itemPath>uthash.h</itemPath>
-        <itemPath>usb_uart_rx_lookup_table.h</itemPath>
-        <itemPath>usb_uart.h</itemPath>
+        <itemPath>usb_uart/terminal_control.h</itemPath>
+        <itemPath>usb_uart/uthash.h</itemPath>
+        <itemPath>usb_uart/usb_uart_rx_lookup_table.h</itemPath>
+        <itemPath>usb_uart/usb_uart.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f5" displayName="I2C" projectFiles="true">
+        <itemPath>i2c/plib_i2c.h</itemPath>
+        <itemPath>i2c/i2c_devices.h</itemPath>
+        <itemPath>i2c/device_driver/mcp9804.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f6" displayName="ADC" projectFiles="true">
+        <itemPath>adc/adc.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -53,35 +57,39 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f4" displayName="Application" projectFiles="true">
-        <itemPath>power_saving.c</itemPath>
-        <itemPath>error_handler.c</itemPath>
-        <itemPath>heartbeat_services.c</itemPath>
-        <itemPath>pgood_monitor.c</itemPath>
-        <itemPath>adc_channels.c</itemPath>
-        <itemPath>telemetry.c</itemPath>
-        <itemPath>i2c_devices.c</itemPath>
+        <itemPath>application/power_saving.c</itemPath>
+        <itemPath>application/error_handler.c</itemPath>
+        <itemPath>application/heartbeat_services.c</itemPath>
+        <itemPath>application/pgood_monitor.c</itemPath>
+        <itemPath>application/adc_channels.c</itemPath>
+        <itemPath>application/telemetry.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Core" projectFiles="true">
-        <itemPath>device_control.c</itemPath>
-        <itemPath>32mzda_interrupt_control.c</itemPath>
-        <itemPath>heartbeat_timer.c</itemPath>
-        <itemPath>prefetch.c</itemPath>
-        <itemPath>watchdog_timer.c</itemPath>
-        <itemPath>cause_of_reset.c</itemPath>
-        <itemPath>rtcc.c</itemPath>
-        <itemPath>adc.c</itemPath>
-        <itemPath>plib_i2c.c</itemPath>
-        <itemPath>mcp9804.c</itemPath>
-        <itemPath>hlvd.c</itemPath>
-        <itemPath>ddr2.c</itemPath>
+        <itemPath>core/device_control.c</itemPath>
+        <itemPath>core/32mzda_interrupt_control.c</itemPath>
+        <itemPath>core/heartbeat_timer.c</itemPath>
+        <itemPath>core/prefetch.c</itemPath>
+        <itemPath>core/watchdog_timer.c</itemPath>
+        <itemPath>core/cause_of_reset.c</itemPath>
+        <itemPath>core/rtcc.c</itemPath>
+        <itemPath>core/hlvd.c</itemPath>
+        <itemPath>core/ddr2.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="GPIO" projectFiles="true">
-        <itemPath>pic32mzda_gpio_setup.c</itemPath>
+        <itemPath>gpio/pic32mzda_gpio_setup.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="USB UART" projectFiles="true">
-        <itemPath>terminal_control.c</itemPath>
-        <itemPath>usb_uart.c</itemPath>
-        <itemPath>usb_uart_rx_lookup_table.c</itemPath>
+        <itemPath>usb_uart/terminal_control.c</itemPath>
+        <itemPath>usb_uart/usb_uart.c</itemPath>
+        <itemPath>usb_uart/usb_uart_rx_lookup_table.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f5" displayName="I2C" projectFiles="true">
+        <itemPath>i2c/plib_i2c.c</itemPath>
+        <itemPath>i2c/i2c_devices.c</itemPath>
+        <itemPath>i2c/device_driver/mcp9804.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f6" displayName="ADC" projectFiles="true">
+        <itemPath>adc/adc.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
     </logicalFolder>
@@ -140,7 +148,7 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value=""/>
+        <property key="extra-include-directories" value="."/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
@@ -239,7 +247,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exceptions" value="true"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value=""/>
+        <property key="extra-include-directories" value="."/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>

@@ -1,11 +1,11 @@
 
 #include <stdio.h>
 
-#include "pgood_monitor.h"
+#include "application/pgood_monitor.h"
 
-#include "pin_macros.h"
+#include "gpio/pin_macros.h"
 
-#include "terminal_control.h"
+#include "usb_uart/terminal_control.h"
 
 // this function prints current PGOOD status
 void printPGOODStatus(void) {

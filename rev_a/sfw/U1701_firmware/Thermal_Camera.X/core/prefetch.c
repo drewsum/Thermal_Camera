@@ -2,10 +2,10 @@
 #include <xc.h>
 #include <stdio.h>
 
-#include "prefetch.h"
-#include "32mzda_interrupt_control.h"
-#include "error_handler.h"
-#include "terminal_control.h"
+#include "core/prefetch.h"
+#include "core/32mzda_interrupt_control.h"
+#include "application/error_handler.h"
+#include "usb_uart/terminal_control.h"
 
 // This function initializes the prefetch module
 bool prefetchInitialize(void) {

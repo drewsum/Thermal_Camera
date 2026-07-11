@@ -8,16 +8,16 @@
     Interrupt-driven driver for the I2C1 peripheral in master mode.
 *******************************************************************************/
 
-#include "plib_i2c.h"
-#include "32mzda_interrupt_control.h"
-#include "device_control.h"
+#include "i2c/plib_i2c.h"
+#include "core/32mzda_interrupt_control.h"
+#include "core/device_control.h"
 #include <xc.h>
 
 #include <stdio.h>
 #include <string.h>
 
-#include "terminal_control.h"
-#include "error_handler.h"
+#include "usb_uart/terminal_control.h"
+#include "application/error_handler.h"
 
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>

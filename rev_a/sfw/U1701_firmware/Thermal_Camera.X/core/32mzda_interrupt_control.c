@@ -2,8 +2,8 @@
 #include <xc.h>
 #include <stdio.h>
 
-#include "32mzda_interrupt_control.h"
-#include "terminal_control.h"
+#include "core/32mzda_interrupt_control.h"
+#include "usb_uart/terminal_control.h"
 
 // This function configures the system for multi-interrupt operation and
 // assigns shadow registers sets to priority level ISRs

@@ -37,11 +37,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ddr2.h"
-#include "device_control.h"
-#include "terminal_control.h"
-#include "error_handler.h"
-#include "watchdog_timer.h"   // kickTheDog() -- serviced during the long self-test pass
+#include "core/ddr2.h"
+#include "core/device_control.h"
+#include "usb_uart/terminal_control.h"
+#include "application/error_handler.h"
+#include "core/watchdog_timer.h"   // kickTheDog() -- serviced during the long self-test pass
 
 // ---- SDRAM timing parameters, in PICOSECONDS.
 //

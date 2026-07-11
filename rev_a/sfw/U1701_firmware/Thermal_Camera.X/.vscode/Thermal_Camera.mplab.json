@@ -256,11 +256,69 @@
         {
             "name": "Project files",
             "files": [
-                "Makefile",
-                "*.c",
-                "*.h"
-            ],
-            "encoding": "ISO-8859-1"
+                {
+                    "include": "Makefile",
+                    "encoding": "ISO-8859-1"
+                },
+                {
+                    "include": "*.c",
+                    "encoding": "ISO-8859-1"
+                },
+                {
+                    "include": "*.h",
+                    "encoding": "ISO-8859-1"
+                },
+                "application/error_handler.h",
+                "application/error_handler.c",
+                "application/pgood_monitor.h",
+                "application/pgood_monitor.c",
+                "application/main.h",
+                "application/heartbeat_services.h",
+                "application/heartbeat_services.c",
+                "application/power_saving.h",
+                "application/power_saving.c",
+                "application/telemetry.c",
+                "application/telemetry.h",
+                "adc/adc.c",
+                "adc/adc.h",
+                "core/32mzda_interrupt_control.h",
+                "core/32mzda_interrupt_control.c",
+                "core/heartbeat_timer.h",
+                "core/heartbeat_timer.c",
+                "core/device_control.h",
+                "core/device_control.c",
+                "core/ddr2.h",
+                "core/ddr2.c",
+                "core/cause_of_reset.h",
+                "core/cause_of_reset.c",
+                "core/prefetch.h",
+                "core/prefetch.c",
+                "core/pic32mzda_configuration.h",
+                "core/hlvd.c",
+                "core/rtcc.h",
+                "core/hlvd.h",
+                "core/rtcc.c",
+                "core/watchdog_timer.c",
+                "core/watchdog_timer.h",
+                "gpio/pic32mzda_gpio_setup.h",
+                "gpio/pin_macros.h",
+                "gpio/pic32mzda_gpio_setup.c",
+                "i2c/i2c_devices.h",
+                "i2c/plib_i2c.h",
+                "i2c/i2c_devices.c",
+                "i2c/plib_i2c.c",
+                "i2c/device_driver/mcp9804.h",
+                "i2c/device_driver/mcp9804.c",
+                "usb_uart/usb_uart.h",
+                "usb_uart/uthash.h",
+                "usb_uart/usb_uart_rx_lookup_table.h",
+                "usb_uart/usb_uart.c",
+                "usb_uart/usb_uart_rx_lookup_table.c",
+                "usb_uart/terminal_control.h",
+                "usb_uart/terminal_control.c",
+                "application/adc_channels.c",
+                "application/adc_channels.h"
+            ]
         }
     ]
 }

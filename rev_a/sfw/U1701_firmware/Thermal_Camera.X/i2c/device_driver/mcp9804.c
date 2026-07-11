@@ -9,9 +9,9 @@
     family) I2C digital temperature sensor, built on plib_i2c.h.
 *******************************************************************************/
 
-#include "mcp9804.h"
-#include "plib_i2c.h"
-#include "terminal_control.h"
+#include "i2c/device_driver/mcp9804.h"
+#include "i2c/plib_i2c.h"
+#include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
 

@@ -10,9 +10,9 @@
     kind-specific typed reads, all dispatched by device kind.
 *******************************************************************************/
 
-#include "i2c_devices.h"
-#include "mcp9804.h"
-#include "terminal_control.h"
+#include "i2c/i2c_devices.h"
+#include "i2c/device_driver/mcp9804.h"
+#include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
 

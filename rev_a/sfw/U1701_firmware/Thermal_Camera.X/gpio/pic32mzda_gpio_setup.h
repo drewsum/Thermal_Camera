@@ -21,7 +21,7 @@
 #include <xc.h>
 #include <stdbool.h>
 
-#include "device_control.h"
+#include "core/device_control.h"
 
 #define TRIS_INPUT          1
 #define TRIS_OUTPUT         0

@@ -3,11 +3,11 @@
 
 #include <time.h>
 
-#include "rtcc.h"
+#include "core/rtcc.h"
 
-#include "device_control.h"
-#include "32mzda_interrupt_control.h"
-#include "terminal_control.h"
+#include "core/device_control.h"
+#include "core/32mzda_interrupt_control.h"
+#include "usb_uart/terminal_control.h"
 
 // This function unlocks the RTCC for writing
 void rtccUnlock(void) {

@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mcp9804.h"
+#include "i2c/device_driver/mcp9804.h"
 
 #ifdef __cplusplus
 extern "C" {

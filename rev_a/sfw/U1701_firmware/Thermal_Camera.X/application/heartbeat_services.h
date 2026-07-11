@@ -20,7 +20,7 @@
 
 #include "xc.h"
 
-#include "heartbeat_timer.h"
+#include "core/heartbeat_timer.h"
 
 // API Variables
 volatile uint32_t device_on_time_counter;

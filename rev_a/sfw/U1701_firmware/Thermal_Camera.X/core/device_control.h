@@ -21,7 +21,7 @@
 #include <xc.h>
 #include <stdbool.h>
 
-#include "32mzda_interrupt_control.h"
+#include "core/32mzda_interrupt_control.h"
 
 // Hardcoded Clock Setting Integers, in Hertz
 #define SYSCLK_INT          200000000

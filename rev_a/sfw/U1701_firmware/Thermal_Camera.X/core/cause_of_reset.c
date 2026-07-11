@@ -1,9 +1,9 @@
 
 #include <xc.h>
 
-// #include "error_handler.h"
+// #include "application/error_handler.h"
 
-#include "cause_of_reset.h"
+#include "core/cause_of_reset.h"
 
 
 // This function determines the cause of the most recent device reset and

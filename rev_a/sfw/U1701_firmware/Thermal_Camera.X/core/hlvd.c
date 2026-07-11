@@ -2,8 +2,8 @@
 #include <xc.h>
 #include <stdio.h>
 
-#include "hlvd.h"
-#include "terminal_control.h"
+#include "core/hlvd.h"
+#include "usb_uart/terminal_control.h"
 
 // This function disables the module, applies the requested trip point and
 // direction, then re-enables the module. Per the HLVD setup procedure,

@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 
-#include "heartbeat_timer.h"
-#include "heartbeat_services.h"
-#include "pin_macros.h"
+#include "core/heartbeat_timer.h"
+#include "application/heartbeat_services.h"
+#include "gpio/pin_macros.h"
 
 // This function initializes the heartbeat timer (100Hz)
 bool heartbeatTimerInitialize(void) {

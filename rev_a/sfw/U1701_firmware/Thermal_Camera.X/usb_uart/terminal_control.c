@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "terminal_control.h"
+#include "usb_uart/terminal_control.h"
 
 // This function clears the terminal
 void terminalClearScreen(void) {

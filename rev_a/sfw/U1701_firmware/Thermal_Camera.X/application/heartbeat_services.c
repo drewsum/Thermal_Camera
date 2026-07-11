@@ -1,13 +1,13 @@
 
-#include "heartbeat_services.h"
+#include "application/heartbeat_services.h"
 
-#include "main.h"
-#include "error_handler.h"
-//#include "i2c_devices.h"
-#include "telemetry.h"
-#include "device_control.h"
-#include "terminal_control.h"
-#include "pin_macros.h"
+#include "application/main.h"
+#include "application/error_handler.h"
+//#include "i2c/i2c_devices.h"
+#include "application/telemetry.h"
+#include "core/device_control.h"
+#include "usb_uart/terminal_control.h"
+#include "gpio/pin_macros.h"
 
 #include <stdio.h>
 
