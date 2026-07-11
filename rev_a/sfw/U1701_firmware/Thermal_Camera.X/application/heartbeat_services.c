@@ -20,8 +20,8 @@ void heartbeatServices(void) {
 
         // NOTE: power_monitor_data_request is not implemented yet (no power
         // monitor I2C_DEVICE_KIND/driver exists yet) -- re-enable once it lands
-//        // get new telemetry data every 200ms
-//        if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
+        // get new telemetry data every 200ms
+        if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
 
         /* Trigger an ADC conversion scan */
         if ((heartbeat_systick + 15) % 20 == 0) ADCCON3bits.GSWTRG = 1;

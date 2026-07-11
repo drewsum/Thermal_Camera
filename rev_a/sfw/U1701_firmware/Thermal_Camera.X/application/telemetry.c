@@ -127,3 +127,32 @@ void updateTemperatureTelemetry(void) {
     if (readings[I2C_DEV_TEMP_7].present) telemetry.ambient_temperature   = readings[I2C_DEV_TEMP_7].celsius;
 
 }
+
+// Reads voltage/current/power for `id` and updates whichever of `dest`'s
+// fields read successfully, leaving the rest untouched.
+static void UpdatePowerMonitorField(I2C_DEVICE_ID id, volatile telemetry_parameters_ps_t *dest) {
+
+    float voltage;
+    float current;
+    float power;
+
+    if (I2CDevices_ReadVoltage(id, &voltage)) dest->voltage = voltage;
+    if (I2CDevices_ReadCurrent(id, &current)) dest->current = current;
+    if (I2CDevices_ReadPower(id, &power))     dest->power   = power;
+
+}
+
+// I2C_DEV_PWR_1..6 (i2c_devices.h) are wired to physical INA231As in the
+// same rail order as the I2C_DEV_TEMP_1..6 temperature sensors (POS12,
+// POS3P0, POS1P8, POS2P8, POS1P2, Backlight) -- keep this table in sync
+// with I2C_DEVICE_LIST if that list is ever reordered.
+void updatePowerMonitorTelemetry(void) {
+
+    UpdatePowerMonitorField(I2C_DEV_PWR_1, &telemetry.pos12);
+    UpdatePowerMonitorField(I2C_DEV_PWR_2, &telemetry.pos3p0);
+    UpdatePowerMonitorField(I2C_DEV_PWR_3, &telemetry.pos1p8);
+    UpdatePowerMonitorField(I2C_DEV_PWR_4, &telemetry.pos2p8);
+    UpdatePowerMonitorField(I2C_DEV_PWR_5, &telemetry.pos1p2);
+    UpdatePowerMonitorField(I2C_DEV_PWR_6, &telemetry.backlight);
+
+}

@@ -12,6 +12,7 @@
 
 #include "i2c/i2c_devices.h"
 #include "i2c/device_driver/mcp9804.h"
+#include "i2c/device_driver/ina231a.h"
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
@@ -36,6 +37,16 @@ static const char* const i2cDeviceNames[I2C_DEVICE_COUNT] =
 
 static bool i2cDevicePresent[I2C_DEVICE_COUNT];
 
+// Only meaningful for I2C_DEVICE_KIND_INA231A entries -- the Current_LSB
+// (amps/bit) I2CDevices_ConfigureOne() got back from INA231A_Configure().
+static float i2cDeviceCurrentLSB[I2C_DEVICE_COUNT];
+
+// All 6 INA231A power monitors on this board share this shunt resistor and
+// expected max current -- update here (or move into I2C_DEVICE_LIST as a
+// per-device column) if that ever differs per rail.
+#define INA231A_SHUNT_RESISTANCE_OHMS       0.02f
+#define INA231A_MAX_EXPECTED_CURRENT_AMPS   3.1f
+
 static bool I2CDevices_IdIsValid(I2C_DEVICE_ID id)
 {
     return ((unsigned)id < (unsigned)I2C_DEVICE_COUNT);
@@ -49,6 +60,29 @@ static bool I2CDevices_Verify(I2C_DEVICE_ID id)
         case I2C_DEVICE_KIND_MCP9804:
             return MCP9804_Verify(i2cDeviceAddresses[id]);
 
+        case I2C_DEVICE_KIND_INA231A:
+            return INA231A_Verify(i2cDeviceAddresses[id]);
+
+        default:
+            return false;
+    }
+}
+
+// Dispatches kind-specific one-time setup for `id`, called once presence is
+// confirmed. Kinds that need no setup (MCP9804) just return true.
+static bool I2CDevices_ConfigureOne(I2C_DEVICE_ID id)
+{
+    switch (i2cDeviceKinds[id])
+    {
+        case I2C_DEVICE_KIND_MCP9804:
+            return true;
+
+        case I2C_DEVICE_KIND_INA231A:
+            return INA231A_Configure(i2cDeviceAddresses[id],
+                                      INA231A_SHUNT_RESISTANCE_OHMS,
+                                      INA231A_MAX_EXPECTED_CURRENT_AMPS,
+                                      &i2cDeviceCurrentLSB[id]);
+
         default:
             return false;
     }
@@ -61,6 +95,10 @@ static void I2CDevices_PrintOne(I2C_DEVICE_ID id)
     {
         case I2C_DEVICE_KIND_MCP9804:
             MCP9804_PrintStatus(i2cDeviceAddresses[id]);
+            break;
+
+        case I2C_DEVICE_KIND_INA231A:
+            INA231A_PrintStatus(i2cDeviceAddresses[id]);
             break;
 
         default:
@@ -79,6 +117,13 @@ bool I2CDevices_Initialize(void)
     {
         i2cDevicePresent[id] = I2CDevices_Verify((I2C_DEVICE_ID)id);
         allPresent = allPresent && i2cDevicePresent[id];
+
+        // Only configure devices that are actually there -- e.g. writing an
+        // INA231A calibration register to an address nothing ACKed is pointless.
+        if (i2cDevicePresent[id] && !I2CDevices_ConfigureOne((I2C_DEVICE_ID)id))
+        {
+            allPresent = false;
+        }
     }
 
     return allPresent;
@@ -170,4 +215,34 @@ uint8_t I2CDevices_ReadAllTemperatures(I2C_DEVICE_TEMP_READING readings[I2C_DEVI
     }
 
     return successCount;
+}
+
+bool I2CDevices_ReadVoltage(I2C_DEVICE_ID id, float *volts)
+{
+    if (!I2CDevices_IdIsValid(id) || (i2cDeviceKinds[id] != I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_ReadBusVoltage(i2cDeviceAddresses[id], volts);
+}
+
+bool I2CDevices_ReadCurrent(I2C_DEVICE_ID id, float *amps)
+{
+    if (!I2CDevices_IdIsValid(id) || (i2cDeviceKinds[id] != I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_ReadCurrent(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], amps);
+}
+
+bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts)
+{
+    if (!I2CDevices_IdIsValid(id) || (i2cDeviceKinds[id] != I2C_DEVICE_KIND_INA231A))
+    {
+        return false;
+    }
+
+    return INA231A_ReadPower(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], watts);
 }

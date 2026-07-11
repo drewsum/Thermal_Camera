@@ -278,6 +278,12 @@ void main(void) {
             temp_sense_data_request = 0;
         }
 
+        // refresh I2C power monitor telemetry if heartbeatServices() requested it
+        if (power_monitor_data_request) {
+            updatePowerMonitorTelemetry();
+            power_monitor_data_request = 0;
+        }
+
         if (live_telemetry_print_request && live_telemetry_enable) {
             
             // Clear the terminal

@@ -317,7 +317,9 @@
                 "usb_uart/terminal_control.h",
                 "usb_uart/terminal_control.c",
                 "application/adc_channels.c",
-                "application/adc_channels.h"
+                "application/adc_channels.h",
+                "i2c/device_driver/ina231a.c",
+                "i2c/device_driver/ina231a.h"
             ]
         }
     ]

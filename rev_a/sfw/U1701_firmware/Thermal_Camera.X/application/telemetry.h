@@ -61,6 +61,12 @@ void printCurrentTelemetry(void);
 // clobbering it with a bad reading.
 void updateTemperatureTelemetry(void);
 
+// Reads every I2C power monitor (via i2c_devices.h) and updates the
+// PSU voltage/current/power fields above. Blocking (I2C transactions) --
+// call from main()'s loop, not from ISR/heartbeat context. A field that
+// fails to read is left at its previous value rather than being clobbered.
+void updatePowerMonitorTelemetry(void);
+
 
 #endif /* _TELEMETRY_H */
 
