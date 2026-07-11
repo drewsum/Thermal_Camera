@@ -53,6 +53,7 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(DDR2_mpll_lock_timeout,          "DDR2 MPLL Lock Timeout") \
     X(DDR2_init_sequence_timeout,      "DDR2 Init Command Sequence Timeout") \
     X(DDR2_calibration_timeout,        "DDR2 Self-Calibration Timeout") \
+    X(DDR2_self_test_failed,           "DDR2 Boot Self-Test Failed") \
     X(clock_init_error,                "System Clock Init") \
     X(heartbeat_timer_init_error,      "Heartbeat Timer Init") \
     X(usb_uart_init_error,             "USB UART Init") \
