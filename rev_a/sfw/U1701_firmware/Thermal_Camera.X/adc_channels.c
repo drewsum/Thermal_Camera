@@ -65,7 +65,7 @@ void __ISR(_ADC_DATA41_VECTOR, IPL1SRS) ADCData41ISR(void) {
     // check to see if data is actually ready
     if (ADCDSTAT2bits.ARDY41) {
         // copy ADC conversion result into telemetry
-        telemetry.backup_battery_voltage = ((double) ADCDATA41) * ADC_VOLTS_PER_LSB * adc_cal_gain * VBAT_ADC_GAIN;
+        telemetry.mcu_battery_voltage = ((double) ADCDATA41) * ADC_VOLTS_PER_LSB * adc_cal_gain * VBAT_ADC_GAIN;
 
     }
 

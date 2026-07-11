@@ -38,7 +38,7 @@
 
 ////// I2C
 #include "plib_i2c.h"
-//#include "temperature_sensors.h"
+#include "temperature_sensors.h"
 //#include "power_monitors.h"
 //#include "misc_i2c_devices.h"
 //
@@ -240,6 +240,11 @@ void main(void) {
     // Initialize the 32MB DDR2 SDRAM stacked in this device's package
     reportInit("DDR2 SDRAM Controller", ddr2Initialize(),
             &error_handler.flags.ddr2_init_error);
+    while(usbUartCheckIfBusy());
+
+    // setup temperature sensors (7x MCP9804 on the I2C bus)
+    reportInit("Temperature Sensors", TemperatureSensors_Initialize(),
+            &error_handler.flags.temp_sensors_init_error);
     while(usbUartCheckIfBusy());
 
     // Disable reset LED

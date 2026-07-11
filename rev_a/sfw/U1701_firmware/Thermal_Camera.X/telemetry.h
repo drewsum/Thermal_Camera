@@ -34,15 +34,16 @@ typedef struct telemetry_paramaters_ps_u {
 // This is the structure that holds all telemetry data in the entire system
 volatile __attribute__((coherent)) struct telemetry_s {
     
-    telemetry_parameters_ps_t pos24;
-    telemetry_parameters_ps_t pos3p3;
-    telemetry_parameters_ps_t pos180;
+    telemetry_parameters_ps_t pos12;
+    telemetry_parameters_ps_t pos3p0;
+    telemetry_parameters_ps_t pos1p8;
+    telemetry_parameters_ps_t pos2p8;
+    telemetry_parameters_ps_t pos1p2;
+    telemetry_parameters_ps_t backlight;
     double ambient_temperature;
     double mcu_die_temp;
+    double mcu_battery_voltage;
     double adc_vref_voltage;
-    double backup_rtc_temperature;
-    double backup_battery_voltage;
-    double pos90_termination_voltage;
     
 } telemetry;
 

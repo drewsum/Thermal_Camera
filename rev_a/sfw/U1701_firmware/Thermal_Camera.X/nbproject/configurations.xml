@@ -12,6 +12,7 @@
         <itemPath>pgood_monitor.h</itemPath>
         <itemPath>adc_channels.h</itemPath>
         <itemPath>telemetry.h</itemPath>
+        <itemPath>temperature_sensors.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Core" projectFiles="true">
         <itemPath>pic32mzda_configuration.h</itemPath>
@@ -24,6 +25,7 @@
         <itemPath>rtcc.h</itemPath>
         <itemPath>adc.h</itemPath>
         <itemPath>plib_i2c.h</itemPath>
+        <itemPath>mcp9804.h</itemPath>
         <itemPath>hlvd.h</itemPath>
         <itemPath>ddr2.h</itemPath>
       </logicalFolder>
@@ -57,6 +59,7 @@
         <itemPath>pgood_monitor.c</itemPath>
         <itemPath>adc_channels.c</itemPath>
         <itemPath>telemetry.c</itemPath>
+        <itemPath>temperature_sensors.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="Core" projectFiles="true">
         <itemPath>device_control.c</itemPath>
@@ -68,6 +71,7 @@
         <itemPath>rtcc.c</itemPath>
         <itemPath>adc.c</itemPath>
         <itemPath>plib_i2c.c</itemPath>
+        <itemPath>mcp9804.c</itemPath>
         <itemPath>hlvd.c</itemPath>
         <itemPath>ddr2.c</itemPath>
       </logicalFolder>
