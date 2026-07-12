@@ -263,7 +263,7 @@ void main(void) {
         uint32_t elapsedSeconds;
         uint16_t powerCycleCount;
 
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, Bold_FONT);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
         printf("\r\nElapsed Time / Power Cycle Status:\r\n");
         terminalTextAttributesReset();
 
