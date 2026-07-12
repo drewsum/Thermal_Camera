@@ -69,7 +69,8 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(i2c_init_error,                  "I2C Master Init") \
     X(hlvd_init_error,                 "HLVD Init") \
     X(ddr2_init_error,                 "DDR2 Init") \
-    X(spi_flash_init_error,            "SPI Flash Init")
+    X(spi_flash_init_error,            "SPI Flash Init") \
+    X(sdhc_init_error,                 "SDHC Init")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,

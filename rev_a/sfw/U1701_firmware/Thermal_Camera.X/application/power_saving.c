@@ -125,8 +125,10 @@ bool PMDInitialize(void) {
     // Disable graphics LCD controller (unused)
     PMD6bits.GLCDMD = 1;
 
-    // Disable SD host controller (unused)
-    PMD6bits.SDHCMD = 1;
+    // Enable SD host controller -- driven by sdhc.c for the on-board
+    // microSD slot; leaving this bit set would make the controller
+    // inaccessible
+    PMD6bits.SDHCMD = 0;
 
     // Disable serial quad interface
     PMD6bits.SQI1MD = 1;
@@ -148,10 +150,11 @@ bool PMDInitialize(void) {
     // Lock PMD
     PMDLock();
 
-    // Report success only if the DDR2 controller and SPI3 module were left
-    // enabled -- disabling either here would freeze all their SFR accesses
-    // in ddr2Initialize()/SST25VF080B_Initialize()
-    return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0);
+    // Report success only if the DDR2 controller, SPI3 module, and SDHC
+    // controller were left enabled -- disabling any of these here would
+    // freeze all their SFR accesses in
+    // ddr2Initialize()/SST25VF080B_Initialize()/SDHC_Initialize()
+    return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0) && (PMD6bits.SDHCMD == 0);
 
 }
 

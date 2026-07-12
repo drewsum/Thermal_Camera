@@ -25,6 +25,11 @@
 #include "spi/spi3.h"
 #include "spi/device_driver/sst25vf080b.h"
 
+// SDHC / microSD
+#include "sdhc/sdhc.h"
+#include "sdhc/device_driver/sd_card.h"
+#include "sdhc/sd_fileio.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -250,6 +255,28 @@ void main(void) {
     // Initialize the SST25VF080B SPI NOR flash on SPI3
     reportInit("SPI Flash (SST25VF080B)", SST25VF080B_Initialize(),
             &error_handler.flags.spi_flash_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Bring up the SDHC peripheral itself (clocks/interrupt/register
+    // defaults only, no card interaction) -- must succeed regardless of
+    // whether a card happens to be inserted
+    reportInit("SDHC Controller", SDHC_Initialize(),
+            &error_handler.flags.sdhc_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Card detection + mount is intentionally NOT wrapped in reportInit()/
+    // an error_handler flag: an absent microSD card is normal, expected
+    // removable-media behavior, not a controller fault. Only the SDHC
+    // Controller line above reflects an actual init failure.
+    terminalTextAttributesReset();
+    if (SD_Card_Initialize() && SDFileIO_Mount()) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    microSD card detected and mounted\r\n");
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    No microSD card detected\r\n");
+    }
+    terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
 
     // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x

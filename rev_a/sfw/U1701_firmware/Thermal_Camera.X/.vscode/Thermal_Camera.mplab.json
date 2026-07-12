@@ -327,7 +327,18 @@
                 "spi/device_driver/sst25vf080b.c",
                 "spi/device_driver/sst25vf080b.h",
                 "application/pushbuttons.c",
-                "application/pushbuttons.h"
+                "application/pushbuttons.h",
+                "sdhc/sdhc.c",
+                "sdhc/sdhc.h",
+                "sdhc/sd_fileio.c",
+                "sdhc/sd_fileio.h",
+                "sdhc/device_driver/sd_card.c",
+                "sdhc/device_driver/sd_card.h",
+                "sdhc/fatfs/ff.c",
+                "sdhc/fatfs/ff.h",
+                "sdhc/fatfs/ffconf.h",
+                "sdhc/fatfs/diskio.c",
+                "sdhc/fatfs/diskio.h"
             ]
         }
     ]

@@ -30,6 +30,9 @@
 #include "i2c/i2c_devices.h"
 #include "spi/spi3.h"
 #include "spi/device_driver/sst25vf080b.h"
+#include "sdhc/sdhc.h"
+#include "sdhc/device_driver/sd_card.h"
+#include "sdhc/sd_fileio.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -218,6 +221,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       ADC Channels\r\n"
         "       I2C Master\r\n"
         "       SPI Flash Interface\r\n"
+        "       SDHC\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -270,6 +274,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "SPI Flash Interface") == 0) {
         SPI3_PrintStatus();
     }
+    else if (strcmp(rx_peripheral_name, "SDHC") == 0) {
+        SDHC_PrintStatus();
+    }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
         sscanf(rx_peripheral_name, "Timer %u", &read_timer_number);
@@ -299,6 +306,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   DMA\r\n"
                 "   I2C Master\r\n"
                 "   SPI Flash Interface\r\n"
+                "   SDHC\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();
@@ -704,6 +712,139 @@ USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash", "Erases the entire SPI Flash 
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("Note: The SST25VF080B device has limited write endurance, please use sparingly.\r\n");
+    terminalTextAttributesReset();
+
+}
+
+// Callback for SDFileIO_ListFiles() -- prints one directory entry per line
+static void printSDFileLine(const char *line) {
+    printf("    %s\r\n", line);
+}
+
+USB_UART_COMMAND(sdCardInfoCommand, "SD Card Info?",
+        "Prints CID/CSD-derived microSD card metadata (manufacturer, capacity, type) and mounted FAT volume info") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    if (SD_Card_GetInfo() == NULL) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("No microSD card currently initialized\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    SD_Card_PrintInfo();
+
+    char fsType[8], label[16];
+    uint32_t totalKB, freeKB;
+    if (SDFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB)) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Filesystem: %s\r\n", fsType);
+        printf("    Volume Label: %s\r\n", label[0] ? label : "(none)");
+        printf("    Total Space: %lu KB\r\n", (unsigned long) totalKB);
+        printf("    Free Space: %lu KB\r\n", (unsigned long) freeKB);
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    No FAT volume currently mounted\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(sdListFilesCommand, "SD List Files",
+        "\b\b <path>: Lists files in the given directory on the mounted microSD card (defaults to the root directory if omitted)") {
+
+    char rx_path[64] = "";
+    sscanf(input_str, "SD List Files %[^\t\n\r]", rx_path);
+
+    terminalTextAttributesReset();
+
+    if (SD_Card_GetInfo() == NULL) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("No microSD card mounted\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Contents of %s:\r\n", rx_path[0] ? rx_path : "/");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+    if (!SDFileIO_ListFiles(rx_path[0] ? rx_path : NULL, printSDFileLine)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to open directory\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(sdReadFileCommand, "SD Read File:",
+        "\b\b <path>: Dumps the contents of a text file on the mounted microSD card to the terminal") {
+
+    char rx_path[64] = "";
+    sscanf(input_str, "SD Read File: %[^\t\n\r]", rx_path);
+
+    terminalTextAttributesReset();
+
+    if (!rx_path[0]) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Please supply a file path, e.g. \"SD Read File: /README.TXT\"\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (SD_Card_GetInfo() == NULL) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("No microSD card mounted\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    if (!SDFileIO_ReadTextFileToTerminal(rx_path)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to read %s\r\n", rx_path);
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(sdSelfTestCommand, "SD Self Test",
+        "Writes, reads back, verifies, and deletes a throwaway test file on the mounted microSD card") {
+
+    (void) input_str;   // no arguments
+
+    SDFileIO_SelfTest();
+
+}
+
+USB_UART_COMMAND(sdEjectCommand, "SD Eject",
+        "Unmounts the microSD card's FAT volume and powers it down so it can be safely removed") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    if (SD_Card_GetInfo() == NULL) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("No microSD card currently mounted\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (SDFileIO_Unmount()) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("microSD card unmounted and powered down -- safe to remove\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to unmount microSD card\r\n");
+    }
+
     terminalTextAttributesReset();
 
 }

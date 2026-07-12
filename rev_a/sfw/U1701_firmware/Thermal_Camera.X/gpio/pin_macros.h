@@ -37,6 +37,7 @@
 // corrected in hardware.
 #define CAP_TOUCH_SHUTTER_PIN       PORTAbits.RA10
 #define CAP_TOUCH_POWER_PIN         PORTAbits.RA9
+#define SD_CARD_DETECT_PIN          PORTAbits.RA0
 
 // Port B
 #define nFLASH_SPI_CS_PIN           LATBbits.LATB4
