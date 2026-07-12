@@ -119,13 +119,16 @@ void printCurrentTelemetry(void) {
 // involvement. Each read's callback just records the raw bytes and outcome
 // in a staging slot -- integer-only, since it runs at IPL7 where FPU state
 // isn't saved. telemetryTasks() (main loop) then decodes finished slots
-// into the telemetry struct.
+// into the telemetry struct, and reports failed ones to the owning device's
+// error_handler.flags.*_i2c_error flag via I2CDevices_ReportI2CError() --
+// see i2c_devices.h for why that call has to happen here rather than inside
+// i2c_devices.c itself.
 
 typedef enum {
     TELEM_SLOT_IDLE = 0,    // free; safe to queue a new read
     TELEM_SLOT_PENDING,     // read queued/in flight; ISR owns .raw
     TELEM_SLOT_READY,       // read finished OK; .raw holds fresh data
-    TELEM_SLOT_FAILED,      // read failed (NACK/timeout/...); keep old value
+    TELEM_SLOT_FAILED,      // read failed (NACK/timeout/...); keep old value, report the error
 } telem_slot_state_t;
 
 typedef struct {
@@ -177,19 +180,20 @@ static volatile double * const telemTempDest[TELEM_TEMP_COUNT] = {
 
 static telem_i2c_slot_t telemTempSlot[TELEM_TEMP_COUNT];
 
-// I2C_DEV_PWR_1..6 (i2c_devices.h) are wired to physical INA231As in the
-// same rail order as the I2C_DEV_TEMP_1..6 temperature sensors.
-#define TELEM_PWR_COUNT     6u
+// I2C_DEV_PWR_1..3,5,6 (i2c_devices.h; PWR_4/POS2P8 isn't populated on this
+// board) are wired to physical INA231As in the same rail order as their
+// I2C_DEV_TEMP_1..6 temperature sensor counterparts.
+#define TELEM_PWR_COUNT     5u
 #define TELEM_PWR_QTY       3u   // voltage, current, power (order below)
 
 static const I2C_DEVICE_ID telemPwrDevice[TELEM_PWR_COUNT] = {
     I2C_DEV_PWR_1, I2C_DEV_PWR_2, I2C_DEV_PWR_3,
-    I2C_DEV_PWR_4, I2C_DEV_PWR_5, I2C_DEV_PWR_6
+    I2C_DEV_PWR_5, I2C_DEV_PWR_6
 };
 
 static volatile telemetry_parameters_ps_t * const telemPwrDest[TELEM_PWR_COUNT] = {
     &telemetry.pos12,  &telemetry.pos3p0, &telemetry.pos1p8,
-    &telemetry.pos2p8, &telemetry.pos1p2, &telemetry.backlight
+    &telemetry.pos1p2, &telemetry.backlight
 };
 
 static bool (* const telemPwrQueueRead[TELEM_PWR_QTY])(I2C_DEVICE_ID, uint8_t*, I2C_TRANSFER_CALLBACK, uintptr_t) = {
@@ -240,7 +244,9 @@ void telemetryTasks(void) {
             slot->state = TELEM_SLOT_IDLE;
 
         } else if (slot->state == TELEM_SLOT_FAILED) {
-            // sensor didn't respond; keep the last good value
+            // sensor didn't respond; keep the last good value, but latch it
+            // against this device's error_handler.flags.*_i2c_error
+            I2CDevices_ReportI2CError(telemTempDevice[i]);
             slot->state = TELEM_SLOT_IDLE;
         }
 
@@ -274,7 +280,9 @@ void telemetryTasks(void) {
                 slot->state = TELEM_SLOT_IDLE;
 
             } else if (slot->state == TELEM_SLOT_FAILED) {
-                // monitor didn't respond; keep the last good value
+                // monitor didn't respond; keep the last good value, but latch
+                // it against this device's error_handler.flags.*_i2c_error
+                I2CDevices_ReportI2CError(telemPwrDevice[i]);
                 slot->state = TELEM_SLOT_IDLE;
             }
 

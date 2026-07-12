@@ -23,6 +23,10 @@
 // These are macros needed for defining ISRs, included in XC32
 #include <sys/attribs.h>
 
+// pulls in I2C_DEVICE_LIST, from which the per-I2C-device error flags below
+// are generated
+#include "i2c/i2c_devices.h"
+
 // set this flag high to update the error LEDs the next loop through main()
 volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 
@@ -64,14 +68,38 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(adc_init_error,                  "ADC Init") \
     X(i2c_init_error,                  "I2C Master Init") \
     X(hlvd_init_error,                 "HLVD Init") \
-    X(ddr2_init_error,                 "DDR2 Init") \
-    X(i2c_devices_init_error,          "I2C Devices Init")
+    X(ddr2_init_error,                 "DDR2 Init")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,
 #define ERROR_HANDLER_FLAG_COUNT(name, string)  +1
 
-#define ERROR_HANDLER_NUM_FLAGS (0 ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_COUNT))
+// On top of the base list above, one I2C-error flag is generated per
+// physical I2C device in I2C_DEVICE_LIST (i2c_devices.h), so that list stays
+// the single source of truth: adding a device automatically adds its flag to
+// the struct, the name table, the status print, and the error LED check.
+// Field names are the device enum name + _i2c_error (e.g.
+// error_handler.flags.I2C_DEV_TEMP_1_i2c_error). Unlike the "_init_error"
+// flags in the base list above (which only ever fire once, during that
+// subsystem's one-time boot init), a device's flag here covers its entire
+// operating lifetime: I2CDevices_ReportI2CError() (i2c_devices.c) sets it
+// both when the device fails to verify/configure during
+// I2CDevices_Initialize() AND when it later fails to ACK or return valid
+// data on any runtime read (NACK, bus timeout, etc). Like every other
+// error_handler flag it only latches on failure -- a later successful read
+// does not clear it, and it stays set until clearErrorHandler() runs.
+#define I2C_DEVICE_ERROR_FLAG_FIELD(name, kind, address, label, refdes)  uint8_t name##_i2c_error;
+#define I2C_DEVICE_ERROR_FLAG_NAME(name, kind, address, label, refdes)   label " (" refdes ") I2C",
+#define I2C_DEVICE_ERROR_FLAG_COUNT(name, kind, address, label, refdes)  +1
+
+#define ERROR_HANDLER_NUM_BASE_FLAGS (0 ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_COUNT))
+#define ERROR_HANDLER_NUM_FLAGS (ERROR_HANDLER_NUM_BASE_FLAGS I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_COUNT))
+
+// Accesses the I2C-error flag for I2C device `id` (an I2C_DEVICE_ID) by
+// index: the per-device flags sit directly after the base flags in
+// flag_array, in I2C_DEVICE_LIST order. Prefer calling
+// I2CDevices_ReportI2CError() (i2c_devices.h) over writing this directly.
+#define ERROR_HANDLER_I2C_DEVICE_FLAG(id) (error_handler.flag_array[ERROR_HANDLER_NUM_BASE_FLAGS + (id)])
 
 // Error handler structure
 // Follow the convention in XC32 user's guide section 8.6.2
@@ -83,6 +111,7 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     struct {
 
         ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_FIELD)
+        I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_FIELD)
 
     } flags;
 
@@ -95,6 +124,7 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 const char * error_handler_flag_names[] = {
 
     ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_NAME)
+    I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_NAME)
 
 };
 

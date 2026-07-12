@@ -14,25 +14,32 @@
 #include "i2c/device_driver/mcp9804.h"
 #include "i2c/device_driver/ina231a.h"
 #include "usb_uart/terminal_control.h"
+#include "application/error_handler.h"
 
 #include <stdio.h>
 
-#define I2C_DEVICE_ADDRESS_ENTRY(name, kind, address, label)  (address),
+#define I2C_DEVICE_ADDRESS_ENTRY(name, kind, address, label, refdes)  (address),
 static const uint16_t i2cDeviceAddresses[I2C_DEVICE_COUNT] =
 {
     I2C_DEVICE_LIST(I2C_DEVICE_ADDRESS_ENTRY)
 };
 
-#define I2C_DEVICE_KIND_ENTRY(name, kind, address, label)  (kind),
+#define I2C_DEVICE_KIND_ENTRY(name, kind, address, label, refdes)  (kind),
 static const I2C_DEVICE_KIND i2cDeviceKinds[I2C_DEVICE_COUNT] =
 {
     I2C_DEVICE_LIST(I2C_DEVICE_KIND_ENTRY)
 };
 
-#define I2C_DEVICE_NAME_ENTRY(name, kind, address, label)  label,
+#define I2C_DEVICE_NAME_ENTRY(name, kind, address, label, refdes)  label,
 static const char* const i2cDeviceNames[I2C_DEVICE_COUNT] =
 {
     I2C_DEVICE_LIST(I2C_DEVICE_NAME_ENTRY)
+};
+
+#define I2C_DEVICE_REFDES_ENTRY(name, kind, address, label, refdes)  refdes,
+static const char* const i2cDeviceRefdes[I2C_DEVICE_COUNT] =
+{
+    I2C_DEVICE_LIST(I2C_DEVICE_REFDES_ENTRY)
 };
 
 static bool i2cDevicePresent[I2C_DEVICE_COUNT];
@@ -50,6 +57,16 @@ static float i2cDeviceCurrentLSB[I2C_DEVICE_COUNT];
 static bool I2CDevices_IdIsValid(I2C_DEVICE_ID id)
 {
     return ((unsigned)id < (unsigned)I2C_DEVICE_COUNT);
+}
+
+void I2CDevices_ReportI2CError(I2C_DEVICE_ID id)
+{
+    if (!I2CDevices_IdIsValid(id))
+    {
+        return;
+    }
+
+    ERROR_HANDLER_I2C_DEVICE_FLAG(id) = 1;
 }
 
 // Dispatches the presence/identification check for `id` to its kind's driver.
@@ -115,15 +132,29 @@ bool I2CDevices_Initialize(void)
 
     for (id = 0; id < I2C_DEVICE_COUNT; id++)
     {
-        i2cDevicePresent[id] = I2CDevices_Verify((I2C_DEVICE_ID)id);
-        allPresent = allPresent && i2cDevicePresent[id];
+        bool ok = I2CDevices_Verify((I2C_DEVICE_ID)id);
+
+        i2cDevicePresent[id] = ok;
 
         // Only configure devices that are actually there -- e.g. writing an
         // INA231A calibration register to an address nothing ACKed is pointless.
-        if (i2cDevicePresent[id] && !I2CDevices_ConfigureOne((I2C_DEVICE_ID)id))
+        if (ok && !I2CDevices_ConfigureOne((I2C_DEVICE_ID)id))
         {
-            allPresent = false;
+            ok = false;
         }
+
+        // Record failure against this specific device's own I2C error flag
+        // (generated from I2C_DEVICE_LIST -- see error_handler.h) rather than
+        // a single flag shared by every I2C device on the board. Like every
+        // other error_handler flag this only latches -- a device that inits
+        // fine here does NOT clear a flag some earlier runtime read may have
+        // set, since that flag is meant to survive warm resets.
+        if (!ok)
+        {
+            I2CDevices_ReportI2CError((I2C_DEVICE_ID)id);
+        }
+
+        allPresent = allPresent && ok;
     }
 
     return allPresent;
@@ -159,6 +190,16 @@ uint16_t I2CDevices_GetAddress(I2C_DEVICE_ID id)
     return i2cDeviceAddresses[id];
 }
 
+const char* I2CDevices_GetRefdes(I2C_DEVICE_ID id)
+{
+    if (!I2CDevices_IdIsValid(id))
+    {
+        return "Invalid Device ID";
+    }
+
+    return i2cDeviceRefdes[id];
+}
+
 void I2CDevices_PrintStatus(void)
 {
     uint8_t id;
@@ -169,7 +210,7 @@ void I2CDevices_PrintStatus(void)
     for (id = 0; id < I2C_DEVICE_COUNT; id++)
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-        printf("    %s\n\r", i2cDeviceNames[id]);
+        printf("    %s (Refdes: %s)\n\r", i2cDeviceNames[id], i2cDeviceRefdes[id]);
 
         I2CDevices_PrintOne((I2C_DEVICE_ID)id);
     }
@@ -184,7 +225,13 @@ bool I2CDevices_ReadTemperature(I2C_DEVICE_ID id, float *celsius)
         return false;
     }
 
-    return MCP9804_ReadTemperature(i2cDeviceAddresses[id], celsius);
+    if (!MCP9804_ReadTemperature(i2cDeviceAddresses[id], celsius))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
 }
 
 bool I2CDevices_ReadTemperatureWithStatus(I2C_DEVICE_ID id, I2C_DEVICE_TEMP_READING *reading)
@@ -197,6 +244,11 @@ bool I2CDevices_ReadTemperatureWithStatus(I2C_DEVICE_ID id, I2C_DEVICE_TEMP_READ
 
     reading->present = MCP9804_ReadTemperatureAndStatus(i2cDeviceAddresses[id],
                                                           &reading->celsius, &reading->alerts);
+
+    if (!reading->present)
+    {
+        I2CDevices_ReportI2CError(id);
+    }
 
     return reading->present;
 }
@@ -224,7 +276,13 @@ bool I2CDevices_ReadVoltage(I2C_DEVICE_ID id, float *volts)
         return false;
     }
 
-    return INA231A_ReadBusVoltage(i2cDeviceAddresses[id], volts);
+    if (!INA231A_ReadBusVoltage(i2cDeviceAddresses[id], volts))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
 }
 
 bool I2CDevices_ReadCurrent(I2C_DEVICE_ID id, float *amps)
@@ -234,7 +292,13 @@ bool I2CDevices_ReadCurrent(I2C_DEVICE_ID id, float *amps)
         return false;
     }
 
-    return INA231A_ReadCurrent(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], amps);
+    if (!INA231A_ReadCurrent(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], amps))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
 }
 
 bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts)
@@ -244,7 +308,13 @@ bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts)
         return false;
     }
 
-    return INA231A_ReadPower(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], watts);
+    if (!INA231A_ReadPower(i2cDeviceAddresses[id], i2cDeviceCurrentLSB[id], watts))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
 }
 
 static bool I2CDevices_IdIsKind(I2C_DEVICE_ID id, I2C_DEVICE_KIND kind)

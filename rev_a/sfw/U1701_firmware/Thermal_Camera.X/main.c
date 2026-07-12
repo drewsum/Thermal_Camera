@@ -239,9 +239,12 @@ void main(void) {
             &error_handler.flags.ddr2_init_error);
     while(usbUartCheckIfBusy());
 
-    // probe every device in I2C_DEVICE_LIST (currently 7x MCP9804 temp sensors)
-    reportInit("I2C Devices", I2CDevices_Initialize(),
-            &error_handler.flags.i2c_devices_init_error);
+    // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x
+    // INA231A power monitors); I2CDevices_Initialize() records each device's
+    // own pass/fail into error_handler.flags.<I2C_DEVICE_ID>_i2c_error (the
+    // same flag its runtime reads later latch into on a NACK/timeout), so no
+    // single aggregate flag is passed here
+    reportInit("I2C Devices", I2CDevices_Initialize(), NULL);
     while(usbUartCheckIfBusy());
 
     // Disable reset LED

@@ -6,16 +6,16 @@
 
   Summary:
     The single interface for every physical I2C device on the board:
-    presence, address, name, register-level status printing, and
-    kind-specific typed reads (e.g. temperature), all dispatched by device
-    kind.
+    presence, address, name, schematic refdes, register-level status
+    printing, and kind-specific typed reads (e.g. temperature), all
+    dispatched by device kind.
 
   Description:
     I2C_DEVICE_LIST below is the single source of truth for every physical
-    device: the enum, address table, kind table, and name table are all
-    generated from it (same X-macro idiom as ERROR_HANDLER_FLAG_LIST in
-    error_handler.h). Add, remove, or rename a device by editing only that
-    list.
+    device: the enum, address table, kind table, name table, and refdes
+    table are all generated from it (same X-macro idiom as
+    ERROR_HANDLER_FLAG_LIST in error_handler.h). Add, remove, or rename a
+    device by editing only that list.
 
     Bringing up a new device kind (e.g. a power monitor) means adding a
     driver file (mirroring mcp9804.c/h), a case to the I2CDevices_Verify()/
@@ -46,22 +46,24 @@ typedef enum
 
 // TODO: addresses/labels below for the 6x INA231A power monitors are
 // placeholders -- fill in real addresses (A1:A0 strapping) and labels.
+// TODO: refdes column below is all placeholder text -- fill in real
+// schematic reference designators (e.g. "U42").
+#warning "POS2P8 PSU Power Monitor is not present on this board, so its I2C address and label are commented out in i2c_devices.h"
 #define I2C_DEVICE_LIST(X) \
-    X(I2C_DEV_TEMP_1, I2C_DEVICE_KIND_MCP9804, 0x18, "POS12 Input Gate Temp Sensor") \
-    X(I2C_DEV_TEMP_2, I2C_DEVICE_KIND_MCP9804, 0x19, "POS3P0 PSU Temp Sensor") \
-    X(I2C_DEV_TEMP_3, I2C_DEVICE_KIND_MCP9804, 0x1A, "POS1P8 PSU Temp Sensor") \
-    X(I2C_DEV_TEMP_4, I2C_DEVICE_KIND_MCP9804, 0x1B, "POS2P8 PSU Temp Sensor") \
-    X(I2C_DEV_TEMP_5, I2C_DEVICE_KIND_MCP9804, 0x1C, "POS1P2 PSU Temp Sensor") \
-    X(I2C_DEV_TEMP_6, I2C_DEVICE_KIND_MCP9804, 0x1D, "Backlight PSU Temp Sensor") \
-    X(I2C_DEV_TEMP_7, I2C_DEVICE_KIND_MCP9804, 0x1F, "Ambient Temp Sensor") \
-    X(I2C_DEV_PWR_1, I2C_DEVICE_KIND_INA231A, 0x40, "POS12 Input Gate Power Monitor") \
-    X(I2C_DEV_PWR_2, I2C_DEVICE_KIND_INA231A, 0x41, "POS3P0 PSU Power Monitor") \
-    X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor") \
-    X(I2C_DEV_PWR_4, I2C_DEVICE_KIND_INA231A, 0x43, "POS2P8 PSU Power Monitor") \
-    X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor") \
-    X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor")
+    X(I2C_DEV_TEMP_1, I2C_DEVICE_KIND_MCP9804, 0x18, "POS12 Input Gate Temp Sensor", "U302") \
+    X(I2C_DEV_TEMP_2, I2C_DEVICE_KIND_MCP9804, 0x19, "POS3P0 PSU Temp Sensor", "U502") \
+    X(I2C_DEV_TEMP_3, I2C_DEVICE_KIND_MCP9804, 0x1A, "POS1P8 PSU Temp Sensor", "U702") \
+    X(I2C_DEV_TEMP_4, I2C_DEVICE_KIND_MCP9804, 0x1B, "POS2P8 PSU Temp Sensor", "U902") \
+    X(I2C_DEV_TEMP_5, I2C_DEVICE_KIND_MCP9804, 0x1C, "POS1P2 PSU Temp Sensor", "U1102") \
+    X(I2C_DEV_TEMP_6, I2C_DEVICE_KIND_MCP9804, 0x1D, "Backlight PSU Temp Sensor", "U1302") \
+    X(I2C_DEV_TEMP_7, I2C_DEVICE_KIND_MCP9804, 0x1F, "Ambient Temp Sensor", "U2302") \
+    X(I2C_DEV_PWR_1, I2C_DEVICE_KIND_INA231A, 0x40, "POS12 Input Gate Power Monitor", "U301") \
+    X(I2C_DEV_PWR_2, I2C_DEVICE_KIND_INA231A, 0x41, "POS3P0 PSU Power Monitor", "U501") \
+    X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
+    X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
+    X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301")
 
-#define I2C_DEVICE_ENUM(name, kind, address, label)  name,
+#define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
 typedef enum
 {
     I2C_DEVICE_LIST(I2C_DEVICE_ENUM)
@@ -91,6 +93,21 @@ const char* I2CDevices_GetName(I2C_DEVICE_ID id);
 
 // Returns the 7-bit I2C address for `id` (from I2C_DEVICE_LIST).
 uint16_t I2CDevices_GetAddress(I2C_DEVICE_ID id);
+
+// Returns the schematic reference designator for `id` (from
+// I2C_DEVICE_LIST). Currently placeholder text for every device -- see the
+// TODO on I2C_DEVICE_LIST.
+const char* I2CDevices_GetRefdes(I2C_DEVICE_ID id);
+
+// Latches `id`'s error_handler.flags.<I2C_DEV_...>_i2c_error flag (see
+// error_handler.h). Called internally by I2CDevices_Initialize() and every
+// blocking Read* function below on failure. Callers driving the queued
+// Read/Decode API further down must call this themselves when a queued read
+// comes back failed, since i2c_devices.c never observes that completion --
+// see updateTemperatureTelemetry()/telemetryTasks() in telemetry.c for the
+// pattern. Safe to call from I2C interrupt context (integer-only). No-op if
+// `id` is out of range.
+void I2CDevices_ReportI2CError(I2C_DEVICE_ID id);
 
 // Prints every device's full register status to the terminal, dispatched
 // by kind (e.g. MCP9804_PrintStatus() for temperature sensors).
