@@ -74,7 +74,7 @@ USB_UART_COMMAND(clearCommand, "Clear Screen", "Clears the serial port terminal"
     
 }
 
-USB_UART_COMMAND(idnCommand, "*IDN?", "Prints identification string") {
+USB_UART_COMMAND(idnCommand, "IDN?", "Prints identification string") {
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("%s by Drew Maatman, %s, FW version %s\r\n", 
@@ -91,67 +91,113 @@ USB_UART_COMMAND(repositoryCommand, "Repository?", "Prints project Git repo loca
     terminalTextAttributesReset();    
 }
 
-USB_UART_COMMAND(hostStatusCommand, "Host Status?", "Prints status of MCU host device (IDs, WDT, DMT, Prefetch, Cause of Reset, up time)") {
+USB_UART_COMMAND(mcuStatusCommand, "MCU Status?",
+        "\b\b <section>: Prints status of MCU host device. If no argument is passed, prints everything. Available sections:\r\n"
+        "       IDs\r\n"
+        "       WDT\r\n"
+        "       DMT\r\n"
+        "       Prefetch\r\n"
+        "       Cause of Reset\r\n"
+        "       Up Time") {
+
+    // Snipe out received arguments
+    char rx_section_name[32] = {0};
+    sscanf(input_str, "MCU Status? %[^\t\n\r]", rx_section_name);
+
+    // No argument means print every section below
+    bool print_all = (rx_section_name[0] == '\0');
+
+    bool want_ids            = print_all || (strcmp(rx_section_name, "IDs") == 0);
+    bool want_wdt             = print_all || (strcmp(rx_section_name, "WDT") == 0);
+    bool want_dmt             = print_all || (strcmp(rx_section_name, "DMT") == 0);
+    bool want_prefetch        = print_all || (strcmp(rx_section_name, "Prefetch") == 0);
+    bool want_cause_of_reset  = print_all || (strcmp(rx_section_name, "Cause of Reset") == 0);
+    bool want_up_time         = print_all || (strcmp(rx_section_name, "Up Time") == 0);
+    bool matched_any = want_ids || want_wdt || want_dmt || want_prefetch ||
+                        want_cause_of_reset || want_up_time;
 
     terminalTextAttributesReset();
-    
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("Host Firmware Version: %s\r\n", FIRMWARE_VERSION_STR);
-    
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("Host Device IDs:\r\n");
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    
-    // Print serial number
-    printf("    PIC32MZ Serial Number retrieved from Flash: %s\n\r",
-                getStringSerialNumber());
-        
-    // Print device ID
-    printf("    Device ID retrieved from Flash: %s (0x%X)\n\r", 
-        getDeviceIDString(getDeviceID()), 
-        getDeviceID());
 
-        // Print revision ID
-    printf("    Revision ID retrieved from Flash: %s (0x%X)\n\r", 
-        getRevisionIDString(getRevisionID()), 
-        getRevisionID());
+    if (want_ids) {
 
-    terminalTextAttributesReset();
-    
-    printWatchdogStatus();
-    printDeadmanStatus();
-    printPrefetchStatus();
-    printHLVDStatus();
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("MCU Firmware Version: %s\r\n", FIRMWARE_VERSION_STR);
 
-    // Print cause of reset
-    if (    reset_cause == Undefined ||
-            reset_cause == Primary_Config_Registers_Error ||
-            reset_cause == Primary_Secondary_Config_Registers_Error ||
-            reset_cause == Config_Mismatch ||
-            reset_cause == DMT_Reset ||
-            reset_cause == WDT_Reset ||
-            reset_cause == Software_Reset ||
-            reset_cause == External_Reset ||
-            reset_cause == BOR_Reset) {
-    
-        terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
-        
-    }
-    
-    else {
-     
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-        
-    }
-    
-    printf("Cause of most recent device reset: %s\r\n", getResetCauseString(reset_cause));
-    terminalTextAttributesReset();
+        printf("MCU Device IDs:\r\n");
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
 
-    terminalTextAttributesReset();
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("Up time since last device reset: %s\n\r",
-            getStringSecondsAsTime(device_on_time_counter));
-    terminalTextAttributesReset();
+        // Print serial number
+        printf("    PIC32MZ Serial Number retrieved from Flash: %s\n\r",
+                    getStringSerialNumber());
+
+        // Print device ID
+        printf("    Device ID retrieved from Flash: %s (0x%X)\n\r",
+            getDeviceIDString(getDeviceID()),
+            getDeviceID());
+
+            // Print revision ID
+        printf("    Revision ID retrieved from Flash: %s (0x%X)\n\r",
+            getRevisionIDString(getRevisionID()),
+            getRevisionID());
+
+        terminalTextAttributesReset();
+
+    }
+
+    if (want_wdt) printWatchdogStatus();
+    if (want_dmt) printDeadmanStatus();
+    if (want_prefetch) printPrefetchStatus();
+
+    if (want_cause_of_reset) {
+
+        // Print cause of reset
+        if (    reset_cause == Undefined ||
+                reset_cause == Primary_Config_Registers_Error ||
+                reset_cause == Primary_Secondary_Config_Registers_Error ||
+                reset_cause == Config_Mismatch ||
+                reset_cause == DMT_Reset ||
+                reset_cause == WDT_Reset ||
+                reset_cause == Software_Reset ||
+                reset_cause == External_Reset ||
+                reset_cause == BOR_Reset) {
+
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
+
+        }
+
+        else {
+
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+
+        }
+
+        printf("Cause of most recent device reset: %s\r\n", getResetCauseString(reset_cause));
+        terminalTextAttributesReset();
+
+    }
+
+    if (want_up_time) {
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("Up time since last device reset: %s\n\r",
+                getStringSecondsAsTime(device_on_time_counter));
+        terminalTextAttributesReset();
+
+    }
+
+    if (!matched_any) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Please enter a valid section, or no argument to print everything. Received \"%s\" as section name\r\n", rx_section_name);
+        printf("Sections that can be printed include:\r\n"
+                "   IDs\r\n"
+                "   WDT\r\n"
+                "   DMT\r\n"
+                "   Prefetch\r\n"
+                "   Cause of Reset\r\n"
+                "   Up Time\r\n");
+        terminalTextAttributesReset();
+    }
 
 }
 
@@ -293,19 +339,92 @@ USB_UART_COMMAND(clearErrorsCommand, "Clear Errors", "Clears all error handler f
 }
 
 USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
-        "Prints current state of surrounding circuitry, including PGOOD, time of flight, I2C slaves") {
- 
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("Platform Revision: %s\r\n", PLATFORM_REVISION_STR);
-    
-    printPGOODStatus();
+        "\b\b <section>: Prints current state of surrounding circuitry. If no argument is passed, prints everything. Available sections:\r\n"
+        "       Revision\r\n"
+        "       PGOOD\r\n"
+        "       Elapsed Time\r\n"
+        "       I2C Slaves") {
 
-    terminalTextAttributesReset();
-    
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
-    printf("\r\nI2C Bus Slave Device Status:\r\n");
-    terminalTextAttributesReset();
-    I2CDevices_PrintStatus();
+    // Snipe out received arguments
+    char rx_section_name[32] = {0};
+    sscanf(input_str, "Platform Status? %[^\t\n\r]", rx_section_name);
+
+    // No argument means print every section below
+    bool print_all = (rx_section_name[0] == '\0');
+
+    bool want_revision = print_all || (strcmp(rx_section_name, "Revision") == 0);
+    bool want_pgood     = print_all || (strcmp(rx_section_name, "PGOOD") == 0);
+    bool want_elapsed   = print_all || (strcmp(rx_section_name, "Elapsed Time") == 0);
+    bool want_i2c       = print_all || (strcmp(rx_section_name, "I2C Slaves") == 0);
+    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c;
+
+    if (want_revision) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Platform Revision: %s\r\n", PLATFORM_REVISION_STR);
+        terminalTextAttributesReset();
+    }
+
+    if (want_pgood) printPGOODStatus();
+
+    // Total elapsed on-time and power-cycle count, from the DS1683 total-
+    // elapsed-time and event recorder (I2C_DEV_ETR_1) -- broken out as its
+    // own section since these two numbers are the ones an operator most
+    // often cares about at a glance. DS1683_PrintStatus() (called from
+    // I2CDevices_PrintStatus(), the "I2C Slaves" section) still prints the
+    // rest of the device's status (command/config registers, alarm flags).
+    if (want_elapsed) {
+
+        uint32_t elapsedSeconds;
+        uint16_t powerCycleCount;
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+        printf("\r\nElapsed Time / Power Cycle Status:\r\n");
+        terminalTextAttributesReset();
+
+        if (I2CDevices_ReadElapsedSeconds(I2C_DEV_ETR_1, &elapsedSeconds)) {
+            uint32_t days  = elapsedSeconds / 86400u;
+            uint32_t hours = (elapsedSeconds / 3600u) % 24u;
+            uint32_t mins  = (elapsedSeconds / 60u) % 60u;
+            uint32_t secs  = elapsedSeconds % 60u;
+
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Total Board Time: %lu s (%lud %02lu:%02lu:%02lu)\r\n",
+                   (unsigned long)elapsedSeconds, (unsigned long)days,
+                   (unsigned long)hours, (unsigned long)mins, (unsigned long)secs);
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Total Board Time: unavailable (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        }
+
+        if (I2CDevices_ReadEventCount(I2C_DEV_ETR_1, &powerCycleCount)) {
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Power Cycle Count:   %u\r\n", powerCycleCount);
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Power Cycle Count:   unavailable (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        }
+
+        terminalTextAttributesReset();
+
+    }
+
+    if (want_i2c) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+        printf("\r\nI2C Bus Slave Device Status:\r\n");
+        terminalTextAttributesReset();
+        I2CDevices_PrintStatus();
+    }
+
+    if (!matched_any) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Please enter a valid section, or no argument to print everything. Received \"%s\" as section name\r\n", rx_section_name);
+        printf("Sections that can be printed include:\r\n"
+                "   Revision\r\n"
+                "   PGOOD\r\n"
+                "   Elapsed Time\r\n"
+                "   I2C Slaves\r\n");
+        terminalTextAttributesReset();
+    }
 
 }
 

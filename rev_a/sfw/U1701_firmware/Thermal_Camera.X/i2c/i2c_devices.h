@@ -31,6 +31,7 @@
 
 #include "i2c/device_driver/mcp9804.h"
 #include "i2c/device_driver/ina231a.h"
+#include "i2c/device_driver/ds1683.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +43,7 @@ typedef enum
 {
     I2C_DEVICE_KIND_MCP9804,   // temperature sensor
     I2C_DEVICE_KIND_INA231A,   // current/power monitor
+    I2C_DEVICE_KIND_DS1683,    // total-elapsed-time and event recorder
 } I2C_DEVICE_KIND;
 
 // TODO: addresses/labels below for the 6x INA231A power monitors are
@@ -61,7 +63,8 @@ typedef enum
     X(I2C_DEV_PWR_2, I2C_DEVICE_KIND_INA231A, 0x41, "POS3P0 PSU Power Monitor", "U501") \
     X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
-    X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301")
+    X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
+    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301")
 
 #define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
 typedef enum
@@ -140,6 +143,15 @@ bool I2CDevices_ReadCurrent(I2C_DEVICE_ID id, float *amps);
 // Reads `id`'s power in watts. Same calibration requirement as
 // I2CDevices_ReadCurrent().
 bool I2CDevices_ReadPower(I2C_DEVICE_ID id, float *watts);
+
+// Reads `id`'s accumulated elapsed time in whole seconds. Returns false if
+// `id` isn't an I2C_DEVICE_KIND_DS1683 device, or on I2C error (call
+// I2C_ErrorGet() for the reason).
+bool I2CDevices_ReadElapsedSeconds(I2C_DEVICE_ID id, uint32_t *seconds);
+
+// Reads `id`'s event count (number of falling edges seen on its EVENT pin).
+// Same kind requirement as I2CDevices_ReadElapsedSeconds().
+bool I2CDevices_ReadEventCount(I2C_DEVICE_ID id, uint16_t *count);
 
 // --- Queued (non-blocking) reads ------------------------------------------
 // Each call queues one register read for `id` and returns immediately;

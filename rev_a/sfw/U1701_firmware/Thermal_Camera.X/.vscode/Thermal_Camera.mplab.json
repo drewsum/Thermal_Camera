@@ -319,7 +319,9 @@
                 "i2c/device_driver/ina231a.c",
                 "i2c/device_driver/ina231a.h",
                 "i2c/i2c_master.c",
-                "i2c/i2c_master.h"
+                "i2c/i2c_master.h",
+                "i2c/device_driver/ds1683.c",
+                "i2c/device_driver/ds1683.h"
             ]
         }
     ]

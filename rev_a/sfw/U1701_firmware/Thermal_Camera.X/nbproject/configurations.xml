@@ -40,6 +40,7 @@
         <itemPath>i2c/i2c_devices.h</itemPath>
         <itemPath>i2c/device_driver/mcp9804.h</itemPath>
         <itemPath>i2c/device_driver/ina231a.h</itemPath>
+        <itemPath>i2c/device_driver/ds1683.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f6" displayName="ADC" projectFiles="true">
         <itemPath>adc/adc.h</itemPath>
@@ -89,6 +90,7 @@
         <itemPath>i2c/i2c_devices.c</itemPath>
         <itemPath>i2c/device_driver/mcp9804.c</itemPath>
         <itemPath>i2c/device_driver/ina231a.c</itemPath>
+        <itemPath>i2c/device_driver/ds1683.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f6" displayName="ADC" projectFiles="true">
         <itemPath>adc/adc.c</itemPath>

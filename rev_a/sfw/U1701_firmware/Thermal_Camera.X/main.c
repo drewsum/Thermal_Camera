@@ -253,6 +253,46 @@ void main(void) {
     printf("    Reset LED Disabled, boot complete\r\n");
     while(usbUartCheckIfBusy());
     
+    // Total elapsed on-time and power-cycle count, from the DS1683 total-
+    // elapsed-time and event recorder (I2C_DEV_ETR_1) -- pulled out here
+    // ahead of the generic I2C dump below since these two numbers are the
+    // ones an operator most often cares about at a glance. DS1683_PrintStatus()
+    // (called from I2CDevices_PrintStatus() further down) still prints the
+    // rest of the device's status (command/config registers, alarm flags).
+    {
+        uint32_t elapsedSeconds;
+        uint16_t powerCycleCount;
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, Bold_FONT);
+        printf("\r\nElapsed Time / Power Cycle Status:\r\n");
+        terminalTextAttributesReset();
+
+        if (I2CDevices_ReadElapsedSeconds(I2C_DEV_ETR_1, &elapsedSeconds)) {
+            uint32_t days  = elapsedSeconds / 86400u;
+            uint32_t hours = (elapsedSeconds / 3600u) % 24u;
+            uint32_t mins  = (elapsedSeconds / 60u) % 60u;
+            uint32_t secs  = elapsedSeconds % 60u;
+
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Total Board Time: %lu s (%lud %02lu:%02lu:%02lu)\r\n",
+                   (unsigned long)elapsedSeconds, (unsigned long)days,
+                   (unsigned long)hours, (unsigned long)mins, (unsigned long)secs);
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Total Board Time: unavailable (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        }
+
+        if (I2CDevices_ReadEventCount(I2C_DEV_ETR_1, &powerCycleCount)) {
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Power Cycle Count:   %u\r\n", powerCycleCount);
+        } else {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Power Cycle Count:   unavailable (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        }
+
+        terminalTextAttributesReset();
+    }
+
     // Print end of boot message, reset terminal for user input
     terminalTextAttributesReset();
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
