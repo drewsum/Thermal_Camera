@@ -999,6 +999,8 @@ bool ddr2SelfTest(void) {
     printf("    Overall: %s\r\n", overall_pass ? "PASS" : "FAIL");
     terminalTextAttributesReset();
 
+    if (!overall_pass) error_handler.flags.DDR2_self_test_failed = 1;
+
     return overall_pass;
 
 }

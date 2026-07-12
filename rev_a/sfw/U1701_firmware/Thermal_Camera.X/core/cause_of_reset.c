@@ -1,7 +1,7 @@
 
 #include <xc.h>
 
-// #include "application/error_handler.h"
+#include "application/error_handler.h"
 
 #include "core/cause_of_reset.h"
 
@@ -57,7 +57,7 @@ reset_cause_t getResetCause(void) {
 
         reset_cause = BOR_Reset;
         RCONbits.BOR = 0;
-        //error_handler.flags.vdd_brownout = 1;
+        error_handler.flags.mcu_vdd_brownout = 1;
 
         // HVDCORE also sets alongside BOR on this device (per silicon
         // errata) -- deliberately left uncleared here; hlvdCoreCheckAndClearEvent()
@@ -83,7 +83,7 @@ reset_cause_t getResetCause(void) {
      
         reset_cause = DMT_Reset;
         RCONbits.DMTO = 0;
-        //error_handler.flags.DMT_timeout = 1;
+        error_handler.flags.DMT_timeout = 1;
         
     }
     
@@ -91,7 +91,7 @@ reset_cause_t getResetCause(void) {
      
         reset_cause = WDT_Reset;
         RCONbits.WDTO = 0;
-        //error_handler.flags.WDT_timeout = 1;
+        error_handler.flags.WDT_timeout = 1;
         
     }
     
@@ -110,17 +110,17 @@ reset_cause_t getResetCause(void) {
     }
     
     if (RCONbits.BCFGERR) {
-    
-        //error_handler.flags.configuration_error = 1;
+
+        error_handler.flags.configuration_error = 1;
         RCONbits.BCFGERR = 0;
-        
+
     }
-    
+
     if (RCONbits.BCFGFAIL) {
-     
-        //error_handler.flags.configuration_error = 1;
+
+        error_handler.flags.configuration_error = 1;
         RCONbits.BCFGFAIL = 0;
-        
+
     }
 
     
