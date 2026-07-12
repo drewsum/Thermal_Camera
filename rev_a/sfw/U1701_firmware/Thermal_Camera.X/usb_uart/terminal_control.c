@@ -1,7 +1,6 @@
 
 #include <xc.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "usb_uart/terminal_control.h"
 
@@ -44,33 +43,14 @@ void terminalReturnCursor(void) {
 void terminalTextAttributes(char * foreground_color,
         char * background_color,
         char * input_attribute) {
-    
+
     char print_string[16];
-    
-    // Null print string
-    uint8_t i;
-    for (i = 0; i < sizeof(print_string); i++) {
-     
-        print_string[i] = '\0';
-        
-    }
-    
-    strncpy(print_string, "\033[", sizeof(print_string));
-   
-    strcat(print_string, input_attribute);
-    
-    strcat(print_string,";3");
-   
-    strcat(print_string, foreground_color);
-    
-    strcat(print_string,";4");
-    
-    strcat(print_string, background_color);
-    
-    strcat(print_string,"m");
-    
-    printf(print_string);
-    
+
+    snprintf(print_string, sizeof(print_string), "\033[%s;3%s;4%sm",
+            input_attribute, foreground_color, background_color);
+
+    printf("%s", print_string);
+
 }
 
 // Reset text attributes to white text, black background, no effects

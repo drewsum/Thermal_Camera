@@ -27,7 +27,6 @@ void portBGPIOInitialize (void) {
     gpioPinSetup(gpio_port_b, 0, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 1, TRIS_OUTPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 2, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
-    // RPB2Rbits.RPB2R = U5RTS_PPS_OUTPUT;                                                 // Assign RPB2 as U5RTS
     gpioPinSetup(gpio_port_b, 3, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     RPB3Rbits.RPB3R = U5TX_PPS_OUTPUT;                                                  // Assign RPB3 as U5TX
     gpioPinSetup(gpio_port_b, 4, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
@@ -36,7 +35,6 @@ void portBGPIOInitialize (void) {
     gpioPinSetup(gpio_port_b, 6, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     U4RXRbits.U4RXR = RPB6_PPS_INPUT;                                                   // Assign RPB6 as U4RX (USB UART receiver)
     gpioPinSetup(gpio_port_b, 7, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
-    // U5CTSRbits.U5CTSR = RPB7_PPS_INPUT;                                                 // Assign RPB7 as U5CTS
     gpioPinSetup(gpio_port_b, 8, TRIS_INPUT, LAT_LOW, ODC_DISABLE, ANALOG_DISABLE);
     gpioPinSetup(gpio_port_b, 9, TRIS_OUTPUT, LAT_HIGH, ODC_DISABLE, ANALOG_DISABLE);
     RPB9Rbits.RPB9R = SDO3_PPS_OUTPUT;                                                  // Assign RPB9 as SDO3
