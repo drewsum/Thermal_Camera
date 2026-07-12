@@ -74,10 +74,12 @@ bool PMDInitialize(void) {
     PMD5bits.U5MD = 0;
     PMD5bits.U6MD = 0;
     
-    // Disable all SPI Modules
+    // Disable all SPI Modules except SPI3 -- driven by spi3.c for the
+    // SST25VF080B SPI NOR flash (sst25vf080b.c); leaving that bit set would
+    // make the module inaccessible
     PMD5bits.SPI1MD = 1;
     PMD5bits.SPI2MD = 1;
-    PMD5bits.SPI3MD = 1;                
+    PMD5bits.SPI3MD = 0;
     PMD5bits.SPI4MD = 1;
     #ifdef SPI5CON
     PMD5bits.SPI5MD = 1;
@@ -146,9 +148,10 @@ bool PMDInitialize(void) {
     // Lock PMD
     PMDLock();
 
-    // Report success only if the DDR2 controller was left enabled -- disabling
-    // it here would freeze all DDR2 SFR accesses in ddr2Initialize()
-    return (PMD7bits.DDR2CMD == 0);
+    // Report success only if the DDR2 controller and SPI3 module were left
+    // enabled -- disabling either here would freeze all their SFR accesses
+    // in ddr2Initialize()/SST25VF080B_Initialize()
+    return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0);
 
 }
 

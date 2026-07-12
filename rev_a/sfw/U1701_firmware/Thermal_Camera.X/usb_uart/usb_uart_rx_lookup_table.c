@@ -28,6 +28,8 @@
 #include "core/hlvd.h"
 #include "core/ddr2.h"
 #include "i2c/i2c_devices.h"
+#include "spi/spi3.h"
+#include "spi/device_driver/sst25vf080b.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -215,6 +217,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       ADC\r\n"
         "       ADC Channels\r\n"
         "       I2C Master\r\n"
+        "       SPI Flash\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -259,10 +262,13 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "RTCC") == 0) {
         printRTCCStatus();
     }
-    else if (strcmp(rx_peripheral_name, "I2C Master") == 0) {    
+    else if (strcmp(rx_peripheral_name, "I2C Master") == 0) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
         printf("I2C Bus Master Controller Status:\r\n");
         I2C_PrintStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "SPI Flash") == 0) {
+        SPI3_PrintStatus();
     }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
@@ -292,6 +298,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   Prefetch\r\n"
                 "   DMA\r\n"
                 "   I2C Master\r\n"
+                "   SPI Flash\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();
@@ -306,6 +313,17 @@ USB_UART_COMMAND(ddr2SelfTestCommand, "DDR2 Self Test",
 
     terminalTextAttributesReset();
     ddr2SelfTest();
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(spiFlashSelfTestCommand, "SPI Flash Self Test",
+        "Runs a DESTRUCTIVE read/write/erase integrity test over the last 4KB sector of the SST25VF080B SPI flash and prints pass/fail") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+    SST25VF080B_SelfTest();
     terminalTextAttributesReset();
 
 }
@@ -343,7 +361,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         "       Revision\r\n"
         "       PGOOD\r\n"
         "       Elapsed Time\r\n"
-        "       I2C Slaves") {
+        "       I2C Slaves\r\n"
+        "       SPI Flash") {
 
     // Snipe out received arguments
     char rx_section_name[32] = {0};
@@ -356,7 +375,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
     bool want_pgood     = print_all || (strcmp(rx_section_name, "PGOOD") == 0);
     bool want_elapsed   = print_all || (strcmp(rx_section_name, "Elapsed Time") == 0);
     bool want_i2c       = print_all || (strcmp(rx_section_name, "I2C Slaves") == 0);
-    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c;
+    bool want_spiflash  = print_all || (strcmp(rx_section_name, "SPI Flash") == 0);
+    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c || want_spiflash;
 
     if (want_revision) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -415,6 +435,13 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         I2CDevices_PrintStatus();
     }
 
+    if (want_spiflash) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+        printf("\r\nSPI Flash Device Status:\r\n");
+        terminalTextAttributesReset();
+        SST25VF080B_PrintStatus();
+    }
+
     if (!matched_any) {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Please enter a valid section, or no argument to print everything. Received \"%s\" as section name\r\n", rx_section_name);
@@ -422,7 +449,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
                 "   Revision\r\n"
                 "   PGOOD\r\n"
                 "   Elapsed Time\r\n"
-                "   I2C Slaves\r\n");
+                "   I2C Slaves\r\n"
+                "   SPI Flash\r\n");
         terminalTextAttributesReset();
     }
 

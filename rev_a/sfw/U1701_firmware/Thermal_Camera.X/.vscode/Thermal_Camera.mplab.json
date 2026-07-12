@@ -321,7 +321,11 @@
                 "i2c/i2c_master.c",
                 "i2c/i2c_master.h",
                 "i2c/device_driver/ds1683.c",
-                "i2c/device_driver/ds1683.h"
+                "i2c/device_driver/ds1683.h",
+                "spi/spi3.c",
+                "spi/spi3.h",
+                "spi/device_driver/sst25vf080b.c",
+                "spi/device_driver/sst25vf080b.h"
             ]
         }
     ]

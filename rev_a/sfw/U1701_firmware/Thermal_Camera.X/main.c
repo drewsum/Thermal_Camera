@@ -21,6 +21,10 @@
 #include "core/hlvd.h"
 #include "core/ddr2.h"
 
+// SPI
+#include "spi/spi3.h"
+#include "spi/device_driver/sst25vf080b.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -237,6 +241,11 @@ void main(void) {
     // Initialize the 32MB DDR2 SDRAM stacked in this device's package
     reportInit("DDR2 SDRAM Controller", ddr2Initialize(),
             &error_handler.flags.ddr2_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Initialize the SST25VF080B SPI NOR flash on SPI3
+    reportInit("SPI Flash (SST25VF080B)", SST25VF080B_Initialize(),
+            &error_handler.flags.spi_flash_init_error);
     while(usbUartCheckIfBusy());
 
     // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x
