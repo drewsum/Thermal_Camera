@@ -217,7 +217,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       ADC\r\n"
         "       ADC Channels\r\n"
         "       I2C Master\r\n"
-        "       SPI Flash\r\n"
+        "       SPI Flash Interface\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -267,7 +267,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         printf("I2C Bus Master Controller Status:\r\n");
         I2C_PrintStatus();
     }
-    else if (strcmp(rx_peripheral_name, "SPI Flash") == 0) {
+    else if (strcmp(rx_peripheral_name, "SPI Flash Interface") == 0) {
         SPI3_PrintStatus();
     }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
@@ -298,7 +298,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   Prefetch\r\n"
                 "   DMA\r\n"
                 "   I2C Master\r\n"
-                "   SPI Flash\r\n"
+                "   SPI Flash Interface\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();
@@ -375,7 +375,7 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
     bool want_pgood     = print_all || (strcmp(rx_section_name, "PGOOD") == 0);
     bool want_elapsed   = print_all || (strcmp(rx_section_name, "Elapsed Time") == 0);
     bool want_i2c       = print_all || (strcmp(rx_section_name, "I2C Slaves") == 0);
-    bool want_spiflash  = print_all || (strcmp(rx_section_name, "SPI Flash") == 0);
+    bool want_spiflash  = print_all || (strcmp(rx_section_name, "SPI Flash Device") == 0);
     bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c || want_spiflash;
 
     if (want_revision) {
@@ -450,7 +450,7 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
                 "   PGOOD\r\n"
                 "   Elapsed Time\r\n"
                 "   I2C Slaves\r\n"
-                "   SPI Flash\r\n");
+                "   SPI Flash Device\r\n");
         terminalTextAttributesReset();
     }
 
@@ -689,3 +689,21 @@ USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V 
 
 }
 
+USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash", "Erases the entire SPI Flash memory") {
+
+    bool success = SST25VF080B_EraseChip();
+
+    terminalTextAttributesReset();
+    if (success) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI Flash erased successfully\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to erase SPI Flash\r\n");
+    }
+
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Note: The SST25VF080B device has limited write endurance, please use sparingly.\r\n");
+    terminalTextAttributesReset();
+
+}
