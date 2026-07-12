@@ -38,6 +38,7 @@
 #include "application/heartbeat_services.h"
 #include "application/telemetry.h"
 #include "application/pgood_monitor.h"
+#include "application/pushbuttons.h"
 
 
 ////// I2C
@@ -187,7 +188,10 @@ void main(void) {
     
     // Setup error handling
     reportInit("Error Handler", errorHandlerInitialize(), NULL);
-    
+
+    // Setup Power/Shutter pushbutton change-notification interrupts
+    reportInit("Pushbuttons", pushbuttonsInitialize(), NULL);
+
     // Setup heartbeat timer
     reportInit("Heartbeat Timer", heartbeatTimerInitialize(),
             &error_handler.flags.heartbeat_timer_init_error);

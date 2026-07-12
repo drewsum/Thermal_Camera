@@ -28,8 +28,15 @@
 
 // Port A
 #define POS3P3_USB_PGOOD_PIN        PORTAbits.RA2
-#define CAP_TOUCH_SHUTTER_PIN       PORTAbits.RA9
-#define CAP_TOUCH_POWER_PIN         PORTAbits.RA10
+// The board silkscreen for these two cap-touch pads is swapped relative to
+// the schematic net names (RA9/RA10 themselves are correct, unchanged) --
+// these macros are intentionally cross-mapped so their names match what's
+// printed on the board (and therefore what the user actually presses),
+// not the net name in the schematic/netlist. Do not "fix" this back to
+// RA9=SHUTTER/RA10=POWER without first confirming the silkscreen has been
+// corrected in hardware.
+#define CAP_TOUCH_SHUTTER_PIN       PORTAbits.RA10
+#define CAP_TOUCH_POWER_PIN         PORTAbits.RA9
 
 // Port B
 #define nFLASH_SPI_CS_PIN           LATBbits.LATB4

@@ -325,7 +325,9 @@
                 "spi/spi3.c",
                 "spi/spi3.h",
                 "spi/device_driver/sst25vf080b.c",
-                "spi/device_driver/sst25vf080b.h"
+                "spi/device_driver/sst25vf080b.h",
+                "application/pushbuttons.c",
+                "application/pushbuttons.h"
             ]
         }
     ]
