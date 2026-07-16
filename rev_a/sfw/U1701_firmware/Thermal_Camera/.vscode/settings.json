@@ -1,0 +1,14 @@
+{
+    "mplab.clangd.arguments": [
+        "--header-insertion=never"
+    ],
+    "mplab.clangd.compileCommandsDir": "${workspaceFolder}\\_build\\Thermal_Camera\\default",
+    "mplab.clangd.path": "c:\\Program Files\\Microchip\\xc32\\v4.45\\bin\\xc32-clangd.exe",
+    "memory-inspector.debugTypes": [
+        "arm-debugger",
+        "embedded-debug",
+        "gdb",
+        "mplab-core-da"
+    ],
+    "cmake.sourceDirectory": "C:/Users/drewm/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera/cmake/Thermal_Camera/default"
+}

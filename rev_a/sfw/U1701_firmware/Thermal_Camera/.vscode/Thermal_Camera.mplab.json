@@ -1,0 +1,116 @@
+{
+    "version": "1.9",
+    "configurations": [
+        {
+            "name": "default",
+            "id": "",
+            "device": "PIC32MZ2064DAR176",
+            "imagePath": "./out/Thermal_Camera/default.elf",
+            "toolProperties": "default-tool-base",
+            "tool": "PICkit 4",
+            "packs": [
+                {
+                    "name": "PIC32MZ-DA_DFP",
+                    "vendor": "Microchip",
+                    "version": "1.7.245"
+                }
+            ],
+            "fileSet": "default",
+            "toolchain": "default-XC32"
+        }
+    ],
+    "propertyGroups": [
+        {
+            "name": "default-XC32",
+            "type": "toolchain",
+            "provider": "microchip.toolchains:xc32@4.45",
+            "properties": {}
+        },
+        {
+            "name": "default-tool-base",
+            "type": "tool",
+            "properties": {}
+        }
+    ],
+    "fileSets": [
+        {
+            "name": "default",
+            "files": [
+                "adc/adc.h",
+                "application/adc_channels.h",
+                "application/error_handler.h",
+                "application/heartbeat_services.h",
+                "application/main.h",
+                "application/pgood_monitor.h",
+                "application/power_saving.h",
+                "application/pushbuttons.h",
+                "application/telemetry.h",
+                "core/32mzda_interrupt_control.h",
+                "core/cause_of_reset.h",
+                "core/ddr2.h",
+                "core/device_control.h",
+                "core/heartbeat_timer.h",
+                "core/hlvd.h",
+                "core/pic32mzda_configuration.h",
+                "core/prefetch.h",
+                "core/rtcc.h",
+                "core/watchdog_timer.h",
+                "gpio/pic32mzda_gpio_setup.h",
+                "gpio/pin_macros.h",
+                "i2c/device_driver/ds1683.h",
+                "i2c/device_driver/ina231a.h",
+                "i2c/device_driver/mcp9804.h",
+                "i2c/i2c_devices.h",
+                "i2c/i2c_master.h",
+                "sdhc/device_driver/sd_card.h",
+                "sdhc/fatfs/diskio.h",
+                "sdhc/fatfs/ff.h",
+                "sdhc/fatfs/ffconf.h",
+                "sdhc/sd_fileio.h",
+                "sdhc/sdhc.h",
+                "spi/device_driver/sst25vf080b.h",
+                "spi/spi3.h",
+                "usb_uart/terminal_control.h",
+                "usb_uart/usb_uart.h",
+                "usb_uart/usb_uart_rx_lookup_table.h",
+                "usb_uart/uthash.h",
+                "adc/adc.c",
+                "application/adc_channels.c",
+                "application/error_handler.c",
+                "application/heartbeat_services.c",
+                "application/pgood_monitor.c",
+                "application/power_saving.c",
+                "application/pushbuttons.c",
+                "application/telemetry.c",
+                "core/32mzda_interrupt_control.c",
+                "core/cause_of_reset.c",
+                "core/ddr2.c",
+                "core/device_control.c",
+                "core/heartbeat_timer.c",
+                "core/hlvd.c",
+                "core/prefetch.c",
+                "core/rtcc.c",
+                "core/watchdog_timer.c",
+                "gpio/pic32mzda_gpio_setup.c",
+                "i2c/device_driver/ds1683.c",
+                "i2c/device_driver/ina231a.c",
+                "i2c/device_driver/mcp9804.c",
+                "i2c/i2c_devices.c",
+                "i2c/i2c_master.c",
+                "main.c",
+                "sdhc/device_driver/sd_card.c",
+                "sdhc/fatfs/diskio.c",
+                "sdhc/fatfs/ff.c",
+                "sdhc/sd_fileio.c",
+                "sdhc/sdhc.c",
+                "spi/device_driver/sst25vf080b.c",
+                "spi/spi3.c",
+                "usb_uart/terminal_control.c",
+                "usb_uart/usb_uart.c",
+                "usb_uart/usb_uart_rx_lookup_table.c",
+                "README.md",
+                "sdhc/fatfs/LICENSE.txt"
+            ]
+        }
+    ]
+}
