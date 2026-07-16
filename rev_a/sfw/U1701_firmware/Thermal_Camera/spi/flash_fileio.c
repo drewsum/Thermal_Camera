@@ -1,0 +1,365 @@
+/*******************************************************************************
+  SPI Flash File I/O Helpers
+
+  File Name:
+    flash_fileio.c
+
+  Summary:
+    Thin app-facing FatFs wrappers for the SPI flash volume ("1:"). See
+    flash_fileio.h for the role this plays relative to sd_fileio.c and
+    sst25vf080b_disk.c.
+*******************************************************************************/
+
+#include <stdio.h>
+#include <string.h>
+
+#include "spi/flash_fileio.h"
+#include "spi/device_driver/sst25vf080b_disk.h"
+#include "sdhc/fatfs/ff.h"
+#include "usb_uart/terminal_control.h"
+#include "usb/device_driver/usb_msd.h"
+
+// While a USB host owns the media (usb_msd.h yield-to-host policy), all
+// local file I/O must refuse -- host and firmware writing the same FAT
+// volume corrupts it. Prints why, so a console user isn't left guessing.
+static bool flashFileIOMediaAvailable(void)
+{
+    if (usb_msd_media_owned_by_host)
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SPI flash volume is owned by the USB host -- unplug USB or send 'USB Detach'\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
+    return true;
+}
+
+#define FLASH_DRIVE_PREFIX      "1:"
+#define FLASH_SELFTEST_FILENAME "1:/FL_TEST.TMP"
+#define FLASH_SELFTEST_PATTERN  "Thermal_Camera SPI flash FS self-test 0123456789"
+
+static FATFS flash_fatfs;
+static bool flash_mounted = false;
+
+// f_mkfs() scratch space -- FF_MAX_SS (512B) is the minimum legal size;
+// bigger only speeds formatting up, and this volume is 1MB, so minimum it
+// is. Deliberately NOT the disk layer's 4KB staging buffer: mkfs writes
+// this buffer out through Flash_Disk_WriteSectors(), which copies into
+// that staging buffer -- sharing them would make those copies
+// self-overlapping.
+static BYTE mkfs_work[FF_MAX_SS];
+
+// FAT/SFD, everything else auto-selected by f_mkfs() from the disk
+// geometry (2040 sectors -> FAT12)
+static const MKFS_PARM flash_mkfs_parm = {
+    .fmt = FM_FAT | FM_SFD,
+    .n_fat = 0,
+    .align = 0,
+    .n_root = 0,
+    .au_size = 0
+};
+
+// Applies FLASH_FILEIO_VOLUME_LABEL if the mounted volume's label is
+// currently blank -- a deliberately renamed volume stays renamed
+static void flashFileIOEnsureLabel(void)
+{
+    char label[24];
+    DWORD vsn;
+
+    if (f_getlabel(FLASH_DRIVE_PREFIX, label, &vsn) == FR_OK && label[0] == '\0')
+    {
+        f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+    }
+}
+
+bool FlashFileIO_MountAndFormatIfNeeded(void)
+{
+    if (!flashFileIOMediaAvailable())
+    {
+        return false;
+    }
+
+    // opt=1: mount now rather than lazily, so an unformatted part is
+    // detected (and handled) here instead of on the first file access
+    FRESULT fr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
+
+    if (fr == FR_NO_FILESYSTEM)
+    {
+        // Fresh/erased part -- expected on first boot, not an error;
+        // build the volume now
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    No FAT volume on SPI flash, formatting...\r\n");
+        terminalTextAttributesReset();
+
+        if (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work)) != FR_OK)
+        {
+            flash_mounted = false;
+            return false;
+        }
+
+        fr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
+    }
+
+    flash_mounted = (fr == FR_OK);
+
+    if (flash_mounted)
+    {
+        flashFileIOEnsureLabel();
+        // Label write may be sitting in the staging buffer -- make the
+        // volume durable before declaring the mount good
+        Flash_Disk_Sync();
+    }
+
+    return flash_mounted;
+}
+
+bool FlashFileIO_Unmount(void)
+{
+    f_mount(NULL, FLASH_DRIVE_PREFIX, 0);
+    flash_mounted = false;
+
+    // Nothing may be left RAM-only once we're unmounted -- the next
+    // consumer (USB host) reads the raw flash
+    return Flash_Disk_Sync();
+}
+
+bool FlashFileIO_IsMounted(void)
+{
+    return flash_mounted;
+}
+
+bool FlashFileIO_Format(void)
+{
+    if (!flashFileIOMediaAvailable())
+    {
+        return false;
+    }
+
+    // Unmount first so FatFs holds no stale volume state across the format
+    f_mount(NULL, FLASH_DRIVE_PREFIX, 0);
+    flash_mounted = false;
+
+    if (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work)) != FR_OK)
+    {
+        return false;
+    }
+
+    if (f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1) != FR_OK)
+    {
+        return false;
+    }
+
+    flash_mounted = true;
+    f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+    return Flash_Disk_Sync();
+}
+
+bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
+{
+    if (!flashFileIOMediaAvailable() || !flash_mounted || (printLine == NULL))
+    {
+        return false;
+    }
+
+    // Default to the volume root; prefix relative paths so they land on
+    // this volume rather than FatFs's default drive (0: = SD card)
+    char dirPath[64];
+    if ((path == NULL) || (path[0] == '\0'))
+    {
+        strcpy(dirPath, FLASH_DRIVE_PREFIX "/");
+    }
+    else if ((path[0] == '0' || path[0] == '1') && (path[1] == ':'))
+    {
+        strncpy(dirPath, path, sizeof(dirPath) - 1u);
+        dirPath[sizeof(dirPath) - 1u] = '\0';
+    }
+    else
+    {
+        snprintf(dirPath, sizeof(dirPath), FLASH_DRIVE_PREFIX "%s", path);
+    }
+
+    DIR dir;
+    if (f_opendir(&dir, dirPath) != FR_OK)
+    {
+        return false;
+    }
+
+    char lineBuf[64];
+    FILINFO fno;
+    FRESULT fr;
+
+    for (;;)
+    {
+        fr = f_readdir(&dir, &fno);
+        if ((fr != FR_OK) || (fno.fname[0] == 0))
+        {
+            break;
+        }
+
+        snprintf(lineBuf, sizeof(lineBuf), "%s%-13s %10lu",
+                (fno.fattrib & AM_DIR) ? "[DIR]  " : "       ",
+                fno.fname, (unsigned long)fno.fsize);
+        printLine(lineBuf);
+    }
+
+    f_closedir(&dir);
+    return true;
+}
+
+bool FlashFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
+        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB)
+{
+    if (!flashFileIOMediaAvailable() || !flash_mounted)
+    {
+        return false;
+    }
+
+    DWORD freeClusters;
+    FATFS *fsPtr = &flash_fatfs;
+    if (f_getfree(FLASH_DRIVE_PREFIX, &freeClusters, &fsPtr) != FR_OK)
+    {
+        return false;
+    }
+
+    if (totalKB != NULL)
+    {
+        uint32_t totalSectors = (flash_fatfs.n_fatent - 2u) * flash_fatfs.csize;
+        *totalKB = totalSectors / 2u; // 512-byte sectors -> KB
+    }
+
+    if (freeKB != NULL)
+    {
+        uint32_t freeSectors = freeClusters * flash_fatfs.csize;
+        *freeKB = freeSectors / 2u;
+    }
+
+    if ((fsTypeStr != NULL) && (fsTypeStrSize > 0u))
+    {
+        const char *typeName;
+        switch (flash_fatfs.fs_type)
+        {
+            case FS_FAT12: typeName = "FAT12"; break;
+            case FS_FAT16: typeName = "FAT16"; break;
+            case FS_FAT32: typeName = "FAT32"; break;
+            default:       typeName = "Unknown"; break;
+        }
+        strncpy(fsTypeStr, typeName, fsTypeStrSize - 1u);
+        fsTypeStr[fsTypeStrSize - 1u] = '\0';
+    }
+
+    if ((labelStr != NULL) && (labelStrSize > 0u))
+    {
+        DWORD vsn;
+        char rawLabel[24];
+        if (f_getlabel(FLASH_DRIVE_PREFIX, rawLabel, &vsn) != FR_OK)
+        {
+            rawLabel[0] = '\0';
+        }
+        strncpy(labelStr, rawLabel, labelStrSize - 1u);
+        labelStr[labelStrSize - 1u] = '\0';
+    }
+
+    return true;
+}
+
+bool FlashFileIO_SelfTest(void)
+{
+    bool overallPass = true;
+    char readBuffer[sizeof(FLASH_SELFTEST_PATTERN)];
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("SPI Flash File I/O Self-Test:\r\n");
+
+    if (!flashFileIOMediaAvailable())
+    {
+        return false;
+    }
+
+    if (!flash_mounted)
+    {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    FAIL: flash FAT volume not currently mounted\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
+
+    // ---- Write ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [1/3] Write %s (%u bytes): ", FLASH_SELFTEST_FILENAME,
+            (unsigned)sizeof(FLASH_SELFTEST_PATTERN) - 1u);
+
+    bool writeOk = false;
+    FIL file;
+    if (f_open(&file, FLASH_SELFTEST_FILENAME, FA_WRITE | FA_CREATE_ALWAYS) == FR_OK)
+    {
+        UINT bytesWritten = 0;
+        writeOk = (f_write(&file, FLASH_SELFTEST_PATTERN,
+                        sizeof(FLASH_SELFTEST_PATTERN) - 1u, &bytesWritten) == FR_OK)
+                && (bytesWritten == (sizeof(FLASH_SELFTEST_PATTERN) - 1u));
+        f_close(&file);
+    }
+
+    if (writeOk)
+    {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("PASS\r\n");
+    }
+    else
+    {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("FAIL\r\n");
+        overallPass = false;
+    }
+
+    // ---- Readback verify ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [2/3] Readback verify: ");
+    memset(readBuffer, 0, sizeof(readBuffer));
+
+    bool readOk = false;
+    if (f_open(&file, FLASH_SELFTEST_FILENAME, FA_READ) == FR_OK)
+    {
+        UINT bytesRead = 0;
+        readOk = (f_read(&file, readBuffer, sizeof(FLASH_SELFTEST_PATTERN) - 1u, &bytesRead) == FR_OK)
+                && (bytesRead == (sizeof(FLASH_SELFTEST_PATTERN) - 1u))
+                && (memcmp(readBuffer, FLASH_SELFTEST_PATTERN, sizeof(FLASH_SELFTEST_PATTERN) - 1u) == 0);
+        f_close(&file);
+    }
+
+    if (readOk)
+    {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("PASS\r\n");
+    }
+    else
+    {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("FAIL (content mismatch or read error)\r\n");
+        overallPass = false;
+    }
+
+    // ---- Delete ----
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    [3/3] Delete: ");
+    if (f_unlink(FLASH_SELFTEST_FILENAME) == FR_OK)
+    {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("PASS\r\n");
+    }
+    else
+    {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("FAIL\r\n");
+        overallPass = false;
+    }
+
+    // Leave nothing pending in the staging buffer after a self-test pass
+    Flash_Disk_Sync();
+
+    terminalTextAttributes(overallPass ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("    Overall: %s\r\n", overallPass ? "PASS" : "FAIL");
+    terminalTextAttributesReset();
+
+    return overallPass;
+}

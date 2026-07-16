@@ -24,11 +24,17 @@
 // SPI
 #include "spi/spi3.h"
 #include "spi/device_driver/sst25vf080b.h"
+#include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/flash_fileio.h"
 
 // SDHC / microSD
 #include "sdhc/sdhc.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "sdhc/sd_fileio.h"
+
+// USB (mass storage device)
+#include "usb/usb.h"
+#include "usb/device_driver/usb_msd.h"
 
 // GPIO
 #include "gpio/pin_macros.h"
@@ -270,6 +276,9 @@ void main(void) {
     // Controller line above reflects an actual init failure.
     terminalTextAttributesReset();
     if (SD_Card_Initialize() && SDFileIO_Mount()) {
+        // Label a blank volume "SD" so it has a name when a USB host
+        // mounts the card (never overwrites an existing label)
+        SDFileIO_EnsureLabel();
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    microSD card detected and mounted\r\n");
     } else {
@@ -277,6 +286,22 @@ void main(void) {
         printf("    No microSD card detected\r\n");
     }
     terminalTextAttributesReset();
+    while(usbUartCheckIfBusy());
+
+    // FAT volume "1:" on the SPI flash (512B-sector disk layer over the
+    // 4KB-erase part, then mount -- formats on first boot, so the
+    // "formatting..." notice is expected exactly once per blank part)
+    reportInit("SPI Flash Filesystem",
+            Flash_Disk_Initialize() && FlashFileIO_MountAndFormatIfNeeded(),
+            &error_handler.flags.flash_fs_init_error);
+    while(usbUartCheckIfBusy());
+
+    // USB mass storage device (native USBHS module to the on-board hub):
+    // exposes the SD card (LUN 0) and SPI flash (LUN 1) as two removable
+    // drives to a USB host. Requires PMDInitialize() above to have left
+    // the USB module enabled.
+    reportInit("USB Mass Storage Device", USB_Initialize(),
+            &error_handler.flags.usb_msd_init_error);
     while(usbUartCheckIfBusy());
 
     // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x
@@ -354,6 +379,14 @@ void main(void) {
             // clear rx buffer
             memset(usb_uart_rx_buffer, 0, strlen(usb_uart_rx_buffer));
         }
+
+        // run the USB device stack if the ISR latched events (bus events,
+        // EP0 control traffic, mass storage bulk transfers)
+        if (usb_event_pending) USB_Tasks();
+
+        // flush the SPI flash staging buffer after a write-idle period
+        // (cheap compare when nothing is dirty)
+        USB_MSD_TimedTasks();
 
         // queue I2C temperature sensor reads if heartbeatServices() requested it
         // (non-blocking: the I2C interrupt clocks the transfers out in the background)

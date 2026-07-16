@@ -97,8 +97,11 @@ bool PMDInitialize(void) {
     PMD5bits.I2C4MD = 1;
     PMD5bits.I2C5MD = 1;
     
-    // Disable USB Module (UART 1 is used for USB debug)
-    PMD5bits.USBMD = 1;
+    // USB module stays enabled: it backs the USB mass storage device
+    // (usb/usb.c). PMD is one-shot (see this function's header comment),
+    // so USB_Initialize() can't undo a disable here -- it checks this bit
+    // as a precondition instead.
+    PMD5bits.USBMD = 0;
 
     // Disable CAN modules (unused)
     PMD5bits.CAN1MD = 1;

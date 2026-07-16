@@ -109,7 +109,17 @@
                 "usb_uart/usb_uart.c",
                 "usb_uart/usb_uart_rx_lookup_table.c",
                 "README.md",
-                "sdhc/fatfs/LICENSE.txt"
+                "sdhc/fatfs/LICENSE.txt",
+                "spi/flash_fileio.c",
+                "spi/flash_fileio.h",
+                "spi/device_driver/sst25vf080b_disk.c",
+                "spi/device_driver/sst25vf080b_disk.h",
+                "usb/device_driver/usb_descriptors.h",
+                "usb/device_driver/usb_descriptors.c",
+                "usb/usb.h",
+                "usb/device_driver/usb_msd.h",
+                "usb/usb.c",
+                "usb/device_driver/usb_msd.c"
             ]
         }
     ]

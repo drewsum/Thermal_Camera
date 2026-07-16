@@ -30,9 +30,13 @@
 #include "i2c/i2c_devices.h"
 #include "spi/spi3.h"
 #include "spi/device_driver/sst25vf080b.h"
+#include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/flash_fileio.h"
 #include "sdhc/sdhc.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "sdhc/sd_fileio.h"
+#include "usb/usb.h"
+#include "usb/device_driver/usb_msd.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -222,6 +226,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       I2C Master\r\n"
         "       SPI Flash Interface\r\n"
         "       SDHC\r\n"
+        "       USB\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -277,6 +282,11 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "SDHC") == 0) {
         SDHC_PrintStatus();
     }
+    else if (strcmp(rx_peripheral_name, "USB") == 0) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("USB Module Status:\r\n");
+        USB_PrintStatus();
+    }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
         sscanf(rx_peripheral_name, "Timer %u", &read_timer_number);
@@ -307,6 +317,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   I2C Master\r\n"
                 "   SPI Flash Interface\r\n"
                 "   SDHC\r\n"
+                "   USB\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();
@@ -370,7 +381,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         "       PGOOD\r\n"
         "       Elapsed Time\r\n"
         "       I2C Slaves\r\n"
-        "       SPI Flash") {
+        "       SPI Flash Device\r\n"
+        "       USB Device") {
 
     // Snipe out received arguments
     char rx_section_name[32] = {0};
@@ -384,7 +396,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
     bool want_elapsed   = print_all || (strcmp(rx_section_name, "Elapsed Time") == 0);
     bool want_i2c       = print_all || (strcmp(rx_section_name, "I2C Slaves") == 0);
     bool want_spiflash  = print_all || (strcmp(rx_section_name, "SPI Flash Device") == 0);
-    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c || want_spiflash;
+    bool want_usb       = print_all || (strcmp(rx_section_name, "USB Device") == 0);
+    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c || want_spiflash || want_usb;
 
     if (want_revision) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -450,6 +463,13 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         SST25VF080B_PrintStatus();
     }
 
+    if (want_usb) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
+        printf("\r\nUSB Mass Storage Device Status:\r\n");
+        terminalTextAttributesReset();
+        USB_MSD_PrintStatus();
+    }
+
     if (!matched_any) {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Please enter a valid section, or no argument to print everything. Received \"%s\" as section name\r\n", rx_section_name);
@@ -458,7 +478,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
                 "   PGOOD\r\n"
                 "   Elapsed Time\r\n"
                 "   I2C Slaves\r\n"
-                "   SPI Flash Device\r\n");
+                "   SPI Flash Device\r\n"
+                "   USB Device\r\n");
         terminalTextAttributesReset();
     }
 
@@ -697,11 +718,24 @@ USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V 
 
 }
 
-USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash", "Erases the entire SPI Flash memory") {
+USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash",
+        "Erases the entire SPI Flash memory, DESTROYING its FAT volume -- run \"Flash FS Format\" afterward to rebuild it") {
+
+    terminalTextAttributesReset();
+
+    // The erase happens underneath the FAT volume -- unmount first so
+    // FatFs holds no stale state (also refuses while a USB host owns the
+    // media, which an erase-under-the-host absolutely must not bypass)
+    if (usb_msd_media_owned_by_host) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash is owned by the USB host -- unplug USB or send 'USB Detach' first\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+    FlashFileIO_Unmount();
 
     bool success = SST25VF080B_EraseChip();
 
-    terminalTextAttributesReset();
     if (success) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI Flash erased successfully\r\n");
@@ -711,6 +745,7 @@ USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash", "Erases the entire SPI Flash 
     }
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("The flash FAT volume was destroyed by the erase -- run \"Flash FS Format\" to rebuild it.\r\n");
     printf("Note: The SST25VF080B device has limited write endurance, please use sparingly.\r\n");
     terminalTextAttributesReset();
 
@@ -846,5 +881,126 @@ USB_UART_COMMAND(sdEjectCommand, "SD Eject",
     }
 
     terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(usbStatusCommand, "USB Status?",
+        "Prints the USB mass storage device's bus state (speed, address, configuration) and transport/LUN status") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("USB Module Status:\r\n");
+    USB_PrintStatus();
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("USB Mass Storage Status:\r\n");
+    USB_MSD_PrintStatus();
+
+}
+
+USB_UART_COMMAND(usbDetachCommand, "USB Detach",
+        "Soft-disconnects from the USB host (host sees an unplug) and remounts the SD/FLASH volumes for local use") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    USB_Detach();
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("USB detached (soft disconnect) -- send \"USB Attach\" to re-present to the host\r\n");
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(usbAttachCommand, "USB Attach",
+        "Re-presents the USB mass storage device to the host after a \"USB Detach\"") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    USB_Attach();
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("USB attached -- the host will re-enumerate if a cable is connected\r\n");
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashFsInfoCommand, "Flash FS Info?",
+        "Prints the SPI flash FAT volume's filesystem type, label, and total/free space") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    char fsType[8], label[16];
+    uint32_t totalKB, freeKB;
+    if (FlashFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB)) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        printf("SPI Flash FAT Volume:\r\n");
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Filesystem: %s\r\n", fsType);
+        printf("    Volume Label: %s\r\n", label[0] ? label : "(none)");
+        printf("    Total Space: %lu KB\r\n", (unsigned long) totalKB);
+        printf("    Free Space: %lu KB\r\n", (unsigned long) freeKB);
+        Flash_Disk_PrintStatus();
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash FAT volume not currently mounted\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashListFilesCommand, "Flash List Files",
+        "\b\b <path>: Lists files in the given directory on the SPI flash FAT volume (defaults to the root directory if omitted)") {
+
+    char rx_path[64] = "";
+    sscanf(input_str, "Flash List Files %[^\t\n\r]", rx_path);
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Contents of flash %s:\r\n", rx_path[0] ? rx_path : "/");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+    if (!FlashFileIO_ListFiles(rx_path[0] ? rx_path : NULL, printSDFileLine)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to open directory (volume mounted?)\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashFsFormatCommand, "Flash FS Format",
+        "DESTRUCTIVELY re-formats the SPI flash FAT volume (FAT/superfloppy, labeled FLASH) and remounts it") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    if (FlashFileIO_Format()) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash FAT volume formatted and remounted\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to format SPI flash FAT volume\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashFsSelfTestCommand, "Flash FS Self Test",
+        "Writes, reads back, verifies, and deletes a throwaway test file on the SPI flash FAT volume") {
+
+    (void) input_str;   // no arguments
+
+    FlashFileIO_SelfTest();
 
 }

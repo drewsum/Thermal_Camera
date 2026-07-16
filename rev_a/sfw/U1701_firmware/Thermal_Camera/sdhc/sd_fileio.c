@@ -16,6 +16,22 @@
 #include "sdhc/fatfs/ff.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "usb_uart/terminal_control.h"
+#include "usb/device_driver/usb_msd.h"
+
+// While a USB host owns the media (usb_msd.h yield-to-host policy), all
+// local file I/O must refuse -- host and firmware writing the same FAT
+// volume corrupts it. Prints why, so a console user isn't left guessing.
+static bool sdFileIOMediaAvailable(void)
+{
+    if (usb_msd_media_owned_by_host)
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD card is owned by the USB host -- unplug USB or send 'USB Detach'\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
+    return true;
+}
 
 // 8.3-compliant name, unlikely to collide with a real file -- SD_TMP is a
 // dedicated throwaway name for SDFileIO_SelfTest(), not a scratch area
@@ -28,6 +44,11 @@ static bool sd_mounted = false;
 
 bool SDFileIO_Mount(void)
 {
+    if (!sdFileIOMediaAvailable())
+    {
+        return false;
+    }
+
     // opt=1: mount now rather than lazily on first file access, so a
     // bad/unformatted/absent card is reported immediately
     FRESULT fr = f_mount(&sd_fatfs, "", 1);
@@ -37,14 +58,51 @@ bool SDFileIO_Mount(void)
 
 bool SDFileIO_Unmount(void)
 {
+    if (!sdFileIOMediaAvailable())
+    {
+        return false;
+    }
+
     f_mount(NULL, "", 0);
     sd_mounted = false;
     return SD_Card_PowerDown();
 }
 
+bool SDFileIO_UnmountKeepPower(void)
+{
+    // No SD_Card_PowerDown() here -- see the header comment: the card is
+    // being handed to the USB host, not ejected
+    f_mount(NULL, "", 0);
+    sd_mounted = false;
+    return true;
+}
+
+bool SDFileIO_EnsureLabel(void)
+{
+    if (!sd_mounted)
+    {
+        return false;
+    }
+
+    char label[24];
+    DWORD vsn;
+    if (f_getlabel("", label, &vsn) != FR_OK)
+    {
+        return false;
+    }
+
+    if (label[0] != '\0')
+    {
+        // Card already has a label (possibly the user's own) -- leave it
+        return true;
+    }
+
+    return (f_setlabel("SD") == FR_OK);
+}
+
 bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
 {
-    if (!sd_mounted || (printLine == NULL))
+    if (!sdFileIOMediaAvailable() || !sd_mounted || (printLine == NULL))
     {
         return false;
     }
@@ -81,7 +139,7 @@ bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
 
 bool SDFileIO_ReadTextFileToTerminal(const char *path)
 {
-    if (!sd_mounted || (path == NULL))
+    if (!sdFileIOMediaAvailable() || !sd_mounted || (path == NULL))
     {
         return false;
     }
@@ -114,7 +172,7 @@ bool SDFileIO_ReadTextFileToTerminal(const char *path)
 
 bool SDFileIO_WriteFile(const char *path, const uint8_t *data, size_t length)
 {
-    if (!sd_mounted || (path == NULL) || (data == NULL))
+    if (!sdFileIOMediaAvailable() || !sd_mounted || (path == NULL) || (data == NULL))
     {
         return false;
     }
@@ -134,7 +192,7 @@ bool SDFileIO_WriteFile(const char *path, const uint8_t *data, size_t length)
 
 bool SDFileIO_DeleteFile(const char *path)
 {
-    if (!sd_mounted || (path == NULL))
+    if (!sdFileIOMediaAvailable() || !sd_mounted || (path == NULL))
     {
         return false;
     }
@@ -145,7 +203,7 @@ bool SDFileIO_DeleteFile(const char *path)
 bool SDFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
         char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB)
 {
-    if (!sd_mounted)
+    if (!sdFileIOMediaAvailable() || !sd_mounted)
     {
         return false;
     }
@@ -206,6 +264,11 @@ bool SDFileIO_SelfTest(void)
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("SD Card File I/O Self-Test:\r\n");
+
+    if (!sdFileIOMediaAvailable())
+    {
+        return false;
+    }
 
     if (!sd_mounted)
     {

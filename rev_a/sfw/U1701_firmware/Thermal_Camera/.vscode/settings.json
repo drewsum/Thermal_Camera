@@ -10,5 +10,6 @@
         "gdb",
         "mplab-core-da"
     ],
-    "cmake.sourceDirectory": "C:/Users/drewm/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera/cmake/Thermal_Camera/default"
+    "cmake.sourceDirectory": "C:/Users/drewm/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera/cmake/Thermal_Camera/default",
+    "mplab.project.workspace.addNewSourceFiles": "Always"
 }

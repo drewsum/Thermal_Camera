@@ -33,6 +33,18 @@ bool SDFileIO_Mount(void);
 // SD_Card_PowerDown(). Backing call for the "SD Eject" USB UART command.
 bool SDFileIO_Unmount(void);
 
+// Unmounts the FAT volume WITHOUT powering the card down -- the USB
+// yield-to-host handoff (usb_msd.c): the firmware releases its FatFs view
+// of the card, but the USB host is about to read the very same card, so
+// it must stay powered and initialized.
+bool SDFileIO_UnmountKeepPower(void);
+
+// Applies the volume label "SD" if the mounted volume's label is
+// currently blank (a card the user labeled themselves is never
+// re-labeled). This is what names the drive when a USB host mounts the
+// card. Call after a successful SDFileIO_Mount().
+bool SDFileIO_EnsureLabel(void);
+
 // Prints one line per directory entry via the caller-supplied
 // `printLine` callback (so this stays terminal/formatting agnostic).
 // `path` defaults to the root ("/") if NULL or empty.

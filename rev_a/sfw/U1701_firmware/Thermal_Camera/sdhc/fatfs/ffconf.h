@@ -189,8 +189,12 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_VOLUMES		1
+#define FF_VOLUMES		2
 /* Number of volumes (logical drives) to be used. (1-10) */
+/* Thermal_Camera: volume "0:" (default drive) = SD card via
+/  sdhc/device_driver/sd_card.h; volume "1:" = SST25VF080B SPI flash via
+/  spi/device_driver/sst25vf080b_disk.h. Both map 1:1 to their pdrv in
+/  sdhc/fatfs/diskio.c. */
 
 
 #define FF_STR_VOLUME_ID	0

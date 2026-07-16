@@ -22,95 +22,150 @@
 #include "sdhc/fatfs/ff.h"
 #include "sdhc/fatfs/diskio.h"
 #include "sdhc/device_driver/sd_card.h"
+#include "spi/device_driver/sst25vf080b_disk.h"
 
-// Only one physical drive (pdrv 0) is supported -- FF_VOLUMES is 1
-// (ffconf.h)
-#define SD_DISKIO_PDRV  0u
+// Physical drive mapping (FF_VOLUMES is 2 in ffconf.h):
+//   pdrv 0 = SD card (sd_card.h), FatFs's default drive
+//   pdrv 1 = SPI flash (sst25vf080b_disk.h), always present
+#define SD_DISKIO_PDRV      0u
+#define FLASH_DISKIO_PDRV   1u
 
 DSTATUS disk_status(BYTE pdrv)
 {
-    if (pdrv != SD_DISKIO_PDRV)
+    switch (pdrv)
     {
-        return STA_NOINIT;
-    }
+        case SD_DISKIO_PDRV:
+            if (!SD_Card_IsPresent())
+            {
+                return STA_NODISK;
+            }
+            return (SD_Card_GetInfo() != NULL) ? 0 : STA_NOINIT;
 
-    if (!SD_Card_IsPresent())
-    {
-        return STA_NODISK;
-    }
+        case FLASH_DISKIO_PDRV:
+            // Soldered-down media -- never STA_NODISK, only
+            // initialized-or-not
+            return Flash_Disk_IsInitialized() ? 0 : STA_NOINIT;
 
-    return (SD_Card_GetInfo() != NULL) ? 0 : STA_NOINIT;
+        default:
+            return STA_NOINIT;
+    }
 }
 
 DSTATUS disk_initialize(BYTE pdrv)
 {
-    if (pdrv != SD_DISKIO_PDRV)
+    switch (pdrv)
     {
-        return STA_NOINIT;
-    }
+        case SD_DISKIO_PDRV:
+            return SD_Card_Initialize() ? 0 : (STA_NOINIT | STA_NODISK);
 
-    return SD_Card_Initialize() ? 0 : (STA_NOINIT | STA_NODISK);
+        case FLASH_DISKIO_PDRV:
+            return Flash_Disk_Initialize() ? 0 : STA_NOINIT;
+
+        default:
+            return STA_NOINIT;
+    }
 }
 
 DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
 {
-    if (pdrv != SD_DISKIO_PDRV)
+    switch (pdrv)
     {
-        return RES_PARERR;
-    }
+        case SD_DISKIO_PDRV:
+            return SD_Card_ReadBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
-    return SD_Card_ReadBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
-}
-
-DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
-{
-    if (pdrv != SD_DISKIO_PDRV)
-    {
-        return RES_PARERR;
-    }
-
-    return SD_Card_WriteBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
-}
-
-DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
-{
-    if (pdrv != SD_DISKIO_PDRV)
-    {
-        return RES_PARERR;
-    }
-
-    const sd_card_info_t *info = SD_Card_GetInfo();
-
-    switch (cmd)
-    {
-        case CTRL_SYNC:
-            // sd_card.c's SD_Card_WriteBlocks() blocks until the transfer
-            // completes (no write-behind cache in this driver), so
-            // there's nothing pending to flush.
-            return RES_OK;
-
-        case GET_SECTOR_COUNT:
-            if (info == NULL)
-            {
-                return RES_NOTRDY;
-            }
-            *(LBA_t *)buff = (LBA_t)info->capacity_blocks;
-            return RES_OK;
-
-        case GET_SECTOR_SIZE:
-            *(WORD *)buff = 512u;
-            return RES_OK;
-
-        case GET_BLOCK_SIZE:
-            // Erase-block size isn't tracked by this driver (would come
-            // from SD Status register ERASE_SIZE, not implemented) -- 1
-            // is FatFs's documented "unknown" convention for f_mkfs().
-            *(DWORD *)buff = 1u;
-            return RES_OK;
+        case FLASH_DISKIO_PDRV:
+            return Flash_Disk_ReadSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
         default:
             return RES_PARERR;
     }
+}
+
+DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
+{
+    switch (pdrv)
+    {
+        case SD_DISKIO_PDRV:
+            return SD_Card_WriteBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
+
+        case FLASH_DISKIO_PDRV:
+            return Flash_Disk_WriteSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
+
+        default:
+            return RES_PARERR;
+    }
+}
+
+DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
+{
+    if (pdrv == SD_DISKIO_PDRV)
+    {
+        const sd_card_info_t *info = SD_Card_GetInfo();
+
+        switch (cmd)
+        {
+            case CTRL_SYNC:
+                // sd_card.c's SD_Card_WriteBlocks() blocks until the
+                // transfer completes (no write-behind cache in this
+                // driver), so there's nothing pending to flush.
+                return RES_OK;
+
+            case GET_SECTOR_COUNT:
+                if (info == NULL)
+                {
+                    return RES_NOTRDY;
+                }
+                *(LBA_t *)buff = (LBA_t)info->capacity_blocks;
+                return RES_OK;
+
+            case GET_SECTOR_SIZE:
+                *(WORD *)buff = 512u;
+                return RES_OK;
+
+            case GET_BLOCK_SIZE:
+                // Erase-block size isn't tracked by this driver (would
+                // come from SD Status register ERASE_SIZE, not
+                // implemented) -- 1 is FatFs's documented "unknown"
+                // convention for f_mkfs().
+                *(DWORD *)buff = 1u;
+                return RES_OK;
+
+            default:
+                return RES_PARERR;
+        }
+    }
+
+    if (pdrv == FLASH_DISKIO_PDRV)
+    {
+        switch (cmd)
+        {
+            case CTRL_SYNC:
+                // Unlike the SD path, this one is real: the flash disk
+                // layer write-caches a 4KB erase page (see
+                // sst25vf080b_disk.h) that must be flushed for f_sync()/
+                // f_close() to actually be durable.
+                return Flash_Disk_Sync() ? RES_OK : RES_ERROR;
+
+            case GET_SECTOR_COUNT:
+                *(LBA_t *)buff = (LBA_t)Flash_Disk_GetSectorCount();
+                return RES_OK;
+
+            case GET_SECTOR_SIZE:
+                *(WORD *)buff = FLASH_DISK_SECTOR_SIZE;
+                return RES_OK;
+
+            case GET_BLOCK_SIZE:
+                // True erase-block ratio (4KB page / 512B sector) so
+                // f_mkfs() aligns the data area to erase boundaries
+                *(DWORD *)buff = FLASH_DISK_SECTORS_PER_PAGE;
+                return RES_OK;
+
+            default:
+                return RES_PARERR;
+        }
+    }
+
+    return RES_PARERR;
 }
 
 #if FF_FS_NORTC == 0

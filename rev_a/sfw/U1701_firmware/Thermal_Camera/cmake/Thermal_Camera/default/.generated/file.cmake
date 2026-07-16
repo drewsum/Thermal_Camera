@@ -46,7 +46,12 @@ set(Thermal_Camera_default_default_XC32_FILE_TYPE_compile
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../sdhc/sd_fileio.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../sdhc/sdhc.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../spi/device_driver/sst25vf080b.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../spi/device_driver/sst25vf080b_disk.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../spi/flash_fileio.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../spi/spi3.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb/device_driver/usb_descriptors.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb/device_driver/usb_msd.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb/usb.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb_uart/terminal_control.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb_uart/usb_uart.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../usb_uart/usb_uart_rx_lookup_table.c")
