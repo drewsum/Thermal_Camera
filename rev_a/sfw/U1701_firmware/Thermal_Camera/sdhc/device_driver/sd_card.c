@@ -53,6 +53,24 @@ static sd_card_info_t sd_card_info;
 static bool sd_card_info_valid = false;
 static uint16_t sd_card_rca = 0;
 
+// Calibrated microsecond delay via CP0 Count (increments at SYSCLK/2,
+// see SD_CARD_TIMEOUT_TICKS above) -- unlike softwareDelay()
+// (core/device_control.c, a raw NOP-counting loop with no fixed
+// relationship to real time), this holds regardless of compiler
+// optimization level or core clock changes. Card power-up settling is
+// timing-critical (load-switch rise time, SD spec supply-ramp
+// requirement) so it can't tolerate softwareDelay()'s uncalibrated
+// duration -- see sd_card.h bring-up notes.
+static void SD_Card_DelayUs(uint32_t us)
+{
+    uint32_t start = _CP0_GET_COUNT();
+    uint32_t ticks = SD_CARD_TIMEOUT_TICKS(us);
+    while ((uint32_t)(_CP0_GET_COUNT() - start) < ticks)
+    {
+        // busy-wait
+    }
+}
+
 // Sends CMD55 (APP_CMD, addressed to the current RCA -- 0 before CMD3 has
 // assigned one, which is required/correct during ACMD41 polling) followed
 // by the requested application command. Returns false if either command
@@ -160,7 +178,7 @@ bool SD_Card_IsPresent(void)
 
     while (consistent < requiredConsistentReads)
     {
-        softwareDelay(1000u);
+        SD_Card_DelayUs(1000u);
         uint8_t level = (uint8_t)SD_CARD_DETECT_PIN;
         if (level != lastLevel)
         {
@@ -205,11 +223,10 @@ bool SD_Card_Initialize(void)
 
     SD_PWR_EN_PIN = HIGH;
 
-    // Load-switch turn-on settling time + SD spec's required supply-ramp/
-    // 74-clock-cycle wait before the first command. The load switch's
-    // actual turn-on time isn't accounted for precisely here (check its
-    // datasheet during bring-up) -- this is a conservative round number.
-    softwareDelay(50000u);
+    // Load-switch turn-on settling time (measured ~5-6.5ms rise for this
+    // board's CT = 0.1uF into a 10uF load, see bring-up notes) + SD spec's
+    // required supply-ramp/74-clock-cycle wait before the first command.
+    SD_Card_DelayUs(50000u);
 
     if (!SD_Card_IsPresent())
     {
