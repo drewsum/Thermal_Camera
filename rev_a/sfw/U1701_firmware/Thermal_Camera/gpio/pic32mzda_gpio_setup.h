@@ -197,6 +197,9 @@ void portJGPIOInitialize (void);
 // initializes port K GPIO pins
 void portKGPIOInitialize (void);
 
+// prints the configuration and live state of every GPIO pin on every port
+void printGPIOPortsStatus(void);
+
 #endif /* _GPIO_SETUP_H */
 
 /* *****************************************************************************

@@ -20,6 +20,7 @@
 #include "core/prefetch.h"
 #include "application/power_saving.h"
 #include "gpio/pin_macros.h"
+#include "gpio/pic32mzda_gpio_setup.h"
 #include "application/pgood_monitor.h"
 #include "application/telemetry.h"
 #include "i2c/i2c_master.h"
@@ -223,6 +224,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       DMA\r\n"
         "       ADC\r\n"
         "       ADC Channels\r\n"
+        "       GPIO Ports\r\n"
         "       I2C Master\r\n"
         "       SPI Flash Interface\r\n"
         "       SDHC\r\n"
@@ -268,6 +270,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "ADC") == 0) {
         printADCStatus();
     }
+    else if (strcmp(rx_peripheral_name, "GPIO Ports") == 0) {
+        printGPIOPortsStatus();
+    }
     else if (strcmp(rx_peripheral_name, "RTCC") == 0) {
         printRTCCStatus();
     }
@@ -312,6 +317,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   DDR2\r\n"
                 "   ADC\r\n"
                 "   ADC Channels\r\n"
+                "   GPIO Ports\r\n"
                 "   Prefetch\r\n"
                 "   DMA\r\n"
                 "   I2C Master\r\n"

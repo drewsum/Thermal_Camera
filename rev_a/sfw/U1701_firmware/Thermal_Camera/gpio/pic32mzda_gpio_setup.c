@@ -1,7 +1,10 @@
 
 #include <xc.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "gpio/pic32mzda_gpio_setup.h"
+#include "usb_uart/terminal_control.h"
 
 // initializes port A GPIO pins
 void portAGPIOInitialize (void) {
@@ -419,5 +422,202 @@ bool gpioInitialize (void) {
 
     // Pin configuration has no software-detectable failure mode
     return true;
-    
+
+}
+
+// Register set for one GPIO port, plus which pins are bonded out on the
+// 176-pin package (PORTx bits for unimplemented pins read undefined)
+typedef struct {
+    const char *name;
+    uint16_t pin_mask;
+    volatile uint32_t *ansel;
+    volatile uint32_t *tris;
+    volatile uint32_t *port;
+    volatile uint32_t *lat;
+    volatile uint32_t *odc;
+    volatile uint32_t *cnpu;
+    volatile uint32_t *cnpd;
+    volatile uint32_t *cncon;
+    volatile uint32_t *cnen;
+    volatile uint32_t *cnstat;
+    volatile uint32_t *cnne;
+    volatile uint32_t *cnf;
+    volatile uint32_t *srcon0;
+    volatile uint32_t *srcon1;
+} gpio_port_registers_t;
+
+#define GPIO_PORT_ENTRY(letter, mask)                                           \
+    {   #letter, (mask),                                                        \
+        &ANSEL##letter, &TRIS##letter, &PORT##letter, &LAT##letter,             \
+        &ODC##letter, &CNPU##letter, &CNPD##letter, &CNCON##letter,             \
+        &CNEN##letter, &CNSTAT##letter, &CNNE##letter, &CNF##letter,            \
+        &SRCON0##letter, &SRCON1##letter }
+
+#define GPIO_GRID_LABEL_WIDTH 9
+#define GPIO_GRID_COL_WIDTH   5
+
+// prints one grid row: a label followed by one value per active pin,
+// right-justified in fixed-width columns so rows line up under the header
+static void printGPIOGridRow(const char *label, const char *values[16], uint16_t pin_mask) {
+
+    uint32_t pin;
+
+    printf("%-*s", GPIO_GRID_LABEL_WIDTH, label);
+    for (pin = 0; pin <= 15; pin++) {
+        if (!((pin_mask >> pin) & 0x1)) continue;
+        printf("%*s", GPIO_GRID_COL_WIDTH, values[pin]);
+    }
+    printf("\r\n");
+
+}
+
+// prints the configuration and live state of every GPIO pin on every port,
+// laid out as a grid (columns = pins, rows = settings) for easy comparison
+void printGPIOPortsStatus(void) {
+
+    static const gpio_port_registers_t gpio_ports[] = {
+        GPIO_PORT_ENTRY(A, 0xC6FF),     // RA0-7, RA9, RA10, RA14, RA15
+        GPIO_PORT_ENTRY(B, 0xFFFF),     // RB0-15
+        GPIO_PORT_ENTRY(C, 0xF01E),     // RC1-4, RC12-15
+        GPIO_PORT_ENTRY(D, 0xFFFF),     // RD0-15
+        GPIO_PORT_ENTRY(E, 0x03FF),     // RE0-9
+        GPIO_PORT_ENTRY(F, 0x313F),     // RF0-5, RF8, RF12, RF13
+        GPIO_PORT_ENTRY(G, 0xF3C3),     // RG0, RG1, RG6-9, RG12-15
+        GPIO_PORT_ENTRY(H, 0xFFFF),     // RH0-15
+        GPIO_PORT_ENTRY(J, 0xFFFF),     // RJ0-15
+        GPIO_PORT_ENTRY(K, 0x00FF),     // RK0-7
+    };
+
+    // Slew rate select is 2 bits per pin, {SRCON1<n>, SRCON0<n>}
+    static const char *slew_strings[4] = {"Fst", "Med", "Slo", "Slw"};
+
+    uint32_t port_index;
+    uint32_t pin;
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("GPIO Ports Status:\r\n");
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Mode: In/Out/Ana   Drive: PP=push-pull, OD=open-drain   PU/PD: weak pull-up/down (--=off)\r\n");
+    printf("    CN: R/F/RF=edge rising/falling/both, M=mismatch, --=off, '!' = change/interrupt flag set\r\n");
+    printf("    Slew: Fst/Med/Slo/Slw = fastest..slowest output slew rate\r\n");
+
+    for (port_index = 0; port_index < sizeof(gpio_ports) / sizeof(gpio_ports[0]); port_index++) {
+
+        const gpio_port_registers_t *p = &gpio_ports[port_index];
+
+        // snapshot the port's registers so the whole grid is self-consistent
+        uint32_t ansel  = *p->ansel;
+        uint32_t tris   = *p->tris;
+        uint32_t port   = *p->port;
+        uint32_t lat    = *p->lat;
+        uint32_t odc    = *p->odc;
+        uint32_t cnpu   = *p->cnpu;
+        uint32_t cnpd   = *p->cnpd;
+        uint32_t cncon  = *p->cncon;
+        uint32_t cnen   = *p->cnen;
+        uint32_t cnstat = *p->cnstat;
+        uint32_t cnne   = *p->cnne;
+        uint32_t cnf    = *p->cnf;
+        uint32_t srcon0 = *p->srcon0;
+        uint32_t srcon1 = *p->srcon1;
+
+        uint32_t cn_module_on  = (cncon >> 15) & 0x1;
+        uint32_t cn_edge_style = (cncon >> 11) & 0x1;
+
+        // per-pin value strings for this port, filled in below and handed
+        // to printGPIOGridRow() one row at a time
+        char pin_num_str[16][4];
+        char mode_str[16][4];
+        char port_str[16][2];
+        char lat_str[16][2];
+        char drive_str[16][3];
+        char pu_str[16][3];
+        char pd_str[16][3];
+        char cn_str[16][4];
+        const char *slew_str[16];
+        const char *row[16];
+
+        for (pin = 0; pin <= 15; pin++) {
+
+            if (!((p->pin_mask >> pin) & 0x1)) continue;
+
+            snprintf(pin_num_str[pin], sizeof(pin_num_str[pin]), "%u", pin);
+
+            if ((ansel >> pin) & 0x1)      strcpy(mode_str[pin], "Ana");
+            else if ((tris >> pin) & 0x1)  strcpy(mode_str[pin], "In");
+            else                           strcpy(mode_str[pin], "Out");
+
+            snprintf(port_str[pin], sizeof(port_str[pin]), "%u", (unsigned) (port >> pin) & 0x1);
+            snprintf(lat_str[pin], sizeof(lat_str[pin]), "%u", (unsigned) (lat >> pin) & 0x1);
+            strcpy(drive_str[pin], ((odc >> pin) & 0x1) ? "OD" : "PP");
+            strcpy(pu_str[pin], ((cnpu >> pin) & 0x1) ? "On" : "--");
+            strcpy(pd_str[pin], ((cnpd >> pin) & 0x1) ? "On" : "--");
+
+            // Change notification setting for this pin: in edge detect mode
+            // CNEN/CNNE enable rising/falling edges and CNF holds the flag,
+            // in mismatch mode CNEN enables the pin and CNSTAT holds the flag
+            uint32_t cn_flag;
+            if (cn_edge_style) {
+                uint32_t rising  = (cnen >> pin) & 0x1;
+                uint32_t falling = (cnne >> pin) & 0x1;
+                if (rising && falling)  strcpy(cn_str[pin], "RF");
+                else if (rising)        strcpy(cn_str[pin], "R");
+                else if (falling)       strcpy(cn_str[pin], "F");
+                else                    strcpy(cn_str[pin], "--");
+                cn_flag = (cnf >> pin) & 0x1;
+            }
+            else {
+                strcpy(cn_str[pin], ((cnen >> pin) & 0x1) ? "M" : "--");
+                cn_flag = (cnstat >> pin) & 0x1;
+            }
+            if (cn_flag) strcat(cn_str[pin], "!");
+
+            uint32_t slew_select = (((srcon1 >> pin) & 0x1) << 1) | ((srcon0 >> pin) & 0x1);
+            slew_str[pin] = slew_strings[slew_select];
+
+        }
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+        if (cn_module_on) {
+            printf("\r\nPort %s (Change Notification On, %s mode):\r\n",
+                    p->name,
+                    cn_edge_style ? "edge detect" : "mismatch");
+        }
+        else {
+            printf("\r\nPort %s (Change Notification Off):\r\n", p->name);
+        }
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = pin_num_str[pin];
+        printGPIOGridRow("Pin", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = mode_str[pin];
+        printGPIOGridRow("Mode", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = port_str[pin];
+        printGPIOGridRow("State", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = lat_str[pin];
+        printGPIOGridRow("Latch", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = drive_str[pin];
+        printGPIOGridRow("Drive", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = pu_str[pin];
+        printGPIOGridRow("Pull-Up", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = pd_str[pin];
+        printGPIOGridRow("Pull-Dn", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = cn_str[pin];
+        printGPIOGridRow("CN", row, p->pin_mask);
+
+        for (pin = 0; pin <= 15; pin++) row[pin] = slew_str[pin];
+        printGPIOGridRow("Slew", row, p->pin_mask);
+
+    }
+
+    terminalTextAttributesReset();
+
 }

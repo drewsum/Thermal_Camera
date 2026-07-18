@@ -221,12 +221,34 @@ bool USB_Initialize(void)
     // Detached while configuring
     usbModifyCsr0(USB_CSR0_SOFTCONN, 0);
 
-    // Hardwired B-device (peripheral): the port goes to a hub downstream
-    // port, there is no ID pin to monitor -- override ID to 1 (B-device)
-    // and leave PHY ID monitoring off.
-    USBCRCONbits.PHYIDEN = 0;
-    USBCRCONbits.USBIDVAL = 1;
+    // Soft-reset the MUSB core (NRST | NRSTX, hardware self-clearing) and
+    // wait for completion, exactly as Microchip's Harmony USBHS driver
+    // does before any module configuration on this family. Bounded wait:
+    // ~10ms at the CP0 rate (SYSCLK/2 = 100MHz), then give up. RMW
+    // preserves the HS/FS/LS end-of-frame fields in the low bytes.
+    USBEOFRST = (USBEOFRST & 0x00FFFFFFul) | (1ul << 24) | (1ul << 25);
+    {
+        uint32_t start = _CP0_GET_COUNT();
+        while ((USBEOFRST & 0xFF000000ul) != 0u)
+        {
+            if ((uint32_t)(_CP0_GET_COUNT() - start) > 1000000ul)
+            {
+                return false;   // core never came out of soft reset
+            }
+        }
+    }
+
+    // Device (B-device) role via ID override -- the port is hardwired to
+    // a hub downstream port, so the ID value is forced rather than
+    // sensed. PHYIDEN=1 is required even with the override: it is what
+    // routes the ID/role indication into the PHY, and without it the PHY
+    // never engages (no D+ pull-up appears on the bus even with SOFTCONN
+    // set). This matches Harmony's PIC32MZ DA device-mode sequence
+    // (USBIDOVEN=1, PHYIDEN=1, USBIDVAL=1), found the hard way during
+    // rev A bring-up.
     USBCRCONbits.USBIDOVEN = 1;
+    USBCRCONbits.PHYIDEN = 1;
+    USBCRCONbits.USBIDVAL = 1;
 
 #if USB_FORCE_SESSION
     // VBUS pin wiring unverified on rev A (usb.h) -- leave every VBUS
