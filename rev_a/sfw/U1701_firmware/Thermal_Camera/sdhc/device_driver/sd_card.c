@@ -230,6 +230,9 @@ bool SD_Card_Initialize(void)
 
     if (!SD_Card_IsPresent())
     {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: card-detect pin reports no card present\r\n");
+        terminalTextAttributesReset();
         SD_PWR_EN_PIN = LOW;
         return false;
     }
@@ -246,6 +249,9 @@ bool SD_Card_Initialize(void)
     }
     if (!idleOk)
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: CMD0 (GO_IDLE_STATE) failed after 3 attempts\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -260,6 +266,10 @@ bool SD_Card_Initialize(void)
         SDHC_GetResponse(response);
         if ((response[0] & 0xFFu) != 0xAAu)
         {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    SD_Card_Initialize: CMD8 echo pattern mismatch (got 0x%02X, expected 0xAA)\r\n",
+                    (unsigned)(response[0] & 0xFFu));
+            terminalTextAttributesReset();
             SD_Card_PowerDown();
             return false;
         }
@@ -278,6 +288,9 @@ bool SD_Card_Initialize(void)
     {
         if (!SD_Card_SendAppCommand(SD_ACMD_SD_SEND_OP_COND, acmd41Arg, SDHC_RESP_R3, response))
         {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    SD_Card_Initialize: ACMD41 (SD_SEND_OP_COND) command failed\r\n");
+            terminalTextAttributesReset();
             SD_Card_PowerDown();
             return false;
         }
@@ -289,11 +302,15 @@ bool SD_Card_Initialize(void)
             break;
         }
 
-        softwareDelay(1000u);
+        SD_Card_DelayUs(1000u);
     }
 
     if (!ready)
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: ACMD41 timed out waiting for card ready (last OCR=0x%08lX)\r\n",
+                (unsigned long)ocr);
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -303,6 +320,9 @@ bool SD_Card_Initialize(void)
     // CMD2: ALL_SEND_CID
     if (!SDHC_SendCommand(SD_CMD_ALL_SEND_CID, 0u, SDHC_RESP_R2, false))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: CMD2 (ALL_SEND_CID) failed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -313,6 +333,9 @@ bool SD_Card_Initialize(void)
     // response's upper 16 bits
     if (!SDHC_SendCommand(SD_CMD_SEND_RELATIVE_ADDR, 0u, SDHC_RESP_R6R7, false))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: CMD3 (SEND_RELATIVE_ADDR) failed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -322,6 +345,9 @@ bool SD_Card_Initialize(void)
     // CMD9: SEND_CSD
     if (!SDHC_SendCommand(SD_CMD_SEND_CSD, (uint32_t)sd_card_rca << 16, SDHC_RESP_R2, false))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SD_Card_Initialize: CMD9 (SEND_CSD) failed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -331,6 +357,9 @@ bool SD_Card_Initialize(void)
     // CMD7: SELECT_CARD -- moves the card into Transfer State
     if (!SDHC_SendCommand(SD_CMD_SELECT_CARD, (uint32_t)sd_card_rca << 16, SDHC_RESP_R1B, false))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: CMD7 (SELECT_CARD) failed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -342,6 +371,9 @@ bool SD_Card_Initialize(void)
         // ignore this.
         if (!SDHC_SendCommand(SD_CMD_SET_BLOCKLEN, 512u, SDHC_RESP_R1, false))
         {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    SD_Card_Initialize: CMD16 (SET_BLOCKLEN) failed\r\n");
+            terminalTextAttributesReset();
             SD_Card_PowerDown();
             return false;
         }
@@ -351,6 +383,9 @@ bool SD_Card_Initialize(void)
     // switch the host side to match
     if (!SD_Card_SendAppCommand(SD_ACMD_SET_BUS_WIDTH, 0x2u, SDHC_RESP_R1, NULL))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: ACMD6 (SET_BUS_WIDTH) failed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -360,6 +395,9 @@ bool SD_Card_Initialize(void)
     // Speed operating rate
     if (!SDHC_SetClockDivider(SD_CARD_OPERATING_CLOCK_HZ))
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: failed to raise SDCLK to operating speed\r\n");
+        terminalTextAttributesReset();
         SD_Card_PowerDown();
         return false;
     }
@@ -388,7 +426,17 @@ bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCoun
     // SDSC cards are byte-addressed; SDHC/SDXC are block-addressed
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_READ_MULTIPLE_BLOCK : SD_CMD_READ_SINGLE_BLOCK;
-    bool useDMA = SDHC_IsADMA2Supported();
+
+    // PIO only for now. The ADMA2 path is not yet usable (found 2026-07-17
+    // when the first mount-time sector read timed out): (a) SDHCCON1.DMASEL
+    // is never set to 0b10/ADMA2, so DMAEN=1 selects SDMA whose system-
+    // address register this driver never programs; (b) SDHCAADDR is loaded
+    // in SDHC_TransferBlocksADMA2(), i.e. AFTER the data command has
+    // already been issued; (c) there's no D-cache clean/invalidate on the
+    // data buffer, so cached KSEG0 callers (FatFs) would see stale data
+    // even if (a)/(b) were fixed. Re-enable via SDHC_IsADMA2Supported()
+    // only once all three are addressed.
+    bool useDMA = false;
 
     SDHC_ConfigureBlockTransfer(512u, blockCount, false, useDMA);
 
@@ -420,7 +468,7 @@ bool SD_Card_WriteBlocks(uint32_t startBlock, const uint8_t *buffer, uint16_t bl
 
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_WRITE_MULTIPLE_BLOCK : SD_CMD_WRITE_BLOCK;
-    bool useDMA = SDHC_IsADMA2Supported();
+    bool useDMA = false; // PIO only -- see SD_Card_ReadBlocks() for the three ADMA2 gaps
 
     SDHC_ConfigureBlockTransfer(512u, blockCount, true, useDMA);
 

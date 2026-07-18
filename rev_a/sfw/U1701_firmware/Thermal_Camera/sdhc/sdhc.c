@@ -131,19 +131,21 @@ bool SDHC_Initialize(void)
         return false;
     }
 
-    // Enable command-complete, transfer-complete, and every error
-    // interrupt at the peripheral level (Flag Enable + Signal Enable) so
-    // sdhcISR() can service faults that occur outside a blocking wait.
-    // Normal command/data completion is still consumed by direct
-    // SDHCINTSTAT polling in SDHC_SendCommand()/SDHC_TransferBlocks*(),
-    // matching this codebase's existing blocking-driver convention.
+    // Enable command-complete, transfer-complete, and every error flag at
+    // the peripheral level (Flag Enable) so SDHCINTSTAT bits actually get
+    // set for SDHC_SendCommand()/SDHC_TransferBlocks*()'s blocking polls
+    // to observe. Signal Enable (and the CPU-level interrupt) is
+    // deliberately left OFF: enabling it raced sdhcISR() against those
+    // same polling loops -- CCIF fires ~120us after a command at the
+    // 400kHz identification clock, well inside the loops' own timeout
+    // window, so the (IPL2, higher-priority) ISR almost always clears
+    // SDHCINTSTAT via its own W1C before the foreground poll's follow-up
+    // reads run, making genuinely-successful commands (e.g. CMD0) read
+    // back as CCIF=0/EIF=0 and fail. sdhcISR() is kept for when this
+    // driver grows an actual async use (e.g. low-power wake-on-card-event
+    // via SDHCCON1.WKONINT/WKONINS) -- re-enable SDHCINTSEN/enableInterrupt
+    // together only once nothing is concurrently polling the same flags.
     SDHCINTEN = 0x03FF8003u;   // CCIE, TXCIE, EIE, and all *EIE error bits
-    SDHCINTSEN = 0x03FF8003u;  // same set, signal-enabled so IFS5.SDHCIF asserts
-
-    setInterruptPriority(sdhc_interrupt, 2);
-    setInterruptSubpriority(sdhc_interrupt, 1);
-    clearInterruptFlag(sdhc_interrupt);
-    enableInterrupt(sdhc_interrupt);
 
     return true;
 }
@@ -207,6 +209,30 @@ void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool i
     sdhc_pending_bcen = (blockCount > 1u) ? 1u : 0u;
 }
 
+// Recovers the CMD/DATA line inhibit state machine after a command
+// error. Per the SDHCI spec, CINHCMD/CINHDAT can latch stuck after a
+// command timeout/CRC/end-bit/index error until an explicit
+// SWRCMD/SWRDATA software reset runs -- there's no automatic recovery.
+// Without this, every SDHC_SendCommand() call after the first failure
+// dies silently on this function's own initial CINHCMD wait, before
+// ever issuing anything (this is what made CMD55/ACMD41 fail with no
+// diagnostic output after a CMD8 timeout during bring-up).
+static bool SDHC_ResetCommandLine(void)
+{
+    bool timedOut;
+    SDHCCON2bits.SWRCMD = 1;
+    SDHC_WAIT_OR_TIMEOUT(!SDHCCON2bits.SWRCMD, SDHC_RESET_TIMEOUT_TICKS, timedOut);
+    return !timedOut;
+}
+
+static bool SDHC_ResetDataLine(void)
+{
+    bool timedOut;
+    SDHCCON2bits.SWRDATA = 1;
+    SDHC_WAIT_OR_TIMEOUT(!SDHCCON2bits.SWRDATA, SDHC_RESET_TIMEOUT_TICKS, timedOut);
+    return !timedOut;
+}
+
 bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t responseType, bool dataPresent)
 {
     bool timedOut;
@@ -214,7 +240,16 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
     SDHC_WAIT_OR_TIMEOUT(!SDHCSTAT1bits.CINHCMD, SDHC_CMD_TIMEOUT_TICKS, timedOut);
     if (timedOut)
     {
-        return false;
+        // CINHCMD stuck from a prior command's error -- reset the CMD
+        // line and give this attempt one more chance before giving up.
+        printf("    SDHC_SendCommand: CMD%u found CINHCMD stuck, resetting CMD line\r\n",
+                (unsigned)cmdIndex);
+        SDHC_ResetCommandLine();
+        SDHC_WAIT_OR_TIMEOUT(!SDHCSTAT1bits.CINHCMD, SDHC_CMD_TIMEOUT_TICKS, timedOut);
+        if (timedOut)
+        {
+            return false;
+        }
     }
 
     if (dataPresent)
@@ -222,9 +257,21 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
         SDHC_WAIT_OR_TIMEOUT(!SDHCSTAT1bits.CINHDAT, SDHC_CMD_TIMEOUT_TICKS, timedOut);
         if (timedOut)
         {
-            return false;
+            printf("    SDHC_SendCommand: CMD%u found CINHDAT stuck, resetting DATA line\r\n",
+                    (unsigned)cmdIndex);
+            SDHC_ResetDataLine();
+            SDHC_WAIT_OR_TIMEOUT(!SDHCSTAT1bits.CINHDAT, SDHC_CMD_TIMEOUT_TICKS, timedOut);
+            if (timedOut)
+            {
+                return false;
+            }
         }
     }
+
+    // Clear any leftover status flags from a prior command so the
+    // CCIF/EIF poll below can only see completion/errors belonging to
+    // THIS command (W1C: writing back the set bits clears them)
+    SDHCINTSTAT = SDHCINTSTAT;
 
     SDHCARG = argument;
 
@@ -250,21 +297,31 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
             break;
     }
 
-    // Build up the combined Transfer-Mode-and-Command register field by
-    // field, writing CIDX last -- on this implementation SDHCMODE is one
-    // 32-bit register (unlike the split 16+16 pair in the generic SDHCI
-    // spec), and the command is issued the moment its CIDX field lands.
-    SDHCMODEbits.DMAEN = dataPresent ? sdhc_pending_dmaen : 0u;
-    SDHCMODEbits.BCEN = dataPresent ? sdhc_pending_bcen : 0u;
-    SDHCMODEbits.ACEN = 0u; // Auto CMD12 not used
-    SDHCMODEbits.DTXDSEL = dataPresent ? sdhc_pending_dtxdsel : 0u;
-    SDHCMODEbits.BSEL = dataPresent ? sdhc_pending_bsel : 0u;
-    SDHCMODEbits.RESPTYPE = respTypeBits;
-    SDHCMODEbits.CCRCCEN = ccrccen;
-    SDHCMODEbits.CIDXCEN = cidxcen;
-    SDHCMODEbits.DPSEL = dataPresent ? 1u : 0u;
-    SDHCMODEbits.CTYPE = 0u; // normal command (not suspend/resume/abort)
-    SDHCMODEbits.CIDX = cmdIndex;
+    // Compose the combined Transfer-Mode-and-Command register in a local
+    // and store it with ONE 32-bit write -- on this implementation
+    // SDHCMODE is one 32-bit register (unlike the split 16+16 pair in the
+    // generic SDHCI spec) and a write containing the command field issues
+    // the command. Field-by-field SDHCMODEbits assignments do NOT write
+    // just one field: each is a full 32-bit read-modify-write whose first
+    // store re-issues the previous command (stale CIDX/RESPTYPE), after
+    // which the remaining stores land while CINHCMD=1 -- undefined per
+    // SDHCI, and on this silicon the real command never goes out cleanly.
+    // This was the 2026-07-17 bring-up failure: CMD0 (all-zero config, no
+    // response) appeared to work, but CMD8 -- the first command with a
+    // nonzero config -- died with CTOEIF because the card never received
+    // a well-formed CMD8 to respond to.
+    uint32_t mode =
+          ((uint32_t)(dataPresent ? sdhc_pending_dmaen : 0u) << _SDHCMODE_DMAEN_POSITION)
+        | ((uint32_t)(dataPresent ? sdhc_pending_bcen : 0u) << _SDHCMODE_BCEN_POSITION)
+        // ACEN = 0 (Auto CMD12 not used), CTYPE = 0 (normal command)
+        | ((uint32_t)(dataPresent ? sdhc_pending_dtxdsel : 0u) << _SDHCMODE_DTXDSEL_POSITION)
+        | ((uint32_t)(dataPresent ? sdhc_pending_bsel : 0u) << _SDHCMODE_BSEL_POSITION)
+        | ((uint32_t)respTypeBits << _SDHCMODE_RESPTYPE_POSITION)
+        | ((uint32_t)ccrccen << _SDHCMODE_CCRCCEN_POSITION)
+        | ((uint32_t)cidxcen << _SDHCMODE_CIDXCEN_POSITION)
+        | ((uint32_t)(dataPresent ? 1u : 0u) << _SDHCMODE_DPSEL_POSITION)
+        | ((uint32_t)cmdIndex << _SDHCMODE_CIDX_POSITION);
+    SDHCMODE = mode;
 
     SDHC_WAIT_OR_TIMEOUT((SDHCINTSTATbits.CCIF || SDHCINTSTATbits.EIF), SDHC_CMD_TIMEOUT_TICKS, timedOut);
 
@@ -280,12 +337,29 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
     // rw="R" annotation claims (verify during bring-up if flags stick)
     SDHCINTSTAT = SDHCINTSTAT;
 
-    if (timedOut)
+    bool success = !timedOut && cmdComplete && !errorFlag && !cmdTimeoutErr
+            && !cmdCrcErr && !cmdEndBitErr && !cmdIdxErr;
+
+    if (!success)
     {
-        return false;
+        printf("    SDHC_SendCommand: CMD%u failed -- timedOut=%u CCIF=%u EIF=%u "
+                "CTOEIF=%u CCRCEIF=%u CEBEIF=%u CIDXEIF=%u CINHCMD=%u\r\n",
+                (unsigned)cmdIndex, (unsigned)timedOut, (unsigned)cmdComplete,
+                (unsigned)errorFlag, (unsigned)cmdTimeoutErr, (unsigned)cmdCrcErr,
+                (unsigned)cmdEndBitErr, (unsigned)cmdIdxErr,
+                (unsigned)SDHCSTAT1bits.CINHCMD);
+
+        // Leave the CMD line clean for whatever command comes next --
+        // any of the error flags above (or the response-wait timing out)
+        // can latch CINHCMD stuck otherwise (see SDHC_ResetCommandLine()).
+        SDHC_ResetCommandLine();
+        if (dataPresent)
+        {
+            SDHC_ResetDataLine();
+        }
     }
 
-    return cmdComplete && !errorFlag && !cmdTimeoutErr && !cmdCrcErr && !cmdEndBitErr && !cmdIdxErr;
+    return success;
 }
 
 void SDHC_GetResponse(uint32_t response[4])
