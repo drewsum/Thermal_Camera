@@ -388,6 +388,10 @@ void main(void) {
         // (cheap compare when nothing is dirty)
         USB_MSD_TimedTasks();
 
+        // mount/unmount on SD card insertion/removal edges (cheap flag
+        // check; the Port A change-notice ISR latches the edge event)
+        SDFileIO_HotSwapTasks();
+
         // queue I2C temperature sensor reads if heartbeatServices() requested it
         // (non-blocking: the I2C interrupt clocks the transfers out in the background)
         if (temp_sense_data_request) {

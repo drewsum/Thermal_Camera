@@ -77,9 +77,12 @@ typedef struct {
 //      CMD16 (SET_BLOCKLEN, SDSC only) -> ACMD6 (SET_BUS_WIDTH 4-bit) ->
 //      SDHC_SetBusWidth(true) -> SDHC_SetClockDivider() up to Default
 //      Speed (25MHz)
-// Populates a static sd_card_info_t on success. Returns false (with
-// SD_PWR_EN_PIN left de-asserted) if no card is detected or any
-// identification step times out/errors.
+// Populates a static sd_card_info_t on success. Returns false if no card
+// is detected or any identification step times out/errors. SD_PWR_EN_PIN
+// is applied on first call (with settling delay) and then left HIGH
+// permanently, even across failures and card removal -- the card-detect
+// pull-up runs off the switched rail, so card-detect is only meaningful
+// while the rail is up (see SD_Card_PowerDown()).
 bool SD_Card_Initialize(void);
 
 // Debounced poll of SD_CARD_DETECT_PIN (gpio/pin_macros.h, RA0): several
@@ -93,7 +96,8 @@ bool SD_Card_Initialize(void);
 bool SD_Card_IsPresent(void);
 
 // Returns NULL if no card has been successfully initialized (SD_Card_
-// Initialize() hasn't run, failed, or SD_Card_PowerDown() has since run).
+// Initialize() hasn't run, failed, or SD_Card_Deinitialize()/
+// SD_Card_PowerDown() has since run).
 const sd_card_info_t *SD_Card_GetInfo(void);
 
 // CMD17/CMD18 (single/multi block read), dispatching to
@@ -109,12 +113,26 @@ bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCoun
 // addressing/DMA/multi-block-stop behavior, which this mirrors.
 bool SD_Card_WriteBlocks(uint32_t startBlock, const uint8_t *buffer, uint16_t blockCount);
 
-// Waits (bounded) for SDHC_IsDataLineBusy() to clear -- no transfer left
-// in flight -- then de-asserts SD_PWR_EN_PIN and clears the cached card
-// info (SD_Card_GetInfo() returns NULL afterward). Called automatically
-// on any SD_Card_Initialize() failure step; also the backing call for the
-// "SD Eject" USB UART command so the card can be safely pulled.
+// SLEEP-ENTRY ONLY: waits (bounded) for SDHC_IsDataLineBusy() to clear --
+// no transfer left in flight -- then de-asserts SD_PWR_EN_PIN and clears
+// the cached card info. Never call this in normal operation: the
+// card-detect pull-up is powered from the switched card rail, so with the
+// rail down SD_CARD_DETECT_PIN drifts low and misreads as "card present"
+// (this fed a remove/re-insert infinite mount loop before the 2026-07-18
+// always-on-rail rework). Everything except sleep entry uses
+// SD_Card_Deinitialize() instead.
 bool SD_Card_PowerDown(void);
+
+// Clears the cached card state (SD_Card_GetInfo() returns NULL afterward)
+// without touching SD_PWR_EN_PIN. The teardown for mount failures, eject,
+// and card removal -- see SD_Card_PowerDown() for why power stays up.
+void SD_Card_Deinitialize(void);
+
+// Calibrated busy-wait via CP0 Count (SYSCLK/2), unlike softwareDelay()
+// (core/device_control.c) which is an uncalibrated NOP loop. Public so
+// the hot-swap path (sd_fileio.c) can use the same timebase for its
+// insertion settle delay.
+void SD_Card_DelayUs(uint32_t us);
 
 // Prints CID/CSD-derived card metadata to the terminal: manufacturer ID,
 // OEM ID, product name/revision/serial number, manufacture date, card
@@ -122,6 +140,14 @@ bool SD_Card_PowerDown(void);
 // Backs the "SD Card Info?" USB UART command. Deliberately NOT part of
 // SDHC_PrintStatus() (sdhc.h), which is peripheral-settings-only.
 void SD_Card_PrintInfo(void);
+
+// Set by portAChangeNoticeISR() (application/pushbuttons.c, which owns
+// Port A change-notice) whenever the SD_CARD_DETECT_PIN level changes in
+// either direction; consumed (cleared) by SDFileIO_HotSwapTasks()
+// (sdhc/sd_fileio.h) in main-loop context, where the actual debounce +
+// mount/unmount work runs. Same latched-request-flag pattern as the other
+// ISR-to-main-loop signals in main.c (usb_event_pending et al.).
+extern volatile uint8_t sd_card_hotswap_event;
 
 #ifdef __cplusplus
 }

@@ -96,6 +96,15 @@ bool SDHC_Initialize(void);
 // sequencing, waiting ICLKSTABLE both times. Returns false on timeout.
 bool SDHC_SetClockDivider(uint32_t targetHz);
 
+// Gates SDCLK off (SDHCCON2.SDCLKEN = 0), leaving the internal clock and
+// all other controller state alone. Called on card teardown
+// (SD_Card_Deinitialize()) so the bus is QUIET while no card is mounted:
+// a card hot-inserted into a slot with the previous session's 25MHz
+// SDCLK free-running can clock in contact-bounce garbage as command
+// framing and be deaf to the first real command afterward. The next
+// SDHC_Initialize()/SDHC_SetClockDivider() re-enables the clock.
+void SDHC_StopClock(void);
+
 // Sets SDHCCON1.DTXWIDTH for 1-bit or 4-bit transfer width. Caller
 // (sd_card.c) must have already told the card to switch via ACMD6 first --
 // this only changes the host side.

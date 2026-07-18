@@ -29,8 +29,11 @@ extern "C" {
 // already succeeded.
 bool SDFileIO_Mount(void);
 
-// Unmounts the FAT volume and powers the card down via
-// SD_Card_PowerDown(). Backing call for the "SD Eject" USB UART command.
+// Unmounts the FAT volume and invalidates the cached card state via
+// SD_Card_Deinitialize() -- card power is deliberately left ON, since
+// card-detect sensing runs off the switched rail (see
+// SD_Card_PowerDown()). Backing call for the "SD Eject" USB UART command
+// and the hot-swap removal path.
 bool SDFileIO_Unmount(void);
 
 // Unmounts the FAT volume WITHOUT powering the card down -- the USB
@@ -68,6 +71,17 @@ bool SDFileIO_DeleteFile(const char *path);
 // mounted.
 bool SDFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
         char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB);
+
+// Main-loop service for SD card hot-swap: consumes sd_card_hotswap_event
+// (sd_card.h -- latched by the Port A change-notice ISR on any card-detect
+// edge), debounces via SD_Card_IsPresent(), and converges actual state to
+// detected state: fresh insertion -> SD_Card_Initialize() + mount + label,
+// removal -> unmount + power-down. No-ops (cheap flag check) when no edge
+// has fired. Deliberately stands down while usb_msd_media_owned_by_host --
+// the USB MSC layer runs its own presence tracking + UNIT ATTENTION
+// reporting for the host (usb_msd.c msdLunMediaReady()) and remounts the
+// firmware view itself when the host releases the media.
+void SDFileIO_HotSwapTasks(void);
 
 // Write / read-back / verify / delete round-trip on a throwaway test
 // file, mirroring SST25VF080B_SelfTest()'s structure. Prints a colored

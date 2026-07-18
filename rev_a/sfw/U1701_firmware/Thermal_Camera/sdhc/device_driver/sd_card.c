@@ -46,12 +46,17 @@
 // negotiation is a phase-2 item, see sd_card.h
 #define SD_CARD_OPERATING_CLOCK_HZ      25000000UL
 
+
 #define SD_CARD_MAX_SDSC_CAPACITY_BLOCKS  (2UL * 1024u * 1024u * 1024u / 512u)   // 2GB
 #define SD_CARD_MAX_SDHC_CAPACITY_BLOCKS  (32UL * 1024u * 1024u * 1024u / 512u)  // 32GB
 
 static sd_card_info_t sd_card_info;
 static bool sd_card_info_valid = false;
 static uint16_t sd_card_rca = 0;
+
+// See sd_card.h -- set by the Port A change-notice ISR on any card-detect
+// edge, consumed by SDFileIO_HotSwapTasks() in the main loop
+volatile uint8_t sd_card_hotswap_event = 0;
 
 // Calibrated microsecond delay via CP0 Count (increments at SYSCLK/2,
 // see SD_CARD_TIMEOUT_TICKS above) -- unlike softwareDelay()
@@ -61,7 +66,7 @@ static uint16_t sd_card_rca = 0;
 // timing-critical (load-switch rise time, SD spec supply-ramp
 // requirement) so it can't tolerate softwareDelay()'s uncalibrated
 // duration -- see sd_card.h bring-up notes.
-static void SD_Card_DelayUs(uint32_t us)
+void SD_Card_DelayUs(uint32_t us)
 {
     uint32_t start = _CP0_GET_COUNT();
     uint32_t ticks = SD_CARD_TIMEOUT_TICKS(us);
@@ -200,6 +205,15 @@ const sd_card_info_t *SD_Card_GetInfo(void)
     return sd_card_info_valid ? &sd_card_info : NULL;
 }
 
+// Sleep-entry ONLY -- do not call this on mount failure, eject, or card
+// removal. The card-detect pull-up is powered from the switched card rail,
+// so dropping SD_PWR_EN_PIN makes SD_CARD_DETECT_PIN drift low and read
+// as "card present" with the slot empty. During normal operation the rail
+// must stay high for card-detect to mean anything (this caused a
+// remove/re-insert infinite mount loop on 2026-07-18: power-down -> CD
+// drifts low -> "insertion" edge -> init re-applies power -> CD reads
+// high/"no card" -> init fails and powers down -> repeat). Use
+// SD_Card_Deinitialize() for every state-teardown that isn't sleep.
 bool SD_Card_PowerDown(void)
 {
     uint32_t start = _CP0_GET_COUNT();
@@ -215,27 +229,83 @@ bool SD_Card_PowerDown(void)
     return true;
 }
 
+// Clears the cached card state (so SD_Card_GetInfo() reports no card)
+// WITHOUT touching SD_PWR_EN_PIN -- see SD_Card_PowerDown() for why the
+// rail stays up in normal operation.
+void SD_Card_Deinitialize(void)
+{
+    sd_card_info_valid = false;
+    sd_card_rca = 0;
+
+    // Quiet the bus while no card is mounted -- see SDHC_StopClock():
+    // leaving the 25MHz operating clock free-running into an empty slot
+    // means the next hot-inserted card clocks in contact-bounce garbage
+    // while seating and misses the first real command (the deterministic
+    // first-CMD8 CTOEIF on every hot insert, 2026-07-18)
+    SDHC_StopClock();
+}
+
 bool SD_Card_Initialize(void)
 {
     sd_card_info_valid = false;
     
     sd_card_rca = 0;
 
-    SD_PWR_EN_PIN = HIGH;
-
-    // Load-switch turn-on settling time (measured ~5-6.5ms rise for this
-    // board's CT = 0.1uF into a 10uF load, see bring-up notes) + SD spec's
+    // Card power is applied once (normally the first Initialize after
+    // boot) and then left on for good -- card-detect sensing depends on
+    // the rail staying up, see SD_Card_PowerDown(). Only a first-time
+    // (or post-sleep) power application needs the settling delay:
+    // load-switch turn-on time (measured ~5-6.5ms rise for this board's
+    // CT = 0.1uF into a 10uF load, see bring-up notes) + SD spec's
     // required supply-ramp/74-clock-cycle wait before the first command.
-    SD_Card_DelayUs(50000u);
+    // On a hot re-insert the rail is already up (the card did its own
+    // power-on reset as its contacts mated) so no wait is needed.
+    if (SD_PWR_EN_PIN == LOW)
+    {
+        SD_PWR_EN_PIN = HIGH;
+        SD_Card_DelayUs(50000u);
+    }
 
     if (!SD_Card_IsPresent())
     {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: card-detect pin reports no card present\r\n");
         terminalTextAttributesReset();
-        SD_PWR_EN_PIN = LOW;
+
+        // Quiet the bus on this path too (not just card removal) --
+        // otherwise a card-less boot leaves main.c's SDHC_Initialize()
+        // 400kHz clock free-running into the empty slot, recreating the
+        // insertion bounce-sampling hazard SDHC_StopClock() exists for
+        SD_Card_Deinitialize();
         return false;
     }
+
+    // Full host-controller re-init before every identification attempt,
+    // replicating the known-good cold-boot path exactly. SWRALL wipes
+    // whatever a previous card session or a mid-removal event left behind
+    // (SDHCI hosts may auto-clear SDBP bus power on a removal event, on
+    // top of the 25MHz/4-bit operating settings a successful init leaves
+    // configured -- either one makes a hot-inserted card deaf to CMD8),
+    // and SDHC_Initialize() rebuilds everything from scratch: internal
+    // clock, bus power, 400kHz identification clock, 1-bit width,
+    // interrupt plumbing. At boot this repeats what main.c's own
+    // SDHC_Initialize() call just did, which is harmless. This was the
+    // 2026-07-18 fix for "cold boot mounts fine, hot re-insert times out
+    // on CMD8 even at the correct identification clock".
+    if (!SDHC_Initialize())
+    {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    SD_Card_Initialize: SDHC controller re-init failed\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
+
+    // SD spec: the card must see >= 74 SDCLK cycles between clock start
+    // and the first command (185us at 400kHz). At cold boot main.c's own
+    // SDHC_Initialize() call left the clock running long before we get
+    // here, but on a hot insert the re-init above just restarted a
+    // stopped clock (see SD_Card_Deinitialize()) microseconds ago.
+    SD_Card_DelayUs(1000u);
 
     uint32_t response[4];
 
@@ -252,7 +322,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: CMD0 (GO_IDLE_STATE) failed after 3 attempts\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
 
@@ -260,7 +330,21 @@ bool SD_Card_Initialize(void)
     // support (voltage window 2.7-3.6V + 0xAA check pattern). A timeout/
     // error here means a Version 1.x card (or not an SD card at all);
     // either way this driver proceeds with a legacy (non-HCS) ACMD41.
-    bool v2OrLater = SDHC_SendCommand(SD_CMD_SEND_IF_COND, 0x1AAu, SDHC_RESP_R6R7, false);
+    // Retried like CMD0: a hot-inserted card can miss the first CMD8
+    // while still finishing its own power-on reset, and a missed CMD8 is
+    // expensive -- an SDHC/SDXC card that never saw CMD8 will NEVER
+    // report ready to ACMD41 (stays busy, OCR bit31 = 0), so the
+    // misclassification costs the full 1s ACMD41 timeout before failing.
+    // A genuine v1.x card just fails all three attempts (~30ms extra).
+    bool v2OrLater = false;
+    for (uint8_t attempt = 0; (attempt < 3u) && !v2OrLater; attempt++)
+    {
+        if (attempt > 0u)
+        {
+            SD_Card_DelayUs(10000u);
+        }
+        v2OrLater = SDHC_SendCommand(SD_CMD_SEND_IF_COND, 0x1AAu, SDHC_RESP_R6R7, false);
+    }
     if (v2OrLater)
     {
         SDHC_GetResponse(response);
@@ -270,7 +354,7 @@ bool SD_Card_Initialize(void)
             printf("    SD_Card_Initialize: CMD8 echo pattern mismatch (got 0x%02X, expected 0xAA)\r\n",
                     (unsigned)(response[0] & 0xFFu));
             terminalTextAttributesReset();
-            SD_Card_PowerDown();
+            SD_Card_Deinitialize();
             return false;
         }
     }
@@ -291,7 +375,7 @@ bool SD_Card_Initialize(void)
             terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
             printf("    SD_Card_Initialize: ACMD41 (SD_SEND_OP_COND) command failed\r\n");
             terminalTextAttributesReset();
-            SD_Card_PowerDown();
+            SD_Card_Deinitialize();
             return false;
         }
 
@@ -311,7 +395,7 @@ bool SD_Card_Initialize(void)
         printf("    SD_Card_Initialize: ACMD41 timed out waiting for card ready (last OCR=0x%08lX)\r\n",
                 (unsigned long)ocr);
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
 
@@ -323,7 +407,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: CMD2 (ALL_SEND_CID) failed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
     SDHC_GetResponse(response);
@@ -336,7 +420,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: CMD3 (SEND_RELATIVE_ADDR) failed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
     SDHC_GetResponse(response);
@@ -348,7 +432,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SD_Card_Initialize: CMD9 (SEND_CSD) failed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
     SDHC_GetResponse(response);
@@ -360,7 +444,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: CMD7 (SELECT_CARD) failed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
 
@@ -374,7 +458,7 @@ bool SD_Card_Initialize(void)
             terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
             printf("    SD_Card_Initialize: CMD16 (SET_BLOCKLEN) failed\r\n");
             terminalTextAttributesReset();
-            SD_Card_PowerDown();
+            SD_Card_Deinitialize();
             return false;
         }
     }
@@ -386,7 +470,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: ACMD6 (SET_BUS_WIDTH) failed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
     SDHC_SetBusWidth(true);
@@ -398,7 +482,7 @@ bool SD_Card_Initialize(void)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    SD_Card_Initialize: failed to raise SDCLK to operating speed\r\n");
         terminalTextAttributesReset();
-        SD_Card_PowerDown();
+        SD_Card_Deinitialize();
         return false;
     }
 

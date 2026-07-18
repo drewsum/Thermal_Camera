@@ -65,7 +65,14 @@ bool SDFileIO_Unmount(void)
 
     f_mount(NULL, "", 0);
     sd_mounted = false;
-    return SD_Card_PowerDown();
+
+    // State teardown only -- SD_PWR_EN_PIN stays HIGH. Card-detect
+    // sensing runs off the switched rail, so powering down here (as this
+    // originally did) makes an empty slot read "card present" and fed an
+    // infinite remount loop on removal. See SD_Card_PowerDown(), which is
+    // reserved for sleep entry.
+    SD_Card_Deinitialize();
+    return true;
 }
 
 bool SDFileIO_UnmountKeepPower(void)
@@ -75,6 +82,90 @@ bool SDFileIO_UnmountKeepPower(void)
     f_mount(NULL, "", 0);
     sd_mounted = false;
     return true;
+}
+
+void SDFileIO_HotSwapTasks(void)
+{
+    if (!sd_card_hotswap_event)
+    {
+        return;
+    }
+    sd_card_hotswap_event = 0;
+
+    if (usb_msd_media_owned_by_host)
+    {
+        // USB MSC layer owns presence tracking while the host holds the
+        // media (see header comment) -- swallow the event; the release
+        // path re-checks presence and remounts on its own
+        return;
+    }
+
+    // SD_Card_IsPresent() is the debounce (5 consecutive consistent 1ms
+    // reads), so slot-contact bounce collapses into one settled answer.
+    // Bounce edges that re-latch the event after this read just cause
+    // extra passes through here that no-op on the state comparison below.
+    bool present = SD_Card_IsPresent();
+    bool initialized = (SD_Card_GetInfo() != NULL);
+
+    if (present && !initialized)
+    {
+        // The CN edge fires at first contact touch, well before the card
+        // is fully seated -- contacts wipe and the card can brown in and
+        // out of power for tens of ms while the user is still pushing it
+        // in. Give it time to seat and finish its own power-on reset,
+        // then re-verify it's still there before the first command.
+        // Without this, CMD8 lands on a card that can't answer yet, and a
+        // missed CMD8 costs the full 1s ACMD41 timeout (see the CMD8
+        // retry comment in sd_card.c) -- mounting then only succeeded
+        // when a later bounce edge happened to retry.
+        SD_Card_DelayUs(100000u);
+        if (!SD_Card_IsPresent())
+        {
+            // Still moving (or actually a removal) -- whatever changed
+            // will have latched a fresh event; deal with it next pass
+            return;
+        }
+
+        terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("microSD card inserted, mounting:\r\n");
+        terminalTextAttributesReset();
+
+        // One deliberate retry instead of relying on slot-bounce edges to
+        // re-trigger this path
+        bool mounted = SD_Card_Initialize() && SDFileIO_Mount();
+        if (!mounted)
+        {
+            mounted = SD_Card_Initialize() && SDFileIO_Mount();
+        }
+
+        if (mounted)
+        {
+            SDFileIO_EnsureLabel();
+            terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    microSD card mounted\r\n");
+            terminalTextAttributesReset();
+            SD_Card_PrintInfo();
+        }
+        else
+        {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    microSD card failed to mount\r\n");
+        }
+        terminalTextAttributesReset();
+    }
+    else if (!present && initialized)
+    {
+        terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("microSD card removed, unmounting\r\n");
+        terminalTextAttributesReset();
+
+        // The card is already gone, so this is cleanup, not a graceful
+        // eject: f_mount(NULL) drops the FatFs view (any open files are
+        // simply orphaned) and the card state cache is invalidated. Slot
+        // power stays on -- card-detect depends on it (see
+        // SD_Card_PowerDown()).
+        SDFileIO_Unmount();
+    }
 }
 
 bool SDFileIO_EnsureLabel(void)

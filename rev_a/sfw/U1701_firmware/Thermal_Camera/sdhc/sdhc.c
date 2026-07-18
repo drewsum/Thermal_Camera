@@ -49,6 +49,24 @@
 static uint32_t sdhc_base_clock_hz = 0;
 static bool     sdhc_adma2_supported = false;
 
+// Interrupt-latched SDHCINTSTAT accumulator: sdhcISR() W1C-clears the
+// hardware register and ORs what it saw in here; the blocking waits in
+// SDHC_SendCommand()/SDHC_TransferBlocks*() consume THIS instead of the
+// SFR. This is what makes the ISR and the foreground waits coexist -- the
+// first interrupt-enabled draft had both reading SDHCINTSTAT directly,
+// and the (higher-priority) ISR's W1C cleared flags before the foreground
+// poll could see them, making successful commands read back as failures.
+// Cleared by SDHC_SendCommand() immediately before each command issue
+// (nothing is in flight at that point, so no events can be lost).
+static volatile uint32_t sdhc_isr_events = 0;
+
+// Command-phase and data-phase event masks for the accumulator waits.
+// EIF is set alongside every specific *EIF error bit, so waiting on
+// (done-flag | EIF) wakes immediately on both success and failure instead
+// of burning the full timeout on an errored transfer.
+#define SDHC_EVT_CMD_DONE   (_SDHCINTSTAT_CCIF_MASK | _SDHCINTSTAT_EIF_MASK)
+#define SDHC_EVT_DATA_DONE  (_SDHCINTSTAT_TXCIF_MASK | _SDHCINTSTAT_EIF_MASK)
+
 // Set by SDHC_ConfigureBlockTransfer(), consumed by the next
 // SDHC_SendCommand(..., dataPresent=true) call to build the Transfer Mode
 // bits of the combined SDHCMODE write.
@@ -132,20 +150,23 @@ bool SDHC_Initialize(void)
     }
 
     // Enable command-complete, transfer-complete, and every error flag at
-    // the peripheral level (Flag Enable) so SDHCINTSTAT bits actually get
-    // set for SDHC_SendCommand()/SDHC_TransferBlocks*()'s blocking polls
-    // to observe. Signal Enable (and the CPU-level interrupt) is
-    // deliberately left OFF: enabling it raced sdhcISR() against those
-    // same polling loops -- CCIF fires ~120us after a command at the
-    // 400kHz identification clock, well inside the loops' own timeout
-    // window, so the (IPL2, higher-priority) ISR almost always clears
-    // SDHCINTSTAT via its own W1C before the foreground poll's follow-up
-    // reads run, making genuinely-successful commands (e.g. CMD0) read
-    // back as CCIF=0/EIF=0 and fail. sdhcISR() is kept for when this
-    // driver grows an actual async use (e.g. low-power wake-on-card-event
-    // via SDHCCON1.WKONINT/WKONINS) -- re-enable SDHCINTSEN/enableInterrupt
-    // together only once nothing is concurrently polling the same flags.
+    // both the Flag Enable (SDHCINTEN -- lets SDHCINTSTAT bits set at all)
+    // and Signal Enable (SDHCINTSEN -- lets those bits assert the CPU
+    // interrupt line) levels. The ISR is the only consumer of SDHCINTSTAT
+    // itself: it W1C-clears the register and publishes what it saw into
+    // sdhc_isr_events, which is what the foreground waits watch. (An
+    // earlier revision left Signal Enable off because ISR and foreground
+    // both read the SFR directly and raced on its W1C -- see the
+    // sdhc_isr_events comment at the top of this file.)
     SDHCINTEN = 0x03FF8003u;   // CCIE, TXCIE, EIE, and all *EIE error bits
+    SDHCINTSEN = 0x03FF8003u;
+    sdhc_isr_events = 0;
+
+    // IPL must match the sdhcISR() IPL2SRS declaration
+    setInterruptPriority(sdhc_interrupt, 2);
+    setInterruptSubpriority(sdhc_interrupt, 0);
+    clearInterruptFlag(sdhc_interrupt);
+    enableInterrupt(sdhc_interrupt);
 
     return true;
 }
@@ -190,6 +211,11 @@ bool SDHC_SetClockDivider(uint32_t targetHz)
 
     SDHC_WAIT_OR_TIMEOUT(SDHCCON2bits.ICLKSTABLE, SDHC_CLOCK_TIMEOUT_TICKS, timedOut);
     return !timedOut;
+}
+
+void SDHC_StopClock(void)
+{
+    SDHCCON2bits.SDCLKEN = 0;
 }
 
 bool SDHC_SetBusWidth(bool wide4bit)
@@ -268,10 +294,13 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
         }
     }
 
-    // Clear any leftover status flags from a prior command so the
-    // CCIF/EIF poll below can only see completion/errors belonging to
-    // THIS command (W1C: writing back the set bits clears them)
+    // Clear any leftover state from a prior command so the waits below
+    // can only see completion/errors belonging to THIS command: W1C any
+    // straggler SDHCINTSTAT bits the ISR hasn't consumed yet, then empty
+    // the accumulator. Safe because nothing is in flight here (CINHCMD
+    // was just confirmed clear), so no event can slip between the two.
     SDHCINTSTAT = SDHCINTSTAT;
+    sdhc_isr_events = 0;
 
     SDHCARG = argument;
 
@@ -323,19 +352,18 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
         | ((uint32_t)cmdIndex << _SDHCMODE_CIDX_POSITION);
     SDHCMODE = mode;
 
-    SDHC_WAIT_OR_TIMEOUT((SDHCINTSTATbits.CCIF || SDHCINTSTATbits.EIF), SDHC_CMD_TIMEOUT_TICKS, timedOut);
+    // Wait on the ISR-latched accumulator, NOT SDHCINTSTAT -- the ISR
+    // W1C-clears the SFR as soon as an event fires, so the SFR reads 0
+    // here by design (see sdhc_isr_events comment)
+    SDHC_WAIT_OR_TIMEOUT(((sdhc_isr_events & SDHC_EVT_CMD_DONE) != 0), SDHC_CMD_TIMEOUT_TICKS, timedOut);
 
-    bool cmdComplete = SDHCINTSTATbits.CCIF;
-    bool errorFlag = SDHCINTSTATbits.EIF;
-    bool cmdTimeoutErr = SDHCINTSTATbits.CTOEIF;
-    bool cmdCrcErr = SDHCINTSTATbits.CCRCEIF;
-    bool cmdEndBitErr = SDHCINTSTATbits.CEBEIF;
-    bool cmdIdxErr = SDHCINTSTATbits.CIDXEIF;
-
-    // Write-back-what-was-read is the standard write-1-to-clear idiom;
-    // harmless no-op if SDHCINTSTAT genuinely is read-only as the ATDF's
-    // rw="R" annotation claims (verify during bring-up if flags stick)
-    SDHCINTSTAT = SDHCINTSTAT;
+    uint32_t events = sdhc_isr_events;
+    bool cmdComplete = (events & _SDHCINTSTAT_CCIF_MASK) != 0;
+    bool errorFlag = (events & _SDHCINTSTAT_EIF_MASK) != 0;
+    bool cmdTimeoutErr = (events & _SDHCINTSTAT_CTOEIF_MASK) != 0;
+    bool cmdCrcErr = (events & _SDHCINTSTAT_CCRCEIF_MASK) != 0;
+    bool cmdEndBitErr = (events & _SDHCINTSTAT_CEBEIF_MASK) != 0;
+    bool cmdIdxErr = (events & _SDHCINTSTAT_CIDXEIF_MASK) != 0;
 
     bool success = !timedOut && cmdComplete && !errorFlag && !cmdTimeoutErr
             && !cmdCrcErr && !cmdEndBitErr && !cmdIdxErr;
@@ -414,10 +442,14 @@ bool SDHC_TransferBlocksPIO(uint8_t *buffer, uint16_t blockSize, uint16_t blockC
         }
     }
 
-    SDHC_WAIT_OR_TIMEOUT(SDHCINTSTATbits.TXCIF, SDHC_DATA_TIMEOUT_TICKS, timedOut);
+    // ISR-latched accumulator, not the SFR -- see sdhc_isr_events. The
+    // accumulator was cleared at command issue and CCIF has since been
+    // consumed only by reads, so TXCIF/EIF from THIS transfer are what
+    // accumulate here. Waking on EIF too means an errored transfer fails
+    // fast instead of eating the full 500ms data timeout.
+    SDHC_WAIT_OR_TIMEOUT(((sdhc_isr_events & SDHC_EVT_DATA_DONE) != 0), SDHC_DATA_TIMEOUT_TICKS, timedOut);
 
-    bool errorFlag = SDHCINTSTATbits.EIF;
-    SDHCINTSTAT = SDHCINTSTAT;
+    bool errorFlag = (sdhc_isr_events & _SDHCINTSTAT_EIF_MASK) != 0;
 
     return !timedOut && !errorFlag;
 }
@@ -468,11 +500,10 @@ bool SDHC_TransferBlocksADMA2(uint8_t *buffer, uint16_t blockSize, uint16_t bloc
     SDHCAADDR = (uint32_t)KVA_TO_PA((void *)&sdhc_adma2_table[0]);
 
     bool timedOut;
-    SDHC_WAIT_OR_TIMEOUT(SDHCINTSTATbits.TXCIF, SDHC_DATA_TIMEOUT_TICKS, timedOut);
+    SDHC_WAIT_OR_TIMEOUT(((sdhc_isr_events & SDHC_EVT_DATA_DONE) != 0), SDHC_DATA_TIMEOUT_TICKS, timedOut);
 
-    bool errorFlag = SDHCINTSTATbits.EIF;
-    bool admaErr = SDHCINTSTATbits.ADEIF;
-    SDHCINTSTAT = SDHCINTSTAT;
+    bool errorFlag = (sdhc_isr_events & _SDHCINTSTAT_EIF_MASK) != 0;
+    bool admaErr = (sdhc_isr_events & _SDHCINTSTAT_ADEIF_MASK) != 0;
 
     return !timedOut && !errorFlag && !admaErr;
 }
@@ -494,15 +525,14 @@ uint32_t SDHC_GetBaseClockHz(void)
 
 void __ISR(_SDHC_VECTOR, IPL2SRS) sdhcISR(void)
 {
-    // Normal command/data completion and errors are consumed by the
-    // blocking polling loops in SDHC_SendCommand()/SDHC_TransferBlocks*()
-    // above, which check SDHCINTSTAT directly rather than depending on
-    // this ISR -- matching this codebase's existing blocking-driver
-    // convention (spi3.c, sst25vf080b.c, ddr2.c). This handler exists so
-    // the SDHC interrupt is safely serviced even if an event fires
-    // outside a blocking wait (e.g. an asynchronous fault), rather than
-    // left permanently pending. No SD-protocol logic runs here.
-    SDHCINTSTAT = SDHCINTSTAT; // W1C idiom, see SDHC_SendCommand() comment
+    // Latch-and-publish: W1C-clear whatever fired and OR it into the
+    // accumulator the foreground waits in SDHC_SendCommand()/
+    // SDHC_TransferBlocks*() are watching (see sdhc_isr_events comment at
+    // the top of this file for why they must not read SDHCINTSTAT
+    // directly). No SD-protocol logic runs here.
+    uint32_t status = SDHCINTSTAT;
+    SDHCINTSTAT = status;
+    sdhc_isr_events |= status;
     clearInterruptFlag(sdhc_interrupt);
 }
 
@@ -536,6 +566,10 @@ void SDHC_PrintStatus(void)
         printf("    Calculated SDCLK: %lu Hz (bypass, no divider)\n\r", (unsigned long)sdhc_base_clock_hz);
     }
 
+    // SDBP can be auto-cleared by the controller on a card-removal event
+    // (SDHCI-permitted behavior) -- if commands "complete" but the card
+    // never responds after a hot swap, check this first
+    printf("    SD Bus Power (SDHCCON1.SDBP): %s\n\r", SDHCCON1bits.SDBP ? "on" : "OFF");
     printf("    Bus Width: %s\n\r", SDHCCON1bits.DTXWIDTH ? "4-bit" : "1-bit");
     printf("    High-Speed Mode: %s\n\r", SDHCCON1bits.HSEN ? "enabled" : "disabled");
     printf("    ADMA2 Capable: %s\n\r", sdhc_adma2_supported ? "yes" : "no");
