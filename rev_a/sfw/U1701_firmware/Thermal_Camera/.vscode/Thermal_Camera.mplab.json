@@ -123,7 +123,9 @@
                 "glcd/device_driver/glt035320240is1.h",
                 "glcd/device_driver/glt035320240is1.c",
                 "glcd/glcd.h",
-                "glcd/glcd.c"
+                "glcd/glcd.c",
+                "i2c/device_driver/gt911.h",
+                "i2c/device_driver/gt911.c"
             ]
         }
     ]

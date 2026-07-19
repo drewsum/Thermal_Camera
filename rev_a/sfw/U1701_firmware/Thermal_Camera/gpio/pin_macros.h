@@ -41,6 +41,7 @@
 
 // Port B
 #define nFLASH_SPI_CS_PIN           LATBbits.LATB4
+#define BACKLIGHT_ENABLE_PIN        LATBbits.LATB5
 #define POS2P8_PGOOD_PIN            PORTBbits.RB8
 #define FLIR_CLK_EN_PIN             LATBbits.LATB11
 #define nFLASH_SPI_WP_PIN           LATBbits.LATB12
@@ -83,6 +84,12 @@
 
 // Port J
 #define LCD_CTP_INT_PIN             PORTJbits.RJ8
+// LAT-side counterpart of LCD_CTP_INT_PIN: RJ8 is normally an input (the
+// GT911 touch controller's interrupt line), but must be driven as a GPIO
+// output during the one-time I2C-address-select sequence at boot
+// (i2c/device_driver/gt911.c) -- TRISJ is switched to output for that
+// window only, then restored to input.
+#define LCD_CTP_INT_LAT_PIN         LATJbits.LATJ8
 #define LCD_CTP_RESET_PIN           LATJbits.LATJ9
 #define LCD_ENABLE_PIN              LATJbits.LATJ11
 

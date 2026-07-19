@@ -14,6 +14,7 @@
 #include "i2c/device_driver/mcp9804.h"
 #include "i2c/device_driver/ina231a.h"
 #include "i2c/device_driver/ds1683.h"
+#include "i2c/device_driver/gt911.h"
 #include "usb_uart/terminal_control.h"
 #include "application/error_handler.h"
 
@@ -84,6 +85,9 @@ static bool I2CDevices_Verify(I2C_DEVICE_ID id)
         case I2C_DEVICE_KIND_DS1683:
             return DS1683_Verify(i2cDeviceAddresses[id]);
 
+        case I2C_DEVICE_KIND_GT911:
+            return GT911_Verify(i2cDeviceAddresses[id]);
+
         default:
             return false;
     }
@@ -107,6 +111,9 @@ static bool I2CDevices_ConfigureOne(I2C_DEVICE_ID id)
         case I2C_DEVICE_KIND_DS1683:
             return true;
 
+        case I2C_DEVICE_KIND_GT911:
+            return true;
+
         default:
             return false;
     }
@@ -127,6 +134,10 @@ static void I2CDevices_PrintOne(I2C_DEVICE_ID id)
 
         case I2C_DEVICE_KIND_DS1683:
             DS1683_PrintStatus(i2cDeviceAddresses[id]);
+            break;
+
+        case I2C_DEVICE_KIND_GT911:
+            GT911_PrintStatus(i2cDeviceAddresses[id]);
             break;
 
         default:

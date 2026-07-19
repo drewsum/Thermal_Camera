@@ -32,6 +32,7 @@
 #include "i2c/device_driver/mcp9804.h"
 #include "i2c/device_driver/ina231a.h"
 #include "i2c/device_driver/ds1683.h"
+#include "i2c/device_driver/gt911.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +45,7 @@ typedef enum
     I2C_DEVICE_KIND_MCP9804,   // temperature sensor
     I2C_DEVICE_KIND_INA231A,   // current/power monitor
     I2C_DEVICE_KIND_DS1683,    // total-elapsed-time and event recorder
+    I2C_DEVICE_KIND_GT911,     // LCD capacitive touch controller
 } I2C_DEVICE_KIND;
 
 // TODO: addresses/labels below for the 6x INA231A power monitors are
@@ -64,7 +66,8 @@ typedef enum
     X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
     X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
-    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301")
+    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301") \
+    X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
 
 #define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
 typedef enum

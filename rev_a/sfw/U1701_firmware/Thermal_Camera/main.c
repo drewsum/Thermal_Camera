@@ -318,12 +318,28 @@ void main(void) {
     // Bring up the Graphics LCD Controller for the on-board
     // GLT035320240IS1-CTP panel: programs timing/Layer 0 from a blank
     // (zeroed) frame buffer in DDR2 and drives the panel reset sequence.
-    // Backlight is intentionally left off and the frame buffer intentionally
-    // left blank -- filling it with actual image data is a separate step.
-    // Must come after ddr2Initialize() above (the frame buffer lives in
-    // DDR2).
+    // The frame buffer is intentionally left blank -- filling it with
+    // actual image data is a separate step. Must come after ddr2Initialize()
+    // above (the frame buffer lives in DDR2).
     reportInit("Graphics LCD Controller", GLCD_Initialize(),
             &error_handler.flags.glcd_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Enable the LCD backlight only if the panel's integrated GT911
+    // capacitive touch controller responded during I2C bring-up above --
+    // its I2C ACK is a reliable proxy for "the LCD module is actually
+    // populated on this board" (the GLCD Controller itself has no way to
+    // detect a physically-attached panel; it only configures MCU-internal
+    // registers). Left off entirely if I2C_DEV_CTP_1 wasn't found.
+    if (I2CDevices_IsPresent(I2C_DEV_CTP_1)) {
+        BACKLIGHT_ENABLE_PIN = HIGH;
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    LCD Backlight Enabled (touch controller present)\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    LCD Backlight left OFF (touch controller not detected)\r\n");
+    }
+    terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
 
     // Disable reset LED
