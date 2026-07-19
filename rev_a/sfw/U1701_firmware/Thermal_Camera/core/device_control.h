@@ -26,6 +26,16 @@
 // Hardcoded Clock Setting Integers, in Hertz
 #define SYSCLK_INT          200000000
 
+// GLCD pixel clock divider, applied to REFCLKO5 (SYSCLK undivided, 200MHz --
+// see REFCLK5Initialize()) inside the GLCD peripheral:
+//     GCLK = SYSCLK / GLCD_PIXEL_CLOCK_DIVIDER = 200MHz / 32 = 6.25MHz
+// The GLT035320240IS1-CTP panel's DCLK spec is 5-8MHz (typ 6MHz); an even
+// divider gives a 50% duty cycle (odd values give 60/40 per DS60001565).
+// Defined here so every REFCLK/pixel-clock setting lives with the clock
+// code; the register write itself (GLCDCLKCON.CLKDIV, a GLCD SFR) has to
+// happen in glcd/glcd.c's GLCD_Initialize().
+#define GLCD_PIXEL_CLOCK_DIVIDER    32
+
 // logic level macros
 #define HIGH        1
 #define LOW         0

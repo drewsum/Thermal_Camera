@@ -118,15 +118,23 @@ bool PMDInitialize(void) {
     PMD6bits.PMPMD = 1;
     
     // Disable external bus interface (EBI)
+    // (During GLCD bring-up this was briefly enabled chasing a Data Bus
+    // Error on GLCD SFR access; the real cause turned out to be sub-word
+    // register access -- see glcd/glcd.c file header -- and full-word GLCD
+    // reads were observed working with EBI/GPU gated off, so both go back
+    // to disabled)
     #ifdef EBICS0
     PMD6bits.EBIMD = 1;
     #endif
 
-    // Disable GPU (unused)
+    // Disable GPU (no register-level driver exists for it -- Microchip
+    // documents no hardware interface, Nano-2D/Harmony only)
     PMD6bits.GPUMD = 1;
 
-    // Disable graphics LCD controller (unused)
-    PMD6bits.GLCDMD = 1;
+    // Enable graphics LCD controller -- driven by glcd/glcd.c for the
+    // on-board GLT035320240IS1-CTP panel; leaving this bit set would make
+    // the controller inaccessible
+    PMD6bits.GLCDMD = 0;
 
     // Enable SD host controller -- driven by sdhc.c for the on-board
     // microSD slot; leaving this bit set would make the controller
@@ -153,11 +161,13 @@ bool PMDInitialize(void) {
     // Lock PMD
     PMDLock();
 
-    // Report success only if the DDR2 controller, SPI3 module, and SDHC
-    // controller were left enabled -- disabling any of these here would
-    // freeze all their SFR accesses in
-    // ddr2Initialize()/SST25VF080B_Initialize()/SDHC_Initialize()
-    return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0) && (PMD6bits.SDHCMD == 0);
+    // Report success only if the DDR2 controller, SPI3 module, SDHC
+    // controller, and GLCD controller were left enabled -- disabling any of
+    // these here would freeze all their SFR accesses in
+    // ddr2Initialize()/SST25VF080B_Initialize()/SDHC_Initialize()/
+    // GLCD_Initialize()
+    return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0) && (PMD6bits.SDHCMD == 0)
+            && (PMD6bits.GLCDMD == 0);
 
 }
 

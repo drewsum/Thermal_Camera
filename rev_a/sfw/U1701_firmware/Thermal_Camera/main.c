@@ -36,6 +36,9 @@
 #include "usb/usb.h"
 #include "usb/device_driver/usb_msd.h"
 
+// GLCD
+#include "glcd/glcd.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -310,6 +313,17 @@ void main(void) {
     // same flag its runtime reads later latch into on a NACK/timeout), so no
     // single aggregate flag is passed here
     reportInit("I2C Devices", I2CDevices_Initialize(), NULL);
+    while(usbUartCheckIfBusy());
+
+    // Bring up the Graphics LCD Controller for the on-board
+    // GLT035320240IS1-CTP panel: programs timing/Layer 0 from a blank
+    // (zeroed) frame buffer in DDR2 and drives the panel reset sequence.
+    // Backlight is intentionally left off and the frame buffer intentionally
+    // left blank -- filling it with actual image data is a separate step.
+    // Must come after ddr2Initialize() above (the frame buffer lives in
+    // DDR2).
+    reportInit("Graphics LCD Controller", GLCD_Initialize(),
+            &error_handler.flags.glcd_init_error);
     while(usbUartCheckIfBusy());
 
     // Disable reset LED

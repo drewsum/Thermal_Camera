@@ -38,6 +38,7 @@
 #include "sdhc/sd_fileio.h"
 #include "usb/usb.h"
 #include "usb/device_driver/usb_msd.h"
+#include "glcd/glcd.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -229,6 +230,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       SPI Flash Interface\r\n"
         "       SDHC\r\n"
         "       USB\r\n"
+        "       GLCD\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -292,6 +294,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         printf("USB Module Status:\r\n");
         USB_PrintStatus();
     }
+    else if (strcmp(rx_peripheral_name, "GLCD") == 0) {
+        GLCD_PrintStatus();
+    }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
         sscanf(rx_peripheral_name, "Timer %u", &read_timer_number);
@@ -324,6 +329,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   SPI Flash Interface\r\n"
                 "   SDHC\r\n"
                 "   USB\r\n"
+                "   GLCD\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();

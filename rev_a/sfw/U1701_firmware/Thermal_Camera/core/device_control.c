@@ -126,6 +126,11 @@ void softwareDelay(uint32_t inputDelay) {
 // REFCLK2: Disabled
 // REFCLK3: Disabled
 // REFCLK4: Enabled, SYSCLK undivided (200 MHz) - SDHC base clock
+// REFCLK5: Enabled, SYSCLK undivided (200 MHz) - GLCD pixel clock source
+//          (glcd/glcd.c divides it to GCLK inside the GLCD peripheral via
+//          GLCDCLKCON.CLKDIV = GLCD_PIXEL_CLOCK_DIVIDER, device_control.h --
+//          that divider is a GLCD SFR and so can only be written during
+//          GLCD_Initialize(), not here)
 // PBCLK1: 66.6 MHz
 // PBCLK2: 66.6 MHz
 // PBCLK3: 12.5 MHz
@@ -297,23 +302,39 @@ void REFCLK4Initialize(void) {
 }
 
 // this function sets up reference clock 5
+// REFCLK5 is the GLCD Controller's pixel clock source, and it must run at
+// SYSCLK (200MHz) UNDIVIDED -- all pixel-clock division belongs in
+// GLCDCLKCON.CLKDIV, inside the GLCD peripheral, not here. This matches
+// Microchip's own Harmony reference config for this exact silicon
+// (gfx_apps_pic32mz_da, glcd_..._mzda_intddr_cu: plib_clk.c does
+// REFO5CONSET = ON only, i.e. ROSEL=SYSCLK, RODIV=0), and mirrors the
+// REFCLK4/SDHC pattern above. It is NOT just convention: first bring-up ran
+// this at SYSCLK/(2*17) = 5.88MHz with the division here instead, and every
+// GLCD register WRITE then took a Data Bus Error exception (reads worked) --
+// consistent with the GLCD's register write path being synchronized into the
+// REFCLKO5 clock domain, where a 34x-slower domain clock overruns the System
+// Bus write timeout. Source and divider must be programmed while ON = 0.
 void REFCLK5Initialize(void) {
- 
-    // Set REFCLK5 divider to 1
-    REFO5CONbits.RODIV = 0b000000000000000;
-    
-    // Disable REFCLK5
-    REFO5CONbits.ON = 0;
 
-    // Disable REFCLK5 in Idle mode
-    REFO5CONbits.SIDL = 1;
-    
+    // Set REFCLK5 divider to 0 (undivided, pass SYSCLK straight through)
+    REFO5CONbits.RODIV = 0;
+
+    // source for REFCLK5 is SYSCLK (200 MHz)
+    REFO5CONbits.ROSEL = 0b0000;
+
+    // Keep REFCLK5 running in Idle mode so the display keeps refreshing
+    // while the CPU idles (same rationale as REFCLK4/SDHC above)
+    REFO5CONbits.SIDL = 0;
+
     // Disable output of REFCLK5 onto output pin
     REFO5CONbits.OE = 0;
-    
+
     // Disable REFCLK5 in sleep
     REFO5CONbits.RSLP = 0;
-    
+
+    // Enable REFCLK5
+    REFO5CONbits.ON = 1;
+
 }
 
 // this function sets up peripheral bus clock 1

@@ -61,10 +61,30 @@ void __attribute__((nomips16)) _general_exception_handler(void) {
     exceptionPrintHex("BadVAddr: 0x", _CP0_GET_BADVADDR());
     exceptionPrintHex("Cause: 0x", _CP0_GET_CAUSE());
 
+    // On a Data Bus Error (EXCCODE 7), also dump the System Bus per-target
+    // error flags and the target-12 (GLCD/GPU/DDR2PHY/DDR2SFR) error log:
+    // the interconnect latches what it rejected -- SBT12ELOG1 holds the
+    // command (CMD<2:0>), region, initiator ID, and error code fields,
+    // decoded against the device datasheet's System Bus register section.
+    // Added during GLCD bring-up (2026-07-19, GLCD SFR writes bus-faulting),
+    // useful for any future DBE too.
+    if (exception_code == 7) {
+        exceptionPrintHex("SBFLAG0: 0x", SBFLAG0);
+        exceptionPrintHex("SBFLAG1: 0x", SBFLAG1);
+        exceptionPrintHex("SBFLAG2: 0x", SBFLAG2);
+        exceptionPrintHex("SBFLAG3: 0x", SBFLAG3);
+        exceptionPrintHex("SBT12ELOG1: 0x", SBT12ELOG1);
+        exceptionPrintHex("SBT12ELOG2: 0x", SBT12ELOG2);
+        exceptionPrintHex("SBT12ECON: 0x", SBT12ECON);
+        exceptionPrintHex("SBT12REG0: 0x", SBT12REG0);
+        exceptionPrintHex("SBT12RD0: 0x", SBT12RD0);
+        exceptionPrintHex("SBT12WR0: 0x", SBT12WR0);
+    }
+
     // Give up
     // Wait for watchdog to save us
     while(1);
-    
+
 }
 
 // This function is called when a TLB exception occurs

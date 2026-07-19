@@ -119,7 +119,11 @@
                 "usb/usb.h",
                 "usb/device_driver/usb_msd.h",
                 "usb/usb.c",
-                "usb/device_driver/usb_msd.c"
+                "usb/device_driver/usb_msd.c",
+                "glcd/device_driver/glt035320240is1.h",
+                "glcd/device_driver/glt035320240is1.c",
+                "glcd/glcd.h",
+                "glcd/glcd.c"
             ]
         }
     ]
