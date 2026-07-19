@@ -111,6 +111,13 @@ bool Flash_Disk_ReadSectors(uint32_t startSector, uint8_t *buffer, uint16_t sect
 
 bool Flash_Disk_WriteSectors(uint32_t startSector, const uint8_t *buffer, uint16_t sectorCount)
 {
+    // Refuse before touching the staging buffer: accepting sectors into
+    // RAM that Flash_Disk_Sync() can never flush would be silent data loss
+    if (SST25VF080B_WriteProtectIsEnabled())
+    {
+        return false;
+    }
+
     if (!flash_disk_initialized || (buffer == NULL)
             || ((startSector + sectorCount) > FLASH_DISK_SECTOR_COUNT))
     {

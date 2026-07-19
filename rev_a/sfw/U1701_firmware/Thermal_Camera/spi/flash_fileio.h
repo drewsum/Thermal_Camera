@@ -35,8 +35,9 @@ extern "C" {
 
 // Volume label written by FlashFileIO_MountAndFormatIfNeeded() /
 // FlashFileIO_Format() -- what the volume shows up as when a USB host
-// mounts it
-#define FLASH_FILEIO_VOLUME_LABEL   "FLASH"
+// mounts it (FAT labels max out at 11 chars; the full display name comes
+// from autorun.inf, see flash_fileio.c)
+#define FLASH_FILEIO_VOLUME_LABEL   "THERMAL SPI"
 
 // Mounts the FAT volume on the SPI flash (f_mount with opt=1, immediate --
 // same rationale as SDFileIO_Mount()). If no valid FAT volume exists
@@ -66,6 +67,11 @@ bool FlashFileIO_Format(void);
 // callback -- mirrors SDFileIO_ListFiles(). `path` defaults to the volume
 // root if NULL or empty; relative paths get the "1:" prefix applied here.
 bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line));
+
+// Dumps a text file's contents to the terminal via printf -- mirrors
+// SDFileIO_ReadTextFileToTerminal(). Relative paths get the "1:" prefix
+// applied here. Backing call for the "Flash Read File:" USB UART command.
+bool FlashFileIO_ReadTextFileToTerminal(const char *path);
 
 // Reports the mounted volume's FAT type, label, and total/free space in
 // KB -- mirrors SDFileIO_GetVolumeInfo(). Any output pointer may be NULL.

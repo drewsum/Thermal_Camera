@@ -738,6 +738,14 @@ USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash",
         terminalTextAttributesReset();
         return;
     }
+
+    if (SST25VF080B_WriteProtectIsEnabled()) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
     FlashFileIO_Unmount();
 
     bool success = SST25VF080B_EraseChip();
@@ -983,12 +991,107 @@ USB_UART_COMMAND(flashListFilesCommand, "Flash List Files",
 
 }
 
-USB_UART_COMMAND(flashFsFormatCommand, "Flash FS Format",
-        "DESTRUCTIVELY re-formats the SPI flash FAT volume (FAT/superfloppy, labeled FLASH) and remounts it") {
+USB_UART_COMMAND(flashReadFileCommand, "Flash Read File:",
+        "\b\b <path>: Dumps the contents of a text file on the SPI flash FAT volume to the terminal") {
+
+    char rx_path[64] = "";
+    sscanf(input_str, "Flash Read File: %[^\t\n\r]", rx_path);
+
+    terminalTextAttributesReset();
+
+    if (!rx_path[0]) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Please supply a file path, e.g. \"Flash Read File: /LOG.TXT\"\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    if (!FlashFileIO_ReadTextFileToTerminal(rx_path)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to read %s (volume mounted?)\r\n", rx_path);
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashWriteProtectQueryCommand, "Flash Write Protect?",
+        "Prints whether the SPI flash hardware write protect is currently enabled") {
 
     (void) input_str;   // no arguments
 
     terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("SPI flash write protect is currently %s\r\n",
+            SST25VF080B_WriteProtectIsEnabled() ? "ENABLED" : "DISABLED");
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashWriteProtectCommand, "Flash Write Protect:",
+        "\b\b <On|Off>: Sets the SPI flash hardware write protect (block-protect bits locked by the WP# pin). Enabled by default at boot") {
+
+    char rx_arg[16] = "";
+    sscanf(input_str, "Flash Write Protect: %15s", rx_arg);
+
+    terminalTextAttributesReset();
+
+    bool turnOn;
+    if ((strcmp(rx_arg, "On") == 0) || (strcmp(rx_arg, "on") == 0) || (strcmp(rx_arg, "ON") == 0)) {
+        turnOn = true;
+    } else if ((strcmp(rx_arg, "Off") == 0) || (strcmp(rx_arg, "off") == 0) || (strcmp(rx_arg, "OFF") == 0)) {
+        turnOn = false;
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Argument must be \"On\" or \"Off\" (use \"Flash Write Protect?\" to query the state)\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (turnOn == SST25VF080B_WriteProtectIsEnabled()) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash write protect is already %s\r\n", turnOn ? "enabled" : "disabled");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (turnOn) {
+        // Nothing may be stuck in the disk layer's staging buffer once
+        // the part starts refusing program/erase
+        Flash_Disk_Sync();
+    }
+
+    if (SST25VF080B_WriteProtectSet(turnOn)) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash write protect %s\r\n",
+                turnOn ? "ENABLED -- flash volume is now read-only"
+                       : "DISABLED -- flash volume is now writable");
+        // An attached host caches the WP state from mount time -- make
+        // it re-mount the LUN and re-read MODE SENSE
+        USB_MSD_NotifyWriteProtectChanged();
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to change SPI flash write protect state\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flashFsFormatCommand, "Flash FS Format",
+        "DESTRUCTIVELY re-formats the SPI flash FAT volume (FAT/superfloppy, labeled THERMAL SPI) and remounts it") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    if (SST25VF080B_WriteProtectIsEnabled()) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
 
     if (FlashFileIO_Format()) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -1006,6 +1109,14 @@ USB_UART_COMMAND(flashFsSelfTestCommand, "Flash FS Self Test",
         "Writes, reads back, verifies, and deletes a throwaway test file on the SPI flash FAT volume") {
 
     (void) input_str;   // no arguments
+
+    if (SST25VF080B_WriteProtectIsEnabled()) {
+        terminalTextAttributesReset();
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
 
     FlashFileIO_SelfTest();
 

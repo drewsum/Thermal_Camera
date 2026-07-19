@@ -19,6 +19,7 @@
 #include "sdhc/device_driver/sd_card.h"
 #include "sdhc/sd_fileio.h"
 #include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/sst25vf080b.h"
 #include "spi/flash_fileio.h"
 #include "usb_uart/terminal_control.h"
 
@@ -55,10 +56,13 @@
 #define SENSE_KEY_ILLEGAL_REQUEST   0x5u
 #define SENSE_KEY_UNIT_ATTENTION    0x6u
 
+#define SENSE_KEY_DATA_PROTECT      0x7u
+
 #define ASC_INVALID_COMMAND         0x20u   // ascq 0x00
 #define ASC_LBA_OUT_OF_RANGE        0x21u
 #define ASC_INVALID_FIELD_IN_CDB    0x24u
 #define ASC_LUN_NOT_SUPPORTED       0x25u
+#define ASC_WRITE_PROTECTED         0x27u
 #define ASC_MEDIA_CHANGED           0x28u
 #define ASC_MEDIUM_NOT_PRESENT      0x3Au
 #define ASC_WRITE_ERROR             0x0Cu
@@ -80,9 +84,15 @@
 // ---- Per-LUN backend ops ----
 typedef struct
 {
-    bool removable;
+    bool removable;             // internal semantics: hotplug detect + eject
+    bool inquiry_removable;     // RMB bit reported to the host. Windows only
+                                // auto-mounts a partition-table-less
+                                // (superfloppy/FM_SFD) volume when RMB=1, so
+                                // the flash LUN must claim removable even
+                                // though it is soldered down
     const char *inquiry_product;    // exactly 16 chars
     bool (*isPresent)(void);
+    bool (*isWriteProtected)(void); // NULL = never write-protected
     uint32_t (*sectorCount)(void);
     bool (*readSectors)(uint32_t lba, uint8_t *buffer, uint16_t count);
     bool (*writeSectors)(uint32_t lba, const uint8_t *buffer, uint16_t count);
@@ -137,10 +147,16 @@ static bool msdFlashIsPresent(void)
     return Flash_Disk_IsInitialized();
 }
 
+static bool msdFlashIsWriteProtected(void)
+{
+    return SST25VF080B_WriteProtectIsEnabled();
+}
+
 static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
     {
         .removable = true,
-        .inquiry_product = "microSD Card    ",
+        .inquiry_removable = true,
+        .inquiry_product = "Thermal Cam SD  ",
         .isPresent = msdSdIsPresent,
         .sectorCount = msdSdSectorCount,
         .readSectors = msdSdReadSectors,
@@ -149,8 +165,10 @@ static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
     },
     {
         .removable = false,
-        .inquiry_product = "SPI Flash       ",
+        .inquiry_removable = true,
+        .inquiry_product = "Thermal Cam SPI ",
         .isPresent = msdFlashIsPresent,
+        .isWriteProtected = msdFlashIsWriteProtected,
         .sectorCount = Flash_Disk_GetSectorCount,
         .readSectors = Flash_Disk_ReadSectors,
         .writeSectors = Flash_Disk_WriteSectors,
@@ -159,6 +177,15 @@ static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
 };
 
 static msd_lun_state_t msd_lun_state[USB_MSD_NUM_LUNS];
+
+// True when writes to this LUN must be refused (and reported as such in
+// MODE SENSE)
+static bool msdLunWriteProtected(uint8_t lun)
+{
+    return (lun < USB_MSD_NUM_LUNS)
+            && (msd_luns[lun].isWriteProtected != NULL)
+            && msd_luns[lun].isWriteProtected();
+}
 
 // ---- Transport state ----
 static usb_msd_bot_state_t bot_state = MSD_STATE_WAIT_CBW;
@@ -554,7 +581,7 @@ static void msdDispatchScsi(void)
             }
             memset(response_buf, 0, 36);
             response_buf[0] = 0x00;     // direct-access block device
-            response_buf[1] = msd_luns[cbw_lun].removable ? 0x80u : 0x00u;
+            response_buf[1] = msd_luns[cbw_lun].inquiry_removable ? 0x80u : 0x00u;
             response_buf[2] = 0x02;     // ANSI SCSI-2
             response_buf[3] = 0x02;     // response data format
             response_buf[4] = 31;       // additional length (36 - 5)
@@ -566,10 +593,10 @@ static void msdDispatchScsi(void)
             break;
 
         case SCSI_MODE_SENSE_6:
-            // Minimal: header only, no pages, not write-protected
+            // Minimal: header only, no pages
             response_buf[0] = 3;        // mode data length (after this byte)
             response_buf[1] = 0;        // medium type
-            response_buf[2] = 0;        // device-specific (bit7 = WP)
+            response_buf[2] = msdLunWriteProtected(cbw_lun) ? 0x80u : 0x00u;
             response_buf[3] = 0;        // block descriptor length
             msdQueueResponse(4);
             msdEnterDataPhase(true, false);
@@ -578,6 +605,7 @@ static void msdDispatchScsi(void)
         case SCSI_MODE_SENSE_10:
             memset(response_buf, 0, 8);
             response_buf[1] = 6;        // mode data length
+            response_buf[3] = msdLunWriteProtected(cbw_lun) ? 0x80u : 0x00u;
             msdQueueResponse(8);
             msdEnterDataPhase(true, false);
             break;
@@ -630,6 +658,13 @@ static void msdDispatchScsi(void)
             if (!msdLunMediaReady(cbw_lun))
             {
                 msdFailCommand(SENSE_KEY_NOT_READY, ASC_MEDIUM_NOT_PRESENT, 0);
+                msdEnterDataPhase(false, false);
+                break;
+            }
+
+            if (isWrite && msdLunWriteProtected(cbw_lun))
+            {
+                msdFailCommand(SENSE_KEY_DATA_PROTECT, ASC_WRITE_PROTECTED, 0);
                 msdEnterDataPhase(false, false);
                 break;
             }
@@ -1056,6 +1091,17 @@ void USB_MSD_ResumeHook(void)
     // Host resumed a still-configured device (no SET_CONFIGURATION coming)
     // -- take the media back off the local mounts before traffic restarts
     msdYieldMediaToHost();
+}
+
+void USB_MSD_NotifyWriteProtectChanged(void)
+{
+    for (uint8_t lun = 0; lun < USB_MSD_NUM_LUNS; lun++)
+    {
+        if (msd_luns[lun].isWriteProtected != NULL)
+        {
+            msd_lun_state[lun].unit_attention = true;
+        }
+    }
 }
 
 void USB_MSD_EndpointHaltCleared(bool inEndpoint)

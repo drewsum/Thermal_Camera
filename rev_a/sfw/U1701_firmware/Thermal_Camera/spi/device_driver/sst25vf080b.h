@@ -17,12 +17,21 @@
     Block protection: per the datasheet (Table 4-3 / its Note 2), the
     STATUS register's BP3:BP0 bits reset to 1 at power-up, which protects
     the ENTIRE array against program/erase -- not just a portion of it, as
-    the "block" naming might suggest. SST25VF080B_Initialize() clears those
-    bits (a Write Status Register sequence) so the array is writable;
-    nothing below will successfully program or erase before that has run.
-    WRSR itself is gated by the WP# pin/BPL bit (Table 4-1) -- WP# is wired
-    permanently high (protection disabled) by the existing GPIO init, so
-    this driver never touches nFLASH_SPI_WP_PIN.
+    the "block" naming might suggest. WRSR itself is gated by the WP# pin
+    and BPL bit (Table 4-1): with WP# low and BPL=1 the STATUS register is
+    hardware-locked. This driver owns nFLASH_SPI_WP_PIN and exposes the
+    whole mechanism as SST25VF080B_WriteProtectSet():
+      enable  = WRSR(BP3:0=1111, BPL=1) while WP# is high, THEN WP# low
+                -- array protected and the protection itself locked;
+      disable = WP# high (unlocks WRSR), then WRSR(0x00) -- array writable.
+    SST25VF080B_Initialize() ends in the PROTECTED state (boot default),
+    so nothing below will program or erase until WriteProtectSet(false).
+
+    CRITICAL guard rationale: with BP bits set the part silently IGNORES
+    program/erase instructions -- BUSY never asserts, so the BUSY-poll
+    "succeeds" and a naive caller would report success while writing
+    nothing. Write/EraseSector/EraseChip therefore check the driver's WP
+    state first and fail fast when protected.
 
     Timing: program/erase completion is detected by polling the STATUS
     register's BUSY bit (the datasheet's recommended method), bounded by
@@ -71,10 +80,22 @@ extern "C" {
 #define SST25VF080B_STATUS_BPL          0x80u   // 1 = BP3:BP0 locked read-only
 
 // Enables SPI3 (via SPI3_Initialize()), confirms a device responds to the
-// JEDEC Read-ID instruction as an SST25VF080B, and clears the STATUS
-// register's block-protection bits so the array is writable -- see the
-// caveat above. Returns false if either step fails.
+// JEDEC Read-ID instruction as an SST25VF080B, and puts the part in the
+// boot-default PROTECTED state (WriteProtectSet(true) -- see the file
+// header). Returns false if any step fails.
 bool SST25VF080B_Initialize(void);
+
+// Hardware write protection (BP bits + BPL + the WP# GPIO -- see the file
+// header for the exact sequencing). Enable leaves the array protected and
+// the protection register hardware-locked; disable makes the full array
+// writable. Both verify the resulting STATUS register and return false if
+// the part didn't take the change. Callers above the raw driver should
+// flush any write-back caches (Flash_Disk_Sync()) BEFORE enabling.
+bool SST25VF080B_WriteProtectSet(bool enable);
+
+// True while the driver holds the part write-protected. Cheap (shadow
+// state, no SPI traffic) -- safe to call per-sector on I/O paths.
+bool SST25VF080B_WriteProtectIsEnabled(void);
 
 // Confirms the device responds to JEDEC Read-ID (9Fh) with the
 // manufacturer/memory-type/capacity bytes documented for this part

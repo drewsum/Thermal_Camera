@@ -113,6 +113,65 @@ static void SST25VF080B_WriteEnable(void)
     SST25VF080B_Deselect();
 }
 
+// Shadow of the write-protect state (sst25vf080b.h file header). Starts
+// true because the part itself powers up with BP3:BP0 = 1111.
+static bool wp_enabled = true;
+
+// Write Status Register (01h). Only honored while WP# is high or BPL=0
+// (Table 4-1) -- callers sequence nFLASH_SPI_WP_PIN accordingly.
+static bool SST25VF080B_WriteStatus(uint8_t value)
+{
+    SST25VF080B_WriteEnable();
+    SST25VF080B_Select();
+    SPI3_TransferByte(SST25VF080B_CMD_WRSR);
+    SPI3_TransferByte(value);
+    SST25VF080B_Deselect();
+
+    return SST25VF080B_WaitWhileBusy(SST25VF080B_TIMEOUT_BYTE_PROGRAM_TICKS);
+}
+
+bool SST25VF080B_WriteProtectSet(bool enable)
+{
+    uint8_t status;
+
+    // WRSR must happen while the status register is still writable, so
+    // WP# goes (or stays) high first in both directions
+    nFLASH_SPI_WP_PIN = HIGH;
+
+    uint8_t target = enable ? (SST25VF080B_STATUS_BP_MASK | SST25VF080B_STATUS_BPL)
+                            : 0x00u;
+
+    if (!SST25VF080B_WriteStatus(target))
+    {
+        return false;
+    }
+
+    if (!SST25VF080B_ReadStatus(&status))
+    {
+        return false;
+    }
+
+    if ((status & (SST25VF080B_STATUS_BP_MASK | SST25VF080B_STATUS_BPL)) != target)
+    {
+        return false;   // part didn't take the change
+    }
+
+    if (enable)
+    {
+        // Hardware-lock the status register: with WP# low and BPL=1,
+        // WRSR is ignored until WP# is raised again (Table 4-1)
+        nFLASH_SPI_WP_PIN = LOW;
+    }
+
+    wp_enabled = enable;
+    return true;
+}
+
+bool SST25VF080B_WriteProtectIsEnabled(void)
+{
+    return wp_enabled;
+}
+
 // *****************************************************************************
 // Section: Interface Routines
 // *****************************************************************************
@@ -135,8 +194,6 @@ bool SST25VF080B_Verify(void)
 
 bool SST25VF080B_Initialize(void)
 {
-    uint8_t status;
-
     if (!SPI3_Initialize())
     {
         return false;
@@ -147,27 +204,11 @@ bool SST25VF080B_Initialize(void)
         return false;
     }
 
-    // Clear BP3:BP0 (and BPL) so the array is writable -- see the
-    // block-protection caveat in sst25vf080b.h. WP# is wired permanently
-    // high by the existing GPIO init, so WRSR is unconditionally allowed
-    // here (datasheet Table 4-1) without touching nFLASH_SPI_WP_PIN.
-    SST25VF080B_WriteEnable();
-    SST25VF080B_Select();
-    SPI3_TransferByte(SST25VF080B_CMD_WRSR);
-    SPI3_TransferByte(0x00u);
-    SST25VF080B_Deselect();
-
-    if (!SST25VF080B_WaitWhileBusy(SST25VF080B_TIMEOUT_BYTE_PROGRAM_TICKS))
-    {
-        return false;
-    }
-
-    if (!SST25VF080B_ReadStatus(&status))
-    {
-        return false;
-    }
-
-    return ((status & SST25VF080B_STATUS_BP_MASK) == 0);
+    // Boot default: PROTECTED (sst25vf080b.h file header). The part
+    // already powers up with BP3:0 = 1111; this additionally sets BPL and
+    // drives WP# low so the protection itself is hardware-locked, and
+    // verifies the part took it. "Flash Write Protect: Off" lifts it.
+    return SST25VF080B_WriteProtectSet(true);
 }
 
 void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length)
@@ -192,6 +233,14 @@ void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length)
 bool SST25VF080B_Write(uint32_t address, const uint8_t *data, size_t length)
 {
     size_t i;
+
+    // With BP bits set the part silently ignores Byte Program (BUSY never
+    // asserts, so the poll below would "pass" without writing anything) --
+    // fail honestly instead. Same guard on both erase functions.
+    if (wp_enabled)
+    {
+        return false;
+    }
 
     if (address >= SST25VF080B_SIZE_BYTES)
     {
@@ -226,6 +275,11 @@ bool SST25VF080B_EraseSector(uint32_t address)
 {
     uint32_t sectorAddress = address & ~(SST25VF080B_SECTOR_SIZE - 1u);
 
+    if (wp_enabled)
+    {
+        return false;   // see SST25VF080B_Write()
+    }
+
     SST25VF080B_WriteEnable();
 
     SST25VF080B_Select();
@@ -238,6 +292,11 @@ bool SST25VF080B_EraseSector(uint32_t address)
 
 bool SST25VF080B_EraseChip(void)
 {
+    if (wp_enabled)
+    {
+        return false;   // see SST25VF080B_Write()
+    }
+
     SST25VF080B_WriteEnable();
 
     SST25VF080B_Select();
@@ -262,6 +321,14 @@ bool SST25VF080B_SelfTest(void)
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("SST25VF080B SPI Flash Self-Test:\r\n");
+
+    if (wp_enabled)
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
+        terminalTextAttributesReset();
+        return false;
+    }
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    WARNING: this overwrites the last 4KB sector (0x%06X-0x%06X).\r\n"
@@ -398,6 +465,12 @@ void SST25VF080B_PrintStatus(void)
         terminalTextAttributesReset();
         return;
     }
+
+    if (wp_enabled) terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Write Protect: %s (WP# pin %s)\n\r",
+           wp_enabled ? "ENABLED" : "disabled",
+           nFLASH_SPI_WP_PIN ? "high" : "low/asserted");
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    STATUS register: 0x%02X\n\r", status);

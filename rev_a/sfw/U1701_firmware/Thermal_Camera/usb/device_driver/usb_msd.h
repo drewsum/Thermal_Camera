@@ -129,6 +129,12 @@ void USB_MSD_ResumeHook(void);
 // BOT machine finish its CSW after a case-13/error stall.
 void USB_MSD_EndpointHaltCleared(bool inEndpoint);
 
+// The flash write-protect state changed (terminal command) -- raises
+// UNIT ATTENTION (MEDIA CHANGED) on the write-protectable LUNs so an
+// attached host re-mounts them and re-reads MODE SENSE's WP bit, which
+// it otherwise caches from mount time.
+void USB_MSD_NotifyWriteProtectChanged(void);
+
 // Prints transport state, per-LUN media state, and counters (backing
 // "USB Status?" alongside usb.c's USB_PrintStatus()).
 void USB_MSD_PrintStatus(void);

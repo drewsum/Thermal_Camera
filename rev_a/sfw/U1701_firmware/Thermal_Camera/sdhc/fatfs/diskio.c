@@ -23,6 +23,7 @@
 #include "sdhc/fatfs/diskio.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/sst25vf080b.h"
 
 // Physical drive mapping (FF_VOLUMES is 2 in ffconf.h):
 //   pdrv 0 = SD card (sd_card.h), FatFs's default drive
@@ -43,8 +44,14 @@ DSTATUS disk_status(BYTE pdrv)
 
         case FLASH_DISKIO_PDRV:
             // Soldered-down media -- never STA_NODISK, only
-            // initialized-or-not
-            return Flash_Disk_IsInitialized() ? 0 : STA_NOINIT;
+            // initialized-or-not. STA_PROTECT makes FatFs return
+            // FR_WRITE_PROTECTED from every write API (f_write, f_mkfs,
+            // f_setlabel...) while the hardware write protect is on.
+            if (!Flash_Disk_IsInitialized())
+            {
+                return STA_NOINIT;
+            }
+            return SST25VF080B_WriteProtectIsEnabled() ? STA_PROTECT : 0;
 
         default:
             return STA_NOINIT;
@@ -59,7 +66,13 @@ DSTATUS disk_initialize(BYTE pdrv)
             return SD_Card_Initialize() ? 0 : (STA_NOINIT | STA_NODISK);
 
         case FLASH_DISKIO_PDRV:
-            return Flash_Disk_Initialize() ? 0 : STA_NOINIT;
+            if (!Flash_Disk_Initialize())
+            {
+                return STA_NOINIT;
+            }
+            // f_mkfs checks THIS return for STA_PROTECT (mount-time
+            // writes check disk_status above)
+            return SST25VF080B_WriteProtectIsEnabled() ? STA_PROTECT : 0;
 
         default:
             return STA_NOINIT;

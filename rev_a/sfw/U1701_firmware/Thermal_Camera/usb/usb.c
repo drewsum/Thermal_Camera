@@ -26,8 +26,14 @@
       would re-write a latched write-0-to-clear flag (SENTSTALL,
       UNDERRUN) back to 1 and keep it set.
 
-    - FIFO data is moved with byte accesses through the low byte lane
-      of USBFIFOn, the same access pattern Microchip's own driver uses.
+    - FIFO access is asymmetric (matches Microchip's Harmony USBHS
+      driver, usbhs_EndpointFIFO_Default): WRITES are repeated byte
+      writes to the low byte lane of USBFIFOn, but READS must never hit
+      the same byte lane twice in a row -- the bridge serves a latched
+      32-bit word per lane, so unloads either read full 32-bit words
+      (SETUP packets) or rotate the byte lane with (i & 3) (bulk OUT).
+      Fixed-lane byte reads return garbage (found the hard way: every
+      SETUP parsed as junk and was stalled).
 *******************************************************************************/
 
 #include <xc.h>
@@ -87,9 +93,11 @@
 #define USB_CSR2_DISCONIF   (1ul << 21)
 #define USB_CSR2_VBUSERRIF  (1ul << 23)
 
-// FIFO byte-lane access windows
+// FIFO access windows. Byte-lane 0 is for WRITES only; reads must use
+// 32-bit words or rotate lanes (see file header)
 #define USB_FIFO0_BYTE  (*(volatile uint8_t *)&USBFIFO0)
 #define USB_FIFO1_BYTE  (*(volatile uint8_t *)&USBFIFO1)
+#define USB_FIFO1_LANES ((volatile uint8_t *)&USBFIFO1)
 
 // Standard request codes (USB 2.0 table 9-4)
 #define USB_REQ_GET_STATUS          0u
@@ -473,20 +481,19 @@ static void usbServiceEp0(void)
 static void usbHandleSetupPacket(void)
 {
     usb_setup_packet_t setup;
-    uint8_t raw[8];
 
     usb_counters.setup_packets++;
 
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        raw[i] = USB_FIFO0_BYTE;
-    }
+    // Unload the 8-byte SETUP packet as two 32-bit word reads (file
+    // header: FIFO reads must not repeat a byte lane)
+    uint32_t w0 = USBFIFO0;
+    uint32_t w1 = USBFIFO0;
 
-    setup.bmRequestType = raw[0];
-    setup.bRequest = raw[1];
-    setup.wValue = (uint16_t)raw[2] | ((uint16_t)raw[3] << 8);
-    setup.wIndex = (uint16_t)raw[4] | ((uint16_t)raw[5] << 8);
-    setup.wLength = (uint16_t)raw[6] | ((uint16_t)raw[7] << 8);
+    setup.bmRequestType = (uint8_t)(w0 & 0xFFu);
+    setup.bRequest = (uint8_t)((w0 >> 8) & 0xFFu);
+    setup.wValue = (uint16_t)(w0 >> 16);
+    setup.wIndex = (uint16_t)(w1 & 0xFFFFu);
+    setup.wLength = (uint16_t)(w1 >> 16);
 
     uint8_t type = (setup.bmRequestType >> 5) & 0x3u;
 
@@ -833,16 +840,18 @@ uint16_t USB_BulkOutRead(uint8_t *data, uint16_t maxLength)
     uint16_t count = (uint16_t)USBE1CSR2bits.RXCNT;
     uint16_t stored = (count < maxLength) ? count : maxLength;
 
+    // Rotate the byte lane on every read (file header: FIFO reads must
+    // not repeat a byte lane)
     for (uint16_t i = 0; i < stored; i++)
     {
-        data[i] = USB_FIFO1_BYTE;
+        data[i] = USB_FIFO1_LANES[i & 3u];
     }
 
     // Drain anything the caller's buffer couldn't hold so the FIFO is
     // clean before release (caller sees the oversize via return > max)
     for (uint16_t i = stored; i < count; i++)
     {
-        (void)USB_FIFO1_BYTE;
+        (void)USB_FIFO1_LANES[i & 3u];
     }
 
     USBE1CSR1 = USB_RX_CSR_BASE();  // RXPKTRDY <- 0: release the FIFO

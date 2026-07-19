@@ -15,6 +15,7 @@
 
 #include "spi/flash_fileio.h"
 #include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/sst25vf080b.h"
 #include "sdhc/fatfs/ff.h"
 #include "usb_uart/terminal_control.h"
 #include "usb/device_driver/usb_msd.h"
@@ -60,15 +61,35 @@ static const MKFS_PARM flash_mkfs_parm = {
 };
 
 // Applies FLASH_FILEIO_VOLUME_LABEL if the mounted volume's label is
-// currently blank -- a deliberately renamed volume stays renamed
+// currently blank or still an old firmware default -- a deliberately
+// renamed volume stays renamed
 static void flashFileIOEnsureLabel(void)
 {
     char label[24];
     DWORD vsn;
 
-    if (f_getlabel(FLASH_DRIVE_PREFIX, label, &vsn) == FR_OK && label[0] == '\0')
+    if (f_getlabel(FLASH_DRIVE_PREFIX, label, &vsn) == FR_OK
+            && ((label[0] == '\0') || (strcmp(label, "FLASH") == 0)))
     {
         f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+    }
+}
+
+// FAT volume labels cap at 11 chars, but Windows Explorer displays the
+// full-length label= from autorun.inf instead when one exists -- create
+// it once if absent (never overwrite: FR_EXIST is the common case)
+static void flashFileIOEnsureAutorun(void)
+{
+    static const char autorun[] =
+            "[autorun]\r\nlabel=Thermal Camera SPI Flash\r\n";
+    FIL file;
+
+    if (f_open(&file, FLASH_DRIVE_PREFIX "/autorun.inf",
+            FA_CREATE_NEW | FA_WRITE) == FR_OK)
+    {
+        UINT written;
+        f_write(&file, autorun, sizeof(autorun) - 1u, &written);
+        f_close(&file);
     }
 }
 
@@ -86,18 +107,49 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
     if (fr == FR_NO_FILESYSTEM)
     {
         // Fresh/erased part -- expected on first boot, not an error;
-        // build the volume now
+        // build the volume now. Provisioning temporarily lifts the
+        // boot-default hardware write protect (restored below), otherwise
+        // a virgin board could never build its own volume.
+        bool reprotect = SST25VF080B_WriteProtectIsEnabled();
+
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    No FAT volume on SPI flash, formatting...\r\n");
+        printf("    No FAT volume on SPI flash, formatting%s...\r\n",
+                reprotect ? " (write protect lifted for provisioning)" : "");
         terminalTextAttributesReset();
 
-        if (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work)) != FR_OK)
+        if (reprotect && !SST25VF080B_WriteProtectSet(false))
         {
             flash_mounted = false;
             return false;
         }
 
-        fr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
+        bool mkfsOk = (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm,
+                mkfs_work, sizeof(mkfs_work)) == FR_OK);
+
+        if (mkfsOk)
+        {
+            fr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
+            if (fr == FR_OK)
+            {
+                // Label/autorun also need WP off, so provision them
+                // before re-protecting (the post-if copies of these
+                // calls then no-op)
+                flashFileIOEnsureLabel();
+                flashFileIOEnsureAutorun();
+                Flash_Disk_Sync();
+            }
+        }
+
+        if (reprotect)
+        {
+            SST25VF080B_WriteProtectSet(true);
+        }
+
+        if (!mkfsOk)
+        {
+            flash_mounted = false;
+            return false;
+        }
     }
 
     flash_mounted = (fr == FR_OK);
@@ -105,8 +157,9 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
     if (flash_mounted)
     {
         flashFileIOEnsureLabel();
-        // Label write may be sitting in the staging buffer -- make the
-        // volume durable before declaring the mount good
+        flashFileIOEnsureAutorun();
+        // Label/autorun writes may be sitting in the staging buffer --
+        // make the volume durable before declaring the mount good
         Flash_Disk_Sync();
     }
 
@@ -151,6 +204,7 @@ bool FlashFileIO_Format(void)
 
     flash_mounted = true;
     f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+    flashFileIOEnsureAutorun();
     return Flash_Disk_Sync();
 }
 
@@ -204,6 +258,52 @@ bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line)
 
     f_closedir(&dir);
     return true;
+}
+
+bool FlashFileIO_ReadTextFileToTerminal(const char *path)
+{
+    if (!flashFileIOMediaAvailable() || !flash_mounted || (path == NULL))
+    {
+        return false;
+    }
+
+    // Prefix relative paths so they land on this volume rather than
+    // FatFs's default drive (0: = SD card) -- same rule as ListFiles
+    char filePath[64];
+    if ((path[0] == '0' || path[0] == '1') && (path[1] == ':'))
+    {
+        strncpy(filePath, path, sizeof(filePath) - 1u);
+        filePath[sizeof(filePath) - 1u] = '\0';
+    }
+    else
+    {
+        snprintf(filePath, sizeof(filePath), FLASH_DRIVE_PREFIX "%s", path);
+    }
+
+    FIL file;
+    if (f_open(&file, filePath, FA_READ) != FR_OK)
+    {
+        return false;
+    }
+
+    char buffer[128];
+    UINT bytesRead;
+    FRESULT fr;
+
+    do
+    {
+        fr = f_read(&file, buffer, sizeof(buffer) - 1u, &bytesRead);
+        if ((fr == FR_OK) && (bytesRead > 0u))
+        {
+            buffer[bytesRead] = '\0';
+            printf("%s", buffer);
+        }
+    } while ((fr == FR_OK) && (bytesRead == (sizeof(buffer) - 1u)));
+
+    printf("\r\n");
+    f_close(&file);
+
+    return (fr == FR_OK);
 }
 
 bool FlashFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,

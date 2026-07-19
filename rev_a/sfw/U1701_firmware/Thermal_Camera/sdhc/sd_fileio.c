@@ -182,13 +182,26 @@ bool SDFileIO_EnsureLabel(void)
         return false;
     }
 
-    if (label[0] != '\0')
+    // FAT labels cap at 11 chars; Windows Explorer prefers the
+    // full-length label= from autorun.inf, so create that once if absent
+    // (FR_EXIST is the common case)
+    static const char autorun[] = "[autorun]\r\nlabel=Thermal Camera SD\r\n";
+    FIL file;
+    if (f_open(&file, "autorun.inf", FA_CREATE_NEW | FA_WRITE) == FR_OK)
+    {
+        UINT written;
+        f_write(&file, autorun, sizeof(autorun) - 1u, &written);
+        f_close(&file);
+    }
+
+    if ((label[0] != '\0') && (strcmp(label, "SD") != 0))
     {
         // Card already has a label (possibly the user's own) -- leave it
         return true;
     }
 
-    return (f_setlabel("SD") == FR_OK);
+    // Blank, or still the old firmware default "SD"
+    return (f_setlabel("THERMAL SD") == FR_OK);
 }
 
 bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
