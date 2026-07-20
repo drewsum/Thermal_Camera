@@ -40,6 +40,7 @@
 #include "usb/device_driver/usb_msd.h"
 #include "glcd/glcd.h"
 #include "application/backlight_pwm.h"
+#include "application/image_loader.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -361,6 +362,38 @@ USB_UART_COMMAND(setBacklightBrightnessCommand, "Set Backlight Brightness:",
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("LCD Backlight brightness set to %lu%%\r\n", (unsigned long) read_percent);
     terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(displayImageCommand, "Display Image:",
+        "\b\b <media>, <filename>: Decodes a PNG from storage into the LCD frame buffer.\r\n"
+        "       media: Flash (SPI flash volume) or SD (microSD card volume)\r\n"
+        "       filename: 8.3 short filename, e.g. TEST.PNG (image must be 320x240)") {
+
+    char media_str[16] = {0};
+    char filename_str[64] = {0};
+
+    if (sscanf(input_str, "Display Image: %15[^,], %63[^\t\n\r]", media_str, filename_str) != 2) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Usage: Display Image: <media>, <filename> (media: Flash or SD)\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    IMAGE_MEDIA media;
+    if (strcmp(media_str, "Flash") == 0) {
+        media = IMAGE_MEDIA_SPI_FLASH;
+    } else if (strcmp(media_str, "SD") == 0) {
+        media = IMAGE_MEDIA_SD_CARD;
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Unknown media \"%s\" -- use Flash or SD\r\n", media_str);
+        terminalTextAttributesReset();
+        return;
+    }
+
+    // ImageLoader_DisplayPNG() prints its own success/failure diagnostics
+    ImageLoader_DisplayPNG(media, filename_str);
 
 }
 

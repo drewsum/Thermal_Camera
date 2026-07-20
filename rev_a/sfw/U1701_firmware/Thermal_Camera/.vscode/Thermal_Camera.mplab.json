@@ -127,7 +127,11 @@
                 "i2c/device_driver/gt911.h",
                 "i2c/device_driver/gt911.c",
                 "application/backlight_pwm.h",
-                "application/backlight_pwm.c"
+                "application/backlight_pwm.c",
+                "application/lodepng/lodepng.h",
+                "application/lodepng/lodepng.c",
+                "application/image_loader.h",
+                "application/image_loader.c"
             ]
         }
     ]

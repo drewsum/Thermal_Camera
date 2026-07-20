@@ -1020,8 +1020,8 @@ static void msdYieldMediaToHost(void)
     FlashFileIO_Unmount();
     usb_msd_media_owned_by_host = 1;
 
-    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("USB host attached: SD and FLASH volumes yielded to host\r\n");
+    terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("USB host attached: SD and FLASH volumes yielded to host\r\n\r\n");
     terminalTextAttributesReset();
 }
 
@@ -1051,7 +1051,7 @@ static void msdHandMediaBack(void)
 
     bool flashRemounted = FlashFileIO_MountAndFormatIfNeeded();
 
-    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("USB host detached: local volumes remounted (SD: %s, FLASH: %s)\r\n",
             sdRemounted ? "mounted" : "not mounted",
             flashRemounted ? "mounted" : "FAILED");
