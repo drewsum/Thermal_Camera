@@ -93,6 +93,24 @@
 #define USB_CSR2_DISCONIF   (1ul << 21)
 #define USB_CSR2_VBUSERRIF  (1ul << 23)
 
+// ---- Endpoint FIFO RAM map ----
+// USBOTG.TXFIFOSZ/RXFIFOSZ encoding: 0x6 = 512-byte packets. FIFOAD is in
+// 8-byte units. Both bulk endpoints are double-buffered, so each reserves
+// 2 x 512 = 1024 bytes:
+//
+//     0    ..   63   EP0 (fixed by hardware, 64B)
+//     64   .. 1087   bulk IN  (2 x 512)
+//     1088 .. 2111   bulk OUT (2 x 512)
+//
+// Total 2112 bytes. The core's FIFO RAM is 8 * 2^USBINFO.RAMBITS bytes
+// (4KB when RAMBITS = 9), so this fits with room to spare -- the actual
+// RAMBITS value is reported by USB_PrintStatus() to make that verifiable
+// on the bench rather than assumed.
+#define USB_FIFO_SZ_512         0x6u
+#define USB_FIFO_BULK_TX_ADDR   64u
+#define USB_FIFO_BULK_RX_ADDR   (USB_FIFO_BULK_TX_ADDR + 2u * 512u)
+#define USB_FIFO_TOTAL_USED     (USB_FIFO_BULK_RX_ADDR + 2u * 512u)
+
 // FIFO access windows. Byte-lane 0 is for WRITES only; reads must use
 // 32-bit words or rotate lanes (see file header)
 #define USB_FIFO0_BYTE  (*(volatile uint8_t *)&USBFIFO0)
@@ -315,9 +333,17 @@ bool USB_Initialize(void)
 // (Re)builds the endpoint FIFO map and bulk endpoint CSRs. Called at init
 // and on every bus reset -- by reset time USBCSR0.HSMODE is valid, so this
 // is also where the bulk max packet size locks to 512 (HS) or 64 (FS).
-// FIFO map: EP0 fixed at bytes 0-63, bulk IN 512B at 64, bulk OUT 512B at
-// 576 (FIFOSZ 0x6 = 2^(6+3) bytes, FIFOAD in 8-byte units). The FIFOs stay
-// 512B even in FS mode; only MAXP shrinks.
+// The FIFOs stay 512B/packet even in FS mode; only MAXP shrinks.
+//
+// Both bulk endpoints are DOUBLE-buffered (TXDPB/RXDPB = 1). FIFOSZ
+// specifies the PACKET size, not the allocation -- with DPB set the core
+// reserves 2x that, so each bulk endpoint costs 1024 bytes of FIFO RAM
+// while still declaring a 512-byte packet. This is what lets the host
+// stream back-to-back packets: hardware clears TXPKTRDY as soon as there
+// is room for another packet rather than waiting for the in-flight one to
+// be ACKed, and a second bulk OUT packet can land while firmware is still
+// unloading the first. Single-buffered, throughput was gated on superloop
+// latency instead of on the wire.
 static void usbConfigureEndpoints(void)
 {
     usb_bulk_maxp = (usbReadCsr0() & USB_CSR0_HSMODE) ? USB_BULK_MAX_PACKET_HS
@@ -325,12 +351,12 @@ static void usbConfigureEndpoints(void)
 
     // Dynamic FIFO sizing registers are indexed through USBCSR3.ENDPOINT
     USBCSR3bits.ENDPOINT = USB_BULK_EP_NUM;
-    USBOTGbits.TXFIFOSZ = 0x6;
-    USBOTGbits.TXDPB = 0;                       // single-buffered
-    USBFIFOAbits.TXFIFOAD = 64u / 8u;
-    USBOTGbits.RXFIFOSZ = 0x6;
-    USBOTGbits.RXDPB = 0;
-    USBFIFOAbits.RXFIFOAD = (64u + 512u) / 8u;
+    USBOTGbits.TXFIFOSZ = USB_FIFO_SZ_512;
+    USBOTGbits.TXDPB = 1;                       // double-buffered
+    USBFIFOAbits.TXFIFOAD = USB_FIFO_BULK_TX_ADDR / 8u;
+    USBOTGbits.RXFIFOSZ = USB_FIFO_SZ_512;
+    USBOTGbits.RXDPB = 1;
+    USBFIFOAbits.RXFIFOAD = USB_FIFO_BULK_RX_ADDR / 8u;
     USBCSR3bits.ENDPOINT = 0;
 
     // Fresh CSRs: direction, max packet, data toggles reset, no stalls
@@ -902,17 +928,31 @@ void USB_BulkReset(void)
 {
     // MSC BOT reset semantics: discard any in-flight FIFO contents but
     // PRESERVE stalls and data toggles (BOT spec 3.1) -- the host clears
-    // those itself with CLEAR_FEATURE as part of reset recovery
-    uint32_t tx = USBE1CSR0;
-    if (tx & USB_TX_TXPKTRDY)
+    // those itself with CLEAR_FEATURE as part of reset recovery.
+    //
+    // FLUSH discards ONE packet per write and is only valid while the
+    // corresponding PKTRDY is set, so a double-buffered endpoint
+    // (usbConfigureEndpoints) needs up to two passes to empty both
+    // halves. Bounded at 2 -- if PKTRDY is still set after that, the core
+    // has re-armed from the bus rather than kept stale data.
+    for (uint8_t pass = 0; pass < 2u; pass++)
     {
+        uint32_t tx = USBE1CSR0;
+        if (!(tx & USB_TX_TXPKTRDY))
+        {
+            break;
+        }
         USBE1CSR0 = USB_TX_CSR_BASE() | USB_TX_FLUSH
                 | (tx & (USB_TX_SENDSTALL | USB_TX_SENTSTALL));
     }
 
-    uint32_t rx = USBE1CSR1;
-    if (rx & USB_RX_RXPKTRDY)
+    for (uint8_t pass = 0; pass < 2u; pass++)
     {
+        uint32_t rx = USBE1CSR1;
+        if (!(rx & USB_RX_RXPKTRDY))
+        {
+            break;
+        }
         USBE1CSR1 = USB_RX_CSR_BASE() | USB_RX_FLUSH
                 | (rx & (USB_RX_SENDSTALL | USB_RX_SENTSTALL));
     }
@@ -945,6 +985,28 @@ void USB_PrintStatus(void)
             (unsigned)(csr0 & USB_CSR0_FUNC_MASK));
     printf("    Bulk Max Packet:                          %u bytes\n\r",
             (unsigned)usb_bulk_maxp);
+
+    // Both bulk endpoints are double-buffered; flag it loudly if the map
+    // in usbConfigureEndpoints() ever outgrows the core's actual FIFO RAM
+    {
+        uint32_t ramBytes = 8ul << USBINFObits.RAMBITS;
+        if (USB_FIFO_TOTAL_USED > ramBytes)
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Endpoint FIFO RAM Used:                   %u / %lu bytes\n\r",
+                (unsigned)USB_FIFO_TOTAL_USED, (unsigned long)ramBytes);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+        // USBOTG's FIFO fields are a window indexed by USBCSR3.ENDPOINT,
+        // which sits at 0 outside usbConfigureEndpoints() -- select the
+        // bulk endpoint to read back ITS config, then put it back
+        USBCSR3bits.ENDPOINT = USB_BULK_EP_NUM;
+        bool txDouble = USBOTGbits.TXDPB;
+        bool rxDouble = USBOTGbits.RXDPB;
+        USBCSR3bits.ENDPOINT = 0;
+
+        printf("    Bulk FIFO Buffering:                      %s / %s (IN / OUT)\n\r",
+                txDouble ? "double" : "single", rxDouble ? "double" : "single");
+    }
     printf("    Session Active:                           %s%s\n\r",
             USBOTGbits.SESSION ? "T" : "F",
             USB_FORCE_SESSION ? " (forced)" : "");

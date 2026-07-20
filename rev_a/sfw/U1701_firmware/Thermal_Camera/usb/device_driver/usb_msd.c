@@ -21,6 +21,7 @@
 #include "spi/device_driver/sst25vf080b_disk.h"
 #include "spi/device_driver/sst25vf080b.h"
 #include "spi/flash_fileio.h"
+#include "spi/spi3.h"           // SPI3_DMA_BUFFER_ALIGNMENT for block_buf
 #include "usb_uart/terminal_control.h"
 
 // ---- Bulk-Only Transport wire formats (MSC BOT spec 5.1/5.2) ----
@@ -206,7 +207,22 @@ static uint8_t response_buf[64];
 static uint16_t response_len;
 static uint16_t response_off;
 
-static uint8_t block_buf[MSD_BLOCK_SIZE];
+// Media staging buffer, sized to the whole per-pass block budget so a
+// READ/WRITE data phase issues ONE multi-block backend call per pass
+// instead of one single-block call per 512 bytes. That matters most on
+// LUN 0: SD_Card_ReadBlocks/WriteBlocks already emit CMD18/CMD25 with the
+// trailing CMD12 when blockCount > 1, so eight blocks now cost one
+// command round trip instead of eight (and on writes, one program-busy
+// wait instead of eight).
+//
+// Aligned for SPI3 DMA: LUN 1 reads land here via SST25VF080B_Read(),
+// which silently falls back to a byte loop for buffers that aren't
+// cache-line aligned (spi3.h). The size is a multiple of the alignment
+// and every 512-byte sub-chunk within it stays aligned.
+#define MSD_STAGING_SIZE    ((uint16_t)USB_MSD_BLOCKS_PER_PASS * MSD_BLOCK_SIZE)
+
+static __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT)))
+        uint8_t block_buf[MSD_STAGING_SIZE];
 static uint16_t block_buf_len;      // valid bytes staged for IN / target for OUT
 static uint16_t block_buf_off;
 
@@ -804,14 +820,20 @@ static void msdPumpDataIn(void)
             return;
         }
 
-        // Refill the staging buffer from the medium when it runs dry
+        // Refill the staging buffer from the medium when it runs dry --
+        // as many blocks as the buffer holds, in one backend call
         if (xfer_from_media && (block_buf_off >= block_buf_len))
         {
             if (xfer_blocks_remaining == 0u)
             {
                 break;
             }
-            if (!msd_luns[cbw_lun].readSectors(xfer_lba, block_buf, 1))
+
+            uint16_t toRead = (xfer_blocks_remaining < USB_MSD_BLOCKS_PER_PASS)
+                    ? (uint16_t)xfer_blocks_remaining
+                    : (uint16_t)USB_MSD_BLOCKS_PER_PASS;
+
+            if (!msd_luns[cbw_lun].readSectors(xfer_lba, block_buf, toRead))
             {
                 msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR,
                         ASC_UNRECOVERED_READ_ERROR, 0);
@@ -819,10 +841,10 @@ static void msdPumpDataIn(void)
                 stall_in_after_data = true;
                 break;
             }
-            usb_msd_counters.blocks_read++;
-            xfer_lba++;
-            xfer_blocks_remaining--;
-            block_buf_len = MSD_BLOCK_SIZE;
+            usb_msd_counters.blocks_read += toRead;
+            xfer_lba += toRead;
+            xfer_blocks_remaining -= toRead;
+            block_buf_len = toRead * MSD_BLOCK_SIZE;
             block_buf_off = 0;
         }
 
@@ -870,6 +892,36 @@ static void msdPumpDataIn(void)
     msdTrySendCsw();
 }
 
+// Writes every COMPLETE block staged in block_buf to the medium in one
+// backend call, then resets the staging offset. A trailing partial block
+// -- only reachable when the host's byte budget truncated the command
+// mid-block (case 7/13) -- is discarded rather than written, matching the
+// single-block behavior this replaced. xfer_lba advances over the staged
+// blocks whether or not they were written, so a failed command that keeps
+// draining stays positionally correct.
+static void msdFlushStagedWrite(void)
+{
+    uint16_t blocks = block_buf_off / MSD_BLOCK_SIZE;
+
+    if ((blocks > 0u) && (csw_status == MSD_CSW_STATUS_PASS))
+    {
+        if (!msd_luns[cbw_lun].writeSectors(xfer_lba, block_buf, blocks))
+        {
+            // Keep draining the host's remaining data (it won't stop
+            // mid-burst), but the command has failed
+            msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR, ASC_WRITE_ERROR, 0);
+            csw_status = MSD_CSW_STATUS_FAIL;
+        }
+        else
+        {
+            usb_msd_counters.blocks_written += blocks;
+        }
+    }
+
+    xfer_lba += blocks;
+    block_buf_off = 0;
+}
+
 static void msdPumpDataOut(void)
 {
     uint32_t budgetBytes = (uint32_t)USB_MSD_BLOCKS_PER_PASS * MSD_BLOCK_SIZE;
@@ -878,10 +930,11 @@ static void msdPumpDataOut(void)
     {
         if (!USB_BulkOutAvailable())
         {
-            return;     // next EP1RX event resumes us
+            return;     // next EP1RX event resumes us (staged bytes keep
+                        // their place in block_buf across passes)
         }
 
-        uint16_t space = (uint16_t)(MSD_BLOCK_SIZE - block_buf_off);
+        uint16_t space = (uint16_t)(MSD_STAGING_SIZE - block_buf_off);
         uint16_t received = USB_BulkOutRead(&block_buf[block_buf_off], space);
 
         if (received > space)
@@ -907,25 +960,9 @@ static void msdPumpDataOut(void)
         data_residue -= received;
         budgetBytes = (budgetBytes > received) ? (budgetBytes - received) : 0u;
 
-        if (block_buf_off >= MSD_BLOCK_SIZE)
+        if (block_buf_off >= MSD_STAGING_SIZE)
         {
-            if (csw_status == MSD_CSW_STATUS_PASS)
-            {
-                if (!msd_luns[cbw_lun].writeSectors(xfer_lba, block_buf, 1))
-                {
-                    // Keep draining the host's remaining data (it won't
-                    // stop mid-burst), but the command has failed
-                    msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR,
-                            ASC_WRITE_ERROR, 0);
-                    csw_status = MSD_CSW_STATUS_FAIL;
-                }
-                else
-                {
-                    usb_msd_counters.blocks_written++;
-                }
-            }
-            xfer_lba++;
-            block_buf_off = 0;
+            msdFlushStagedWrite();
         }
     }
 
@@ -933,6 +970,11 @@ static void msdPumpDataOut(void)
     {
         return;
     }
+
+    // Data phase complete -- commit whatever whole blocks are still staged
+    // (the common case for any transfer that isn't an exact multiple of
+    // the staging buffer)
+    msdFlushStagedWrite();
 
     // All expected data received. If the host budgeted more bytes than
     // the command consumes (case 11/13), refuse the excess.
