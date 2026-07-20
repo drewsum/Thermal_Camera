@@ -49,6 +49,7 @@
 
 #include <xc.h>
 #include <sys/attribs.h>
+#include <sys/kmem.h>       // KVA_TO_PA for USB DMA physical addresses
 #include <stdio.h>
 #include <string.h>
 
@@ -93,6 +94,43 @@
 #define USB_RX_SENDSTALL (1ul << 21)
 #define USB_RX_SENTSTALL (1ul << 22)    // write 0 to clear
 #define USB_RX_CLRDT    (1ul << 23)     // clear data toggle
+
+// ---- Endpoint DMA control bits, in the CSR high bytes ----
+// USBE1CSR0<31:24> is MUSB TXCSRH, USBE1CSR1<31:24> is RXCSRH. Positions
+// below are the ATDF's (USBIENCSR0/USBIENCSR1 DMAREQEN/DMAREQMD) and agree
+// with the databook's TXCSRH/RXCSRH layout. That derivation is already
+// proven in this file: USB_TX_MODE is TXCSRH.5 -> bit 29 by the same
+// mapping, and it works. Note the TX and RX positions are NOT the same.
+#define USB_TX_DMAREQMD (1ul << 26)     // TXCSRH.2
+#define USB_TX_DMAREQEN (1ul << 28)     // TXCSRH.4
+#define USB_TX_AUTOSET  (1ul << 31)     // TXCSRH.7 -- arm TXPKTRDY per full packet
+#define USB_RX_DMAREQMD (1ul << 27)     // RXCSRH.3
+#define USB_RX_DMAREQEN (1ul << 29)     // RXCSRH.5
+#define USB_RX_AUTOCLR  (1ul << 31)     // RXCSRH.7 -- release RXPKTRDY per full packet
+
+// ---- USBDMAnC (channel control) bits ----
+#define USB_DMAC_EN     (1ul << 0)
+#define USB_DMAC_DIR_TX (1ul << 1)      // 1 = read from memory (RAM -> FIFO)
+#define USB_DMAC_MODE1  (1ul << 2)      // 0 = one packet per transfer, 1 = many
+#define USB_DMAC_IE     (1ul << 3)
+#define USB_DMAC_ERR    (1ul << 8)      // bus error (read back after completion)
+#define USB_DMAC_EP(n)  (((uint32_t)(n) & 0xFu) << 4)
+
+// Channel assignment. USBDMAINT reports channel n in bit (n-1).
+#define USB_DMA_TX_CHAN 1u
+#define USB_DMA_RX_CHAN 2u
+#define USB_DMAINT_TX   (1ul << (USB_DMA_TX_CHAN - 1u))
+#define USB_DMAINT_RX   (1ul << (USB_DMA_RX_CHAN - 1u))
+
+// D-cache maintenance for DMA buffers. Same line size and the same MIPS32
+// CACHE op-field encoding as spi3.c's SPI3_DCacheInvalidate() -- see that
+// function for the full rationale. The USB DMA engine reaches physical
+// memory directly, so a TX buffer the CPU just filled must be written back
+// before the engine reads it, and an RX buffer must be invalidated so the
+// CPU doesn't serve later loads out of stale lines.
+#define USB_DCACHE_LINE_SIZE        16u
+#define USB_CACHE_OP_HIT_INVAL_D    0x11u   // Hit_Invalidate_D
+#define USB_CACHE_OP_HIT_WRITEBK_D  0x19u   // Hit_Writeback_D
 
 // Interrupt-flag masks within the ISR's clear-on-read snapshots
 #define USB_CSR0_EP0IF      (1ul << 16)
@@ -328,6 +366,15 @@ bool USB_Initialize(void)
     enableInterrupt(usb_general_event);
     usb_isr_armed = true;
 
+    // The MUSB DMA engine has its own vector. Same IPL2 as the general
+    // event so the two USB ISRs never preempt each other -- the DMA ISR
+    // touches usb_event_pending, which the general path also owns.
+    USBDMAINT;              // clear any stale channel flags (read-to-clear)
+    setInterruptPriority(usb_dma_event, 2);
+    setInterruptSubpriority(usb_dma_event, 0);
+    clearInterruptFlag(usb_dma_event);
+    enableInterrupt(usb_dma_event);
+
 #if USB_FORCE_SESSION
     USBOTGbits.SESSION = 1;
 #endif
@@ -357,6 +404,10 @@ bool USB_Initialize(void)
 // latency instead of on the wire.
 static void usbConfigureEndpoints(void)
 {
+    // Called on every bus reset -- kill any transfer the engine was in the
+    // middle of before the FIFO map is rebuilt underneath it
+    USB_BulkDmaAbort();
+
     usb_bulk_maxp = (usbReadCsr0() & USB_CSR0_HSMODE) ? USB_BULK_MAX_PACKET_HS
                                                       : USB_BULK_MAX_PACKET_FS;
 
@@ -398,8 +449,14 @@ void USB_Tasks(void)
         return;
     }
 
-    // Atomically take this pass's events (the ISR ORs into these)
+    // Atomically take this pass's events (the ISR ORs into these). BOTH
+    // USB ISRs write usb_event_pending, so both must be masked while it is
+    // cleared -- otherwise a DMA completion landing between the snapshot
+    // and the clear would have its usb_event_pending=1 overwritten by the
+    // clear below, and the retire/re-pump it should have triggered would
+    // be lost until some unrelated event happened to wake the pump.
     disableInterrupt(usb_general_event);
+    disableInterrupt(usb_dma_event);
     uint32_t p0 = usb_pending_csr0;
     uint32_t p1 = usb_pending_csr1;
     uint32_t p2 = usb_pending_csr2;
@@ -407,6 +464,7 @@ void USB_Tasks(void)
     usb_pending_csr1 = 0;
     usb_pending_csr2 = 0;
     usb_event_pending = 0;
+    enableInterrupt(usb_dma_event);
     enableInterrupt(usb_general_event);
 
     // Bus events first, so a reset/resume reshapes state before any
@@ -946,8 +1004,305 @@ uint16_t USB_BulkOutRead(uint8_t *data, uint16_t maxLength)
     return count;
 }
 
+// ---- MUSB internal DMA (usb.h) ----
+
+static volatile uint8_t usb_dma_in_active = 0;
+static volatile uint8_t usb_dma_out_active = 0;
+static volatile uint8_t usb_dma_error = 0;
+
+// Retained so the completion ISR can invalidate exactly what the engine
+// wrote (the RX direction only)
+static uint8_t *usb_dma_rx_buffer = NULL;
+static uint16_t usb_dma_rx_length = 0;
+
+static void usbDCacheOp(const void *addr, size_t length, uint32_t op)
+{
+    uint32_t line = (uint32_t)addr & ~(uint32_t)(USB_DCACHE_LINE_SIZE - 1u);
+    uint32_t end = (uint32_t)addr + length;
+
+    for (; line < end; line += USB_DCACHE_LINE_SIZE)
+    {
+        if (op == USB_CACHE_OP_HIT_WRITEBK_D)
+        {
+            __asm__ __volatile__ ("cache %0, 0(%1)"
+                : : "i" (USB_CACHE_OP_HIT_WRITEBK_D), "r" (line) : "memory");
+        }
+        else
+        {
+            __asm__ __volatile__ ("cache %0, 0(%1)"
+                : : "i" (USB_CACHE_OP_HIT_INVAL_D), "r" (line) : "memory");
+        }
+    }
+    __asm__ __volatile__ ("sync" ::: "memory");
+}
+
+// Shared eligibility test (usb.h documents the contract). The cache-line
+// alignment requirement is a CORRECTNESS rule, not a tuning preference:
+// the maintenance ops above act on whole lines, so a buffer that doesn't
+// start and end on a line boundary would have them reach into unrelated
+// data -- writing back or discarding somebody else's dirty line.
+static bool usbBulkDmaEligible(const void *data, uint16_t length)
+{
+    uint16_t maxp = usb_bulk_maxp;
+
+    return (data != NULL)
+            && (length > 0u)
+            && (maxp > 0u)
+            && ((length % maxp) == 0u)
+            && (((uintptr_t)data & (USB_DCACHE_LINE_SIZE - 1u)) == 0u)
+            && ((length % USB_DCACHE_LINE_SIZE) == 0u)
+            && !usb_dma_in_active
+            && !usb_dma_out_active;
+}
+
+// Rewrites a bulk CSR with the DMA request/automation bits cleared,
+// preserving the latched state that must survive an unrelated CSR write:
+// an in-flight TXPKTRDY (software must never clear it -- hardware does
+// that when the packet goes out), a pending RXPKTRDY, and any stall.
+// Rebuild-not-RMW, for the reason in the file header. Split by direction
+// so the completion ISR can disarm exactly the endpoint that finished,
+// closing the window where stale AUTOSET/AUTOCLR/DMAREQEN bits outlive
+// the transfer.
+static void usbBulkTxDisarm(void)
+{
+    uint32_t tx = USBE1CSR0;
+    USBE1CSR0 = USB_TX_CSR_BASE()
+            | (tx & (USB_TX_TXPKTRDY | USB_TX_SENDSTALL | USB_TX_SENTSTALL));
+}
+
+static void usbBulkRxDisarm(void)
+{
+    uint32_t rx = USBE1CSR1;
+    USBE1CSR1 = USB_RX_CSR_BASE()
+            | (rx & (USB_RX_RXPKTRDY | USB_RX_SENDSTALL | USB_RX_SENTSTALL));
+}
+
+// Bisection gate (2026-07-20): see USB_ENABLE_BULK_OUT_DMA. With OUT DMA
+// already gated off, the flash LUN still failed while SD (same IN-DMA
+// read path) worked -- so this second gate takes bulk IN off DMA too,
+// reverting BOTH directions to the pure-PIO behavior of findings #1-#3
+// that was confirmed working. If flash then works, the fault is somewhere
+// in the DMA layer (prime suspect: SPI3-DMA-filled block_buf vs USB DMA
+// cache interaction, which is unique to the flash LUN); if it still
+// fails, the DMA layer is exonerated and the cause is elsewhere (pump
+// restructuring or flash staging/sync). Flip to 0 to force all bulk IN
+// back onto PIO.
+//
+// 2026-07-20 resolution: IN DMA is ON, but restricted to the SD LUN by
+// usb_msd.c's per-LUN usb_in_dma_safe flag. Bisection proved the flash
+// LUN is corrupted by IN DMA (SD is fine over the identical path), and a
+// bounce-through-CPU-memcpy diagnostic ruled out block_buf's cache state
+// as the cause -- the fault is a cross-DMA-master hazard below the buffer
+// level (flash fills via the SST25 driver's SPI3 system DMA; SD via SDHC
+// PIO). Flash reads therefore stay on PIO, where they're SPI-bandwidth
+// bound anyway. OUT DMA (below) stays off entirely -- it was never the
+// flash culprit but is also unproven and unneeded.
+#define USB_ENABLE_BULK_IN_DMA 1
+
+bool USB_BulkInWriteDma(const uint8_t *data, uint16_t length)
+{
+#if !USB_ENABLE_BULK_IN_DMA
+    (void)data;
+    (void)length;
+    return false;       // force PIO for bulk IN (see gate note above)
+#else
+    if (!usbBulkDmaEligible(data, length))
+    {
+        return false;
+    }
+
+    // The engine drives TXPKTRDY itself from here on, but a packet armed
+    // by an earlier PIO write must clear the FIFO first
+    if (USBE1CSR0 & USB_TX_TXPKTRDY)
+    {
+        return false;
+    }
+
+    // The engine reads physical memory -- push the CPU's dirty lines out
+    // to RAM before it does, or it ships whatever RAM held previously
+    usbDCacheOp(data, length, USB_CACHE_OP_HIT_WRITEBK_D);
+
+    usb_dma_in_active = 1;
+
+    // Endpoint side: AutoSet arms TXPKTRDY for each full packet the
+    // engine lands in the FIFO, DMAREQMD selects Mode 1 (many packets per
+    // transfer). Preserve a latched stall; TXPKTRDY is known clear here.
+    uint32_t tx = USBE1CSR0;
+    USBE1CSR0 = USB_TX_CSR_BASE() | USB_TX_AUTOSET | USB_TX_DMAREQEN
+            | USB_TX_DMAREQMD | (tx & (USB_TX_SENDSTALL | USB_TX_SENTSTALL));
+
+    // Channel side. Address is physical; count is bytes.
+    USBDMA1A = (uint32_t)KVA_TO_PA((void *)data);
+    USBDMA1N = length;
+    USBDMA1C = USB_DMAC_EP(USB_BULK_EP_NUM) | USB_DMAC_DIR_TX
+            | USB_DMAC_MODE1 | USB_DMAC_IE | USB_DMAC_EN;
+
+    return true;
+#endif
+}
+
+// Bisection gate (2026-07-20): bulk OUT DMA is disabled while the flash
+// LUN regression is isolated. Bulk IN DMA is proven good (SD read-mount
+// works end-to-end over it); the OUT/RX direction is the one SD's
+// read-only test never exercised and the prime suspect -- specifically a
+// possible RX-Mode-1-DMA vs RX-double-buffering (RXDPB=1, finding #1)
+// interaction on this MUSB core. Returning false here routes every bulk
+// OUT transfer back through the proven PIO path (USB_BulkOutRead), leaving
+// bulk IN on DMA. Flip to 1 to re-arm RX DMA once the interaction is
+// understood.
+#define USB_ENABLE_BULK_OUT_DMA 0
+
+bool USB_BulkOutReadDma(uint8_t *data, uint16_t length)
+{
+#if !USB_ENABLE_BULK_OUT_DMA
+    (void)data;
+    (void)length;
+    return false;       // force PIO for bulk OUT (see gate note above)
+#else
+    if (!usbBulkDmaEligible(data, length))
+    {
+        return false;
+    }
+
+    // A packet already sitting in the FIFO belongs to the PIO path -- let
+    // the caller drain it before the engine takes over the endpoint
+    if (USBE1CSR1 & USB_RX_RXPKTRDY)
+    {
+        return false;
+    }
+
+    // Drop any dirty lines covering the destination BEFORE the engine
+    // writes it, so a later natural eviction can't land on top of DMA
+    // data. Invalidated again at completion against speculative fills.
+    usbDCacheOp(data, length, USB_CACHE_OP_HIT_INVAL_D);
+
+    usb_dma_rx_buffer = data;
+    usb_dma_rx_length = length;
+    usb_dma_out_active = 1;
+
+    // AutoClear releases RXPKTRDY as each full packet is drained to memory
+    uint32_t rx = USBE1CSR1;
+    USBE1CSR1 = USB_RX_CSR_BASE() | USB_RX_AUTOCLR | USB_RX_DMAREQEN
+            | USB_RX_DMAREQMD | (rx & (USB_RX_SENDSTALL | USB_RX_SENTSTALL));
+
+    USBDMA2A = (uint32_t)KVA_TO_PA((void *)data);
+    USBDMA2N = length;
+    USBDMA2C = USB_DMAC_EP(USB_BULK_EP_NUM)     // DIR = 0: FIFO -> memory
+            | USB_DMAC_MODE1 | USB_DMAC_IE | USB_DMAC_EN;
+
+    return true;
+#endif
+}
+
+bool USB_BulkDmaBusy(void)
+{
+    return (usb_dma_in_active != 0u) || (usb_dma_out_active != 0u);
+}
+
+bool USB_BulkDmaTakeError(void)
+{
+    disableInterrupt(usb_dma_event);
+    bool error = (usb_dma_error != 0u);
+    usb_dma_error = 0;
+    enableInterrupt(usb_dma_event);
+
+    return error;
+}
+
+void USB_BulkDmaAbort(void)
+{
+    disableInterrupt(usb_dma_event);
+
+    USBDMA1C = 0;
+    USBDMA2C = 0;
+
+    bool wasReceiving = (usb_dma_out_active != 0u);
+
+    usb_dma_in_active = 0;
+    usb_dma_out_active = 0;
+
+    (void)USBDMAINT;    // read-to-clear: drop any flag raised mid-teardown
+
+    enableInterrupt(usb_dma_event);
+    clearInterruptFlag(usb_dma_event);
+
+    // However far the engine got, the destination lines are now
+    // untrustworthy -- make sure the CPU refetches rather than serving a
+    // partially-written buffer out of cache
+    if (wasReceiving && (usb_dma_rx_buffer != NULL))
+    {
+        usbDCacheOp(usb_dma_rx_buffer, usb_dma_rx_length,
+                USB_CACHE_OP_HIT_INVAL_D);
+    }
+    usb_dma_rx_buffer = NULL;
+    usb_dma_rx_length = 0;
+
+    usbBulkTxDisarm();
+    usbBulkRxDisarm();
+}
+
+// Completion. Follows this file's ISR-latches/superloop-executes model:
+// retire the channels, do the one thing that cannot wait (the receive
+// buffer's cache invalidate, which must land before any CPU read of it),
+// and set usb_event_pending so the next USB_Tasks() pass re-pumps the MSD
+// state machine exactly as an endpoint interrupt would.
+void __ISR(_USB_DMA_VECTOR, IPL2SRS) usbDmaISR(void)
+{
+    uint32_t pending = USBDMAINT;   // read-to-clear
+
+    if (pending & USB_DMAINT_TX)
+    {
+        if (USBDMA1C & USB_DMAC_ERR)
+        {
+            usb_dma_error = 1;
+            usb_counters.dma_errors++;
+        }
+        USBDMA1C = 0;
+        usb_dma_in_active = 0;
+        usb_counters.dma_in_transfers++;
+
+        // Clear AUTOSET/DMAREQEN so they don't outlive the transfer (the
+        // FIFO holds a fully-armed last packet the core will send on its
+        // own; TXPKTRDY is preserved by the disarm)
+        usbBulkTxDisarm();
+    }
+
+    if (pending & USB_DMAINT_RX)
+    {
+        if (USBDMA2C & USB_DMAC_ERR)
+        {
+            usb_dma_error = 1;
+            usb_counters.dma_errors++;
+        }
+        USBDMA2C = 0;
+        usb_dma_out_active = 0;
+        usb_counters.dma_out_transfers++;
+
+        usbBulkRxDisarm();
+
+        if (usb_dma_rx_buffer != NULL)
+        {
+            usbDCacheOp(usb_dma_rx_buffer, usb_dma_rx_length,
+                    USB_CACHE_OP_HIT_INVAL_D);
+            usb_dma_rx_buffer = NULL;
+            usb_dma_rx_length = 0;
+        }
+    }
+
+    if (pending != 0u)
+    {
+        usb_event_pending = 1;
+    }
+
+    clearInterruptFlag(usb_dma_event);
+}
+
 void USB_BulkStall(bool inEndpoint)
 {
+    // A stall tears down whatever the engine was doing on this endpoint
+    USB_BulkDmaAbort();
+
+
     if (inEndpoint)
     {
         uint32_t keep = USBE1CSR0 & USB_TX_TXPKTRDY;
@@ -987,6 +1342,10 @@ bool USB_BulkOutStalled(void)
 
 void USB_BulkReset(void)
 {
+    // Stop the engine before flushing, or it would keep feeding the FIFO
+    // that is being emptied
+    USB_BulkDmaAbort();
+
     // MSC BOT reset semantics: discard any in-flight FIFO contents but
     // PRESERVE stalls and data toggles (BOT spec 3.1) -- the host clears
     // those itself with CLEAR_FEATURE as part of reset recovery.
@@ -1100,6 +1459,14 @@ void USB_PrintStatus(void)
             (unsigned long)usb_counters.setup_packets);
     printf("    EP0 Stalls:                               %lu\n\r",
             (unsigned long)usb_counters.ep0_stalls);
+    printf("    Bulk DMA Transfers (IN / OUT):            %lu / %lu\n\r",
+            (unsigned long)usb_counters.dma_in_transfers,
+            (unsigned long)usb_counters.dma_out_transfers);
+    if (usb_counters.dma_errors > 0)
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Bulk DMA Errors:                          %lu\n\r",
+            (unsigned long)usb_counters.dma_errors);
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
 
     if (usb_counters.vbus_errors > 0)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
