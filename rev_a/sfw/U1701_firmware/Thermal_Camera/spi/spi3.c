@@ -166,14 +166,14 @@ uint8_t SPI3_TransferByte(uint8_t data)
 #define SPI3_RX_DMA_DSIZ_REG        DCH3DSIZ
 #define SPI3_RX_DMA_CSIZ_REG        DCH3CSIZ
 
-// Disabled by default (2026-07-20): the SDHC ADMA2 path added in this same
-// session hung real hardware the first time it was exercised despite
-// looking correct on review (see sd_card.c's useDMA comment) -- this SPI3
-// DMA path is equally unvalidated on real hardware, so it's left wired up
-// but inert rather than risking the same kind of regression. Flip to 1
-// only after bench-testing SPI3_TransferBlockDMA() in isolation (e.g. via
-// "Flash Self Test", scoping SDO3/SDI3/SCK3 during a 4KB sector read).
-#define SPI3_DMA_ENABLED   0
+// Re-enabled 2026-07-20 for bench testing, clock speed left untouched at
+// the known-good 10MHz default above (see the SPI3_DEFAULT_CLK_HZ
+// comment) -- this isolates the DMA path itself as the only variable
+// under test, after the SDHC ADMA2 path hung real hardware in the same
+// session (see sd_card.c's useDMA comment / [[sdhc-sd-card-driver]]
+// memory). If this also causes a boot/read failure, flip back to 0 and
+// treat DMA itself (not clock speed) as the suspect.
+#define SPI3_DMA_ENABLED   1
 
 // Below this length, DMA channel setup/teardown overhead exceeds
 // whatever it would save over the plain byte loop -- SPI3_TransferBlock()
@@ -201,6 +201,30 @@ static __attribute__((coherent)) uint8_t spi3_dma_tx_dummy[SPI3_DMA_MAX_LENGTH];
 
 #define SPI3_DMA_TIMEOUT_TICKS   ((uint32_t)(((uint64_t)SYSCLK_INT / 2u) * 50000u / 1000000u))  // 50ms
 
+// D-cache line size (microAptiv/PIC32MZ-DA) and MIPS32 CACHE op-field
+// encodings -- same values and same rationale as sdhc.c's
+// SDHC_DCacheInvalidate() (see that file for the full explanation). rxData
+// here (e.g. sst25vf080b.c's static readBuffer[]) is ordinary cached
+// KSEG0 memory, not __attribute__((coherent)) like spi3_dma_tx_dummy[] --
+// the RX DMA channel writes it via physical memory directly, bypassing
+// the CPU entirely, so without this the caller's very next load of
+// rxData could return stale cached bytes instead of what DCH3 just wrote.
+#define SPI3_DCACHE_LINE_SIZE            16u
+#define SPI3_CACHE_OP_HIT_INVALIDATE_D   0x11u
+
+static void SPI3_DCacheInvalidate(const void *addr, size_t length)
+{
+    uint32_t line = (uint32_t)addr & ~(SPI3_DCACHE_LINE_SIZE - 1u);
+    uint32_t end = (uint32_t)addr + length;
+
+    for (; line < end; line += SPI3_DCACHE_LINE_SIZE)
+    {
+        __asm__ __volatile__ ("cache %0, 0(%1)"
+            : : "i" (SPI3_CACHE_OP_HIT_INVALIDATE_D), "r" (line) : "memory");
+    }
+    __asm__ __volatile__ ("sync" ::: "memory");
+}
+
 // Captures `length` bytes (>= SPI3_DMA_MIN_LENGTH, <= SPI3_DMA_MAX_LENGTH)
 // from SPI3BUF into `rxData` via DCH2/DCH3, transmitting spi3_dma_tx_dummy
 // as filler. Returns false on a DMA timeout (SPI3_TransferBlock() falls
@@ -209,6 +233,21 @@ static __attribute__((coherent)) uint8_t spi3_dma_tx_dummy[SPI3_DMA_MAX_LENGTH];
 static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
 {
     DMACONbits.ON = 1;
+
+    // SPI3_TransferByte() (used for the command/address/dummy bytes sent
+    // just before every call here) only polls SPIRBF/SPITBE -- the
+    // peripheral's own status bits -- and never touches the CPU-level
+    // spi3_receive_done/spi3_transfer_done IFS flag bits, which are a
+    // separate thing entirely and stay set until software clears them.
+    // Since SPI3 has never used interrupts before this DMA path existed,
+    // those flags carry a backlog of "set" from every byte this driver
+    // has ever shifted. If left set, arming CHSIRQ/SIRQEN against an
+    // already-set flag can fire the DMA channel immediately on enable --
+    // before the real first byte ever shifts -- desyncing the TX/RX
+    // channels from actual SPI3 activity and capturing garbage. Clear
+    // both right before arming either channel.
+    clearInterruptFlag(spi3_receive_done);
+    clearInterruptFlag(spi3_transfer_done);
 
     // RX: SPI3BUF (fixed, 1 byte) -> rxData (grows to `length` bytes)
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
@@ -262,6 +301,11 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
 
     SPI3_TX_DMA_CON_BITFIELD.CHEN = 0;
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
+
+    if (!timedOut)
+    {
+        SPI3_DCacheInvalidate(rxData, length);
+    }
 
     return !timedOut;
 }
