@@ -114,7 +114,12 @@ bool SDHC_SetBusWidth(bool wide4bit);
 // data (CMD17/18/24/25 in sd_card.c's usage): programs SDHCBLKCON
 // (BSIZE/BCOUNT) and records direction/DMA-use for SDHC_SendCommand() to
 // fold into the Transfer Mode bits of the same SDHCMODE write that issues
-// the command. Has no effect on commands issued with dataPresent=false.
+// the command. Also sets SDHCCON1.DMASEL to select ADMA2 (0b10) whenever
+// useADMA2 is honored, since DMASEL's power-on default (0b00) selects
+// SDMA -- a mode this driver never programs the system-address register
+// for, so leaving DMASEL untouched would give a live DMAEN=1 with no
+// working destination. Has no effect on commands issued with
+// dataPresent=false.
 void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool isWrite, bool useADMA2);
 
 // Waits CINHCMD (and CINHDAT, if dataPresent) clear, loads SDHCARG, then
@@ -145,15 +150,33 @@ bool SDHC_TransferBlocksPIO(uint8_t *buffer, uint16_t blockSize, uint16_t blockC
 
 // Builds a 32-bit ADMA2 descriptor table (single-descriptor, since
 // `buffer` is assumed caller-contiguous) in a statically-allocated,
-// uncached (KSEG1) region, points SDHCAADDR at its physical address, and
-// waits TXCIF with a bounded timeout, checking SDHCAESTAT on failure.
-// Caller must have already issued the command via SDHC_SendCommand(...,
-// dataPresent=true) with SDHC_ConfigureBlockTransfer(..., useADMA2=true)
-// beforehand (which sets SDHCMODE.DMAEN and SDHCCON1.DMASEL for this
-// path). Gated by SDHC_IsADMA2Supported() -- sd_card.c falls back to
-// SDHC_TransferBlocksPIO() transparently if this silicon instance doesn't
-// support it.
-bool SDHC_TransferBlocksADMA2(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite);
+// uncached (KSEG1) region and points SDHCAADDR at its physical address.
+// MUST be called BEFORE SDHC_SendCommand(..., dataPresent=true) for the
+// same transfer -- the ADMA2 engine starts fetching descriptors from
+// SDHCAADDR the moment the command goes out (SDHCMODE.DMAEN=1), so
+// programming SDHCAADDR any later races the engine against an
+// unprogrammed address register. Caller must first call
+// SDHC_ConfigureBlockTransfer(..., useADMA2=true), which also sets
+// SDHCCON1.DMASEL to select ADMA2 (not the power-on-default SDMA, which
+// this driver does not support). On a write, also flushes the buffer out
+// of the CPU's D-cache to physical RAM first (see SDHC_WaitADMA2Transfer()
+// for the read-side counterpart) -- the ADMA2 engine only ever sees
+// physical memory, not the cache. Returns false (falls through to
+// SDHC_TransferBlocksPIO() being the caller's fallback) if the transfer
+// exceeds a single descriptor's 65536-byte limit; multi-descriptor
+// chaining is not implemented.
+bool SDHC_PrepareADMA2Transfer(const uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite);
+
+// Waits TXCIF (transfer complete) with a bounded timeout, checking
+// SDHCAESTAT-reflected errors (ADEIF) on failure, for an ADMA2 transfer
+// previously armed by SDHC_PrepareADMA2Transfer() and issued via
+// SDHC_SendCommand(). On a successful read, invalidates the buffer's
+// D-cache lines afterward so the caller's next load re-fetches the data
+// the ADMA2 engine just wrote to physical RAM instead of returning
+// whatever was cached there beforehand. Gated by SDHC_IsADMA2Supported()
+// -- sd_card.c falls back to SDHC_TransferBlocksPIO() transparently if
+// this silicon instance doesn't support ADMA2.
+bool SDHC_WaitADMA2Transfer(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite);
 
 // Returns whether this silicon instance's SDHCCAP.ADMA2 bit is set.
 // Cached at SDHC_Initialize() time.

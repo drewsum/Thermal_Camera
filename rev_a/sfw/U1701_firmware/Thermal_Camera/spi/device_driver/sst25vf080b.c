@@ -24,6 +24,7 @@
 // *****************************************************************************
 
 #define SST25VF080B_CMD_READ               0x03u
+#define SST25VF080B_CMD_FAST_READ          0x0Bu
 #define SST25VF080B_CMD_SECTOR_ERASE_4K    0x20u
 #define SST25VF080B_CMD_CHIP_ERASE         0x60u
 #define SST25VF080B_CMD_BYTE_PROGRAM       0x02u
@@ -224,8 +225,9 @@ void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length)
     }
 
     SST25VF080B_Select();
-    SPI3_TransferByte(SST25VF080B_CMD_READ);
+    SPI3_TransferByte(SST25VF080B_CMD_FAST_READ);
     SST25VF080B_SendAddress(address);
+    SPI3_TransferByte(0x00u);  // Fast Read dummy byte (datasheet Table 4-4)
     SPI3_TransferBlock(NULL, data, length);
     SST25VF080B_Deselect();
 }

@@ -54,6 +54,12 @@ uint8_t SPI3_TransferByte(uint8_t data);
 // Shifts `length` bytes out from `txData` (or 0x00 filler if `txData` is
 // NULL) while capturing the same number of bytes into `rxData` (discarded
 // if `rxData` is NULL). Chip select is the caller's responsibility.
+//
+// When txData is NULL, rxData is non-NULL, and length is in [32, 4096]
+// bytes, this runs over DMA (DCH2/DCH3, see spi3.c) instead of a
+// SPI3_TransferByte() loop, freeing the CPU from shuttling each byte
+// through SPI3BUF by hand. Still a blocking call either way -- it
+// returns only once the whole transfer (DMA or byte loop) has completed.
 void SPI3_TransferBlock(const uint8_t *txData, uint8_t *rxData, size_t length);
 
 // Returns the SPI3 bus clock speed (Hz) actually produced by the current

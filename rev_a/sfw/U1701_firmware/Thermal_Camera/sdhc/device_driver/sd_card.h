@@ -100,13 +100,15 @@ bool SD_Card_IsPresent(void);
 // SD_Card_PowerDown() has since run).
 const sd_card_info_t *SD_Card_GetInfo(void);
 
-// CMD17/CMD18 (single/multi block read), dispatching to
-// SDHC_TransferBlocksADMA2() if SDHC_IsADMA2Supported(), else
-// SDHC_TransferBlocksPIO(). Handles SDSC (byte address = startBlock*512)
-// vs SDHC/SDXC (block address = startBlock) addressing transparently, and
-// issues CMD12 (STOP_TRANSMISSION) after any multi-block transfer since
-// Auto CMD12 is not configured in sdhc.c. Returns false if no card is
-// initialized or the transfer fails.
+// CMD17/CMD18 (single/multi block read) via SDHC_TransferBlocksPIO().
+// PIO-only -- ADMA2 (SDHC_PrepareADMA2Transfer()/SDHC_WaitADMA2Transfer())
+// hung the DATA line on real hardware when briefly enabled (2026-07-20)
+// and is disabled here pending further hardware-in-loop debugging; see
+// the useDMA comment in sd_card.c. Handles SDSC (byte address =
+// startBlock*512) vs SDHC/SDXC (block address = startBlock) addressing
+// transparently, and issues CMD12 (STOP_TRANSMISSION) after any
+// multi-block transfer since Auto CMD12 is not configured in sdhc.c.
+// Returns false if no card is initialized or the transfer fails.
 bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCount);
 
 // CMD24/CMD25 (single/multi block write). See SD_Card_ReadBlocks() for

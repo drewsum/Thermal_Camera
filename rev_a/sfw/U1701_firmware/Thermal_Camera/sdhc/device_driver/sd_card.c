@@ -511,15 +511,17 @@ bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCoun
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_READ_MULTIPLE_BLOCK : SD_CMD_READ_SINGLE_BLOCK;
 
-    // PIO only for now. The ADMA2 path is not yet usable (found 2026-07-17
-    // when the first mount-time sector read timed out): (a) SDHCCON1.DMASEL
-    // is never set to 0b10/ADMA2, so DMAEN=1 selects SDMA whose system-
-    // address register this driver never programs; (b) SDHCAADDR is loaded
-    // in SDHC_TransferBlocksADMA2(), i.e. AFTER the data command has
-    // already been issued; (c) there's no D-cache clean/invalidate on the
-    // data buffer, so cached KSEG0 callers (FatFs) would see stale data
-    // even if (a)/(b) were fixed. Re-enable via SDHC_IsADMA2Supported()
-    // only once all three are addressed.
+    // REGRESSION 2026-07-20: enabling ADMA2 whenever SDHC_IsADMA2Supported()
+    // hung the DATA line on real hardware (CMD17 stuck on CINHDAT forever,
+    // never recovering) -- the ADMA2 descriptor format this driver uses was
+    // already flagged in sdhc.c as "not confirmed against the PIC32MZ-DA
+    // Family Reference Manual for this specific silicon," and turning it on
+    // for the first time exercised that gap on a real card. Forced back to
+    // PIO-only, the confirmed-working path. SDHC_PrepareADMA2Transfer()/
+    // SDHC_WaitADMA2Transfer() in sdhc.c still have their three known bugs
+    // fixed (DMASEL, SDHCAADDR ordering, D-cache maintenance) but are not
+    // wired up here -- re-enabling needs actual hardware-in-loop debugging
+    // of the ADMA2 engine itself, not just those three bugs.
     bool useDMA = false;
 
     SDHC_ConfigureBlockTransfer(512u, blockCount, false, useDMA);
@@ -530,7 +532,7 @@ bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCoun
     }
 
     bool ok = useDMA
-            ? SDHC_TransferBlocksADMA2(buffer, 512u, blockCount, false)
+            ? SDHC_WaitADMA2Transfer(buffer, 512u, blockCount, false)
             : SDHC_TransferBlocksPIO(buffer, 512u, blockCount, false);
 
     if (blockCount > 1u)
@@ -552,7 +554,10 @@ bool SD_Card_WriteBlocks(uint32_t startBlock, const uint8_t *buffer, uint16_t bl
 
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_WRITE_MULTIPLE_BLOCK : SD_CMD_WRITE_BLOCK;
-    bool useDMA = false; // PIO only -- see SD_Card_ReadBlocks() for the three ADMA2 gaps
+
+    // See SD_Card_ReadBlocks() -- forced to PIO after the 2026-07-20 ADMA2
+    // hang regression.
+    bool useDMA = false;
 
     SDHC_ConfigureBlockTransfer(512u, blockCount, true, useDMA);
 
@@ -562,7 +567,7 @@ bool SD_Card_WriteBlocks(uint32_t startBlock, const uint8_t *buffer, uint16_t bl
     }
 
     bool ok = useDMA
-            ? SDHC_TransferBlocksADMA2((uint8_t *)(void *)buffer, 512u, blockCount, true)
+            ? SDHC_WaitADMA2Transfer((uint8_t *)(void *)buffer, 512u, blockCount, true)
             : SDHC_TransferBlocksPIO((uint8_t *)(void *)buffer, 512u, blockCount, true);
 
     if (blockCount > 1u)

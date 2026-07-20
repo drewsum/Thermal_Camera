@@ -11,6 +11,7 @@
 
 #include <xc.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <sys/kmem.h>
 
 #include "sdhc/sdhc.h"
@@ -233,6 +234,14 @@ void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool i
     sdhc_pending_dmaen = (useADMA2 && sdhc_adma2_supported) ? 1u : 0u;
     sdhc_pending_bsel = (blockCount > 1u) ? 1u : 0u;
     sdhc_pending_bcen = (blockCount > 1u) ? 1u : 0u;
+
+    // DMASEL must select ADMA2 (0b10) whenever DMAEN will be set for this
+    // transfer -- its power-on default (0b00) selects SDMA, whose system-
+    // address register (SDHCSSA0) this driver never programs. Leaving
+    // DMASEL at 0b00 with DMAEN=1 was the first ADMA2 bring-up bug: the
+    // controller silently waited on an SDMA transfer that could never
+    // start.
+    SDHCCON1bits.DMASEL = sdhc_pending_dmaen ? 0x2u : 0x0u;
 }
 
 // Recovers the CMD/DATA line inhibit state machine after a command
@@ -474,15 +483,67 @@ typedef struct __attribute__((packed))
 
 // Single-entry descriptor table -- sd_card.c's block r/w wrappers always
 // pass one contiguous buffer, so one descriptor covers the whole
-// transfer. __attribute__((coherent)) keeps this KSEG1-uncached from the
-// ADMA2 engine's perspective with no manual cache maintenance, matching
-// usb_uart.c's DMA buffer convention.
+// transfer. __attribute__((coherent)) keeps THIS TABLE ITSELF KSEG1-
+// uncached from the ADMA2 engine's perspective with no manual cache
+// maintenance, matching usb_uart.c's DMA buffer convention -- but it says
+// nothing about the caller's `buffer` (FatFs's sector buffer), which is
+// ordinary cached KSEG0 memory this driver doesn't control the allocation
+// of. That buffer needs its own explicit D-cache maintenance; see
+// SDHC_DCacheWritebackInvalidate()/SDHC_DCacheInvalidate() below.
 static __attribute__((coherent)) sdhc_adma2_descriptor_t sdhc_adma2_table[1];
 
-bool SDHC_TransferBlocksADMA2(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite)
-{
-    (void)isWrite; // direction was already set via SDHC_ConfigureBlockTransfer()/SDHCMODE.DTXDSEL
+// D-cache line size on this core (microAptiv, PIC32MZ-DA family) is 16
+// bytes. Used only as the maintenance stride below; a stride smaller than
+// the true line size is always safe (it just re-touches a line more than
+// once), so this doesn't need to be read back from CP0 Config1 at runtime.
+#define SDHC_DCACHE_LINE_SIZE   16u
 
+// CACHE instruction op-field encodings (MIPS32 CACHE, Primary D-cache):
+// Hit Invalidate = 0x11, Hit Writeback Invalidate = 0x15. These are the
+// standard MIPS32 values (same ones Microchip's own Harmony sys_devcon
+// cache routines use for this core family), not project-specific.
+#define SDHC_CACHE_OP_HIT_INVALIDATE_D            0x11u
+#define SDHC_CACHE_OP_HIT_WRITEBACK_INVALIDATE_D  0x15u
+
+// Flushes `length` bytes starting at `addr` out of the D-cache to
+// physical RAM (write back any dirty lines) and invalidates them, so a
+// DMA engine reading physical memory afterward sees what the CPU last
+// stored rather than a stale copy still sitting in cache. Call BEFORE
+// arming a DMA read-from-buffer (i.e. an SD card write).
+static void SDHC_DCacheWritebackInvalidate(const void *addr, size_t length)
+{
+    uint32_t line = (uint32_t)addr & ~(SDHC_DCACHE_LINE_SIZE - 1u);
+    uint32_t end = (uint32_t)addr + length;
+
+    for (; line < end; line += SDHC_DCACHE_LINE_SIZE)
+    {
+        __asm__ __volatile__ ("cache %0, 0(%1)"
+            : : "i" (SDHC_CACHE_OP_HIT_WRITEBACK_INVALIDATE_D), "r" (line) : "memory");
+    }
+    __asm__ __volatile__ ("sync" ::: "memory");
+}
+
+// Invalidates `length` bytes of D-cache starting at `addr` WITHOUT
+// writing back first, discarding whatever the cache holds there. Call
+// AFTER a DMA write-into-buffer (i.e. an SD card read) completes, before
+// the CPU is allowed to load from that range -- otherwise a load could
+// return pre-DMA stale data still sitting in cache instead of what the
+// DMA engine just wrote to physical RAM.
+static void SDHC_DCacheInvalidate(const void *addr, size_t length)
+{
+    uint32_t line = (uint32_t)addr & ~(SDHC_DCACHE_LINE_SIZE - 1u);
+    uint32_t end = (uint32_t)addr + length;
+
+    for (; line < end; line += SDHC_DCACHE_LINE_SIZE)
+    {
+        __asm__ __volatile__ ("cache %0, 0(%1)"
+            : : "i" (SDHC_CACHE_OP_HIT_INVALIDATE_D), "r" (line) : "memory");
+    }
+    __asm__ __volatile__ ("sync" ::: "memory");
+}
+
+bool SDHC_PrepareADMA2Transfer(const uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite)
+{
     uint32_t totalBytes = (uint32_t)blockSize * (uint32_t)blockCount;
 
     if ((totalBytes == 0) || (totalBytes > 0x10000u))
@@ -493,19 +554,40 @@ bool SDHC_TransferBlocksADMA2(uint8_t *buffer, uint16_t blockSize, uint16_t bloc
         return false;
     }
 
+    if (isWrite)
+    {
+        SDHC_DCacheWritebackInvalidate(buffer, totalBytes);
+    }
+
     sdhc_adma2_table[0].attributes = SDHC_ADMA2_ATTR_VALID | SDHC_ADMA2_ATTR_END | SDHC_ADMA2_ACT_TRAN;
     sdhc_adma2_table[0].length = (totalBytes == 0x10000u) ? 0u : (uint16_t)totalBytes;
     sdhc_adma2_table[0].address = (uint32_t)KVA_TO_PA(buffer);
 
+    // Must land before the caller's next SDHC_SendCommand() -- see the
+    // header comment on why loading this after the command (as the first
+    // draft of this driver did) races the ADMA2 engine.
     SDHCAADDR = (uint32_t)KVA_TO_PA((void *)&sdhc_adma2_table[0]);
 
+    return true;
+}
+
+bool SDHC_WaitADMA2Transfer(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite)
+{
+    uint32_t totalBytes = (uint32_t)blockSize * (uint32_t)blockCount;
     bool timedOut;
+
     SDHC_WAIT_OR_TIMEOUT(((sdhc_isr_events & SDHC_EVT_DATA_DONE) != 0), SDHC_DATA_TIMEOUT_TICKS, timedOut);
 
     bool errorFlag = (sdhc_isr_events & _SDHCINTSTAT_EIF_MASK) != 0;
     bool admaErr = (sdhc_isr_events & _SDHCINTSTAT_ADEIF_MASK) != 0;
+    bool success = !timedOut && !errorFlag && !admaErr;
 
-    return !timedOut && !errorFlag && !admaErr;
+    if (success && !isWrite)
+    {
+        SDHC_DCacheInvalidate(buffer, totalBytes);
+    }
+
+    return success;
 }
 
 bool SDHC_IsADMA2Supported(void)

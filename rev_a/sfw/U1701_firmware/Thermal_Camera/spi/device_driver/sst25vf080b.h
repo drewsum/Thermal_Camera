@@ -105,8 +105,11 @@ bool SST25VF080B_Verify(void);
 // Reads the STATUS register (RDSR, 05h).
 bool SST25VF080B_ReadStatus(uint8_t *status);
 
-// Copies `length` bytes starting at `address` into `data` using the plain
-// Read (03h) instruction. Requests that run past the end of the array are
+// Copies `length` bytes starting at `address` into `data` using the Fast
+// Read (0Bh) instruction (address followed by one dummy byte, then data).
+// Fast Read is rated to this part's full clock range (datasheet Table
+// 7-1), unlike plain Read (03h) which caps out at 25MHz -- see spi3.h's
+// SPI3_MAX_CLK_HZ. Requests that run past the end of the array are
 // silently truncated to fit, matching this project's other bounds-checked
 // helpers (e.g. ddr2Read()).
 void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length);
