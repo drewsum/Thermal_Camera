@@ -37,5 +37,29 @@ void printPGOODStatus(void) {
     else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    +1.8V Voltage is %s\n\r", POS1P8_PGOOD_PIN ? "within tolerance" : "out of tolerance");
 
+    if (nBATT_FLT_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager is %s\n\r", nBATT_FLT_PIN ? "not faulted" : "faulted");
+
+    if (nBATT_DOK_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager DC Input is %s\n\r", nBATT_DOK_PIN ? "not stable" : "stable");
+
+    if (nBATT_UOK_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager USB Input is %s\n\r", nBATT_UOK_PIN ? "not stable" : "stable");
+
+    if (nBATT_CHG_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager is %s battery\n\r", nBATT_CHG_PIN ? "not charging" : "charging");
+
+    if (nBATT_CEN_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager charging is %s\n\r", nBATT_CEN_PIN ? "not enabled" : "enabled");
+
+    if (BATT_IUSB_PIN) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Battery Manager USB Current is %s\n\r", BATT_IUSB_PIN ? "500mA" : "100mA");
+
     terminalTextAttributesReset();
 }

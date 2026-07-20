@@ -305,7 +305,8 @@ bool SDFileIO_DeleteFile(const char *path)
 }
 
 bool SDFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
-        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB)
+        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB,
+        uint32_t *totalBytes, uint32_t *freeBytes)
 {
     if (!sdFileIOMediaAvailable() || !sd_mounted)
     {
@@ -319,17 +320,16 @@ bool SDFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
         return false;
     }
 
-    if (totalKB != NULL)
-    {
-        uint32_t totalSectors = (sd_fatfs.n_fatent - 2u) * sd_fatfs.csize;
-        *totalKB = totalSectors / 2u; // 512-byte sectors -> KB
-    }
+    uint32_t totalSectors = (sd_fatfs.n_fatent - 2u) * sd_fatfs.csize;
+    uint32_t freeSectors = freeClusters * sd_fatfs.csize;
 
-    if (freeKB != NULL)
-    {
-        uint32_t freeSectors = freeClusters * sd_fatfs.csize;
-        *freeKB = freeSectors / 2u;
-    }
+    if (totalKB != NULL) *totalKB = totalSectors / 2u; // 512-byte sectors -> KB
+    if (freeKB != NULL) *freeKB = freeSectors / 2u;
+
+    // Computed from the sector count directly (not totalKB*1024) so these
+    // stay byte-exact instead of inheriting the KB conversion's truncation
+    if (totalBytes != NULL) *totalBytes = totalSectors * 512u;
+    if (freeBytes != NULL) *freeBytes = freeSectors * 512u;
 
     if ((fsTypeStr != NULL) && (fsTypeStrSize > 0u))
     {

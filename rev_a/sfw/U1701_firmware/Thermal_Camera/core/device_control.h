@@ -36,6 +36,23 @@
 // happen in glcd/glcd.c's GLCD_Initialize().
 #define GLCD_PIXEL_CLOCK_DIVIDER    32
 
+// Internal SRAM: base address and total size of the kseg0_data_mem region
+// (PIC32MZ2064DAR176 device-specific linker script,
+// p32MZ2064DAR176.ld -- "kseg0_data_mem (w!x) : ORIGIN = 0x80000000,
+// LENGTH = 0xA0000"). Used by the "Storage Usage?" USB UART command
+// alongside the linker-provided _end/_min_heap_size symbols (see
+// usb_uart_rx_lookup_table.c) to report static/heap/stack usage --
+// there is no equivalent live "bytes used" symbol for flash (below), so
+// that section only reports total capacity.
+#define MCU_SRAM_BASE_ADDRESS       0x80000000u
+#define MCU_SRAM_TOTAL_BYTES        0x000A0000u   // 640KB
+
+// Internal program flash total size, from the device header's official
+// Microchip-provided macro (in KB) -- p32mz2064dar176.h: "#define
+// __PIC32_FLASH_SIZE 2048". Matches the device-specific linker script's
+// kseg0_program_mem LENGTH (0x200000) independently.
+#define MCU_FLASH_TOTAL_BYTES       ((uint32_t)__PIC32_FLASH_SIZE * 1024u)
+
 // logic level macros
 #define HIGH        1
 #define LOW         0

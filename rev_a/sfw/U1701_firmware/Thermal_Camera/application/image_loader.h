@@ -48,9 +48,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "core/ddr2.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// DDR2 decode arena (lodepng allocator backing store): physical DDR2
+// offset +1MB..+5MB, through the CACHED (KSEG0) alias. Public (rather than
+// private to image_loader.c) so other modules -- currently just the
+// "Storage Usage?" command -- can report this reservation without
+// duplicating the constants. See the file header above for the
+// partitioning/coherency rationale.
+#define IMAGE_LOADER_ARENA_BASE   ((uint8_t *)(DDR2_KSEG0_BASE_ADDRESS + 0x00100000u))
+#define IMAGE_LOADER_ARENA_SIZE   0x00400000u
 
 // Which filesystem volume to load from (see sdhc/sd_fileio.h and
 // spi/flash_fileio.h for the two volumes' mount lifecycles).

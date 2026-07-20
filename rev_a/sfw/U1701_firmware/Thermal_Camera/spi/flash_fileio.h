@@ -58,9 +58,9 @@ bool FlashFileIO_Unmount(void);
 bool FlashFileIO_IsMounted(void);
 
 // Unconditionally re-formats the flash volume (f_mkfs + relabel +
-// remount), destroying its contents. Backing call for the
-// "Flash FS Format" USB UART command -- and the recovery step after
-// "Erase SPI Flash" wipes the FAT structures.
+// remount), destroying its contents. Called by the "SPI Flash Format" USB
+// UART command as the rebuild step immediately after it erases the whole
+// chip (SST25VF080B_EraseChip()).
 bool FlashFileIO_Format(void);
 
 // Prints one line per directory entry via the caller-supplied `printLine`
@@ -74,9 +74,11 @@ bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line)
 bool FlashFileIO_ReadTextFileToTerminal(const char *path);
 
 // Reports the mounted volume's FAT type, label, and total/free space in
-// KB -- mirrors SDFileIO_GetVolumeInfo(). Any output pointer may be NULL.
+// both KB and exact bytes -- mirrors SDFileIO_GetVolumeInfo(). Any output
+// pointer may be NULL.
 bool FlashFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
-        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB);
+        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB,
+        uint32_t *totalBytes, uint32_t *freeBytes);
 
 // Write / read-back / verify / delete round-trip on a throwaway test file,
 // mirroring SDFileIO_SelfTest(). Prints a colored pass/fail per step and

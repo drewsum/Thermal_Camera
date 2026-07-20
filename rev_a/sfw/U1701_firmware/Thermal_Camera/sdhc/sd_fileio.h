@@ -66,11 +66,14 @@ bool SDFileIO_WriteFile(const char *path, const uint8_t *data, size_t length);
 bool SDFileIO_DeleteFile(const char *path);
 
 // Reports the mounted volume's FAT type ("FAT12"/"FAT16"/"FAT32"), label,
-// and total/free space in KB. Any of the four output pointers may be
-// NULL if that piece isn't needed. Returns false if no volume is
-// mounted.
+// and total/free space in both KB and exact bytes (totalBytes/freeBytes
+// are computed directly from the sector count, not derived from the
+// already-rounded KB values, so they're byte-exact). Any of the six
+// output pointers may be NULL if that piece isn't needed. Returns false
+// if no volume is mounted.
 bool SDFileIO_GetVolumeInfo(char *fsTypeStr, size_t fsTypeStrSize,
-        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB);
+        char *labelStr, size_t labelStrSize, uint32_t *totalKB, uint32_t *freeKB,
+        uint32_t *totalBytes, uint32_t *freeBytes);
 
 // Main-loop service for SD card hot-swap: consumes sd_card_hotswap_event
 // (sd_card.h -- latched by the Port A change-notice ISR on any card-detect

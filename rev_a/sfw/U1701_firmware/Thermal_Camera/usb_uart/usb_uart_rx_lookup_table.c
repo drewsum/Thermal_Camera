@@ -397,29 +397,6 @@ USB_UART_COMMAND(displayImageCommand, "Display Image:",
 
 }
 
-USB_UART_COMMAND(ddr2SelfTestCommand, "DDR2 Self Test",
-        "Runs a DESTRUCTIVE read/write integrity test over all 32MB of DDR2 (data bus, address bus, full-array) and prints pass/fail") {
-
-    (void) input_str;   // no arguments
-
-    terminalTextAttributesReset();
-    ddr2SelfTest();
-    terminalTextAttributesReset();
-
-}
-
-USB_UART_COMMAND(spiFlashSelfTestCommand, "SPI Flash Self Test",
-        "Runs a DESTRUCTIVE read/write/erase integrity test over the last 4KB sector of the SST25VF080B SPI flash and prints pass/fail") {
-
-    (void) input_str;   // no arguments
-
-    terminalTextAttributesReset();
-    SST25VF080B_SelfTest();
-    terminalTextAttributesReset();
-
-}
-
-
 USB_UART_COMMAND(errorStatusCommand, "Error Status?", "Prints the status of various error handler flags") {
  
     // Print error handler status
@@ -790,8 +767,8 @@ USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V 
 
 }
 
-USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash",
-        "Erases the entire SPI Flash memory, DESTROYING its FAT volume -- run \"Flash FS Format\" afterward to rebuild it") {
+USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
+        "DESTRUCTIVELY erases the entire SPI Flash chip, then re-formats and remounts its FAT volume (FAT/superfloppy, labeled THERMAL SPI)") {
 
     terminalTextAttributesReset();
 
@@ -814,18 +791,24 @@ USB_UART_COMMAND(eraseSPIFlash, "Erase SPI Flash",
 
     FlashFileIO_Unmount();
 
-    bool success = SST25VF080B_EraseChip();
-
-    if (success) {
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("SPI Flash erased successfully\r\n");
-    } else {
+    if (!SST25VF080B_EraseChip()) {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Failed to erase SPI Flash\r\n");
+        printf("Failed to erase SPI Flash -- FAT volume was NOT reformatted\r\n");
+        terminalTextAttributesReset();
+        return;
     }
 
-    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("The flash FAT volume was destroyed by the erase -- run \"Flash FS Format\" to rebuild it.\r\n");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("SPI Flash erased successfully\r\n");
+
+    if (FlashFileIO_Format()) {
+        printf("SPI flash FAT volume formatted and remounted\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Failed to format SPI flash FAT volume\r\n");
+    }
+
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("Note: The SST25VF080B device has limited write endurance, please use sparingly.\r\n");
     terminalTextAttributesReset();
 
@@ -854,7 +837,7 @@ USB_UART_COMMAND(sdCardInfoCommand, "SD Card Info?",
 
     char fsType[8], label[16];
     uint32_t totalKB, freeKB;
-    if (SDFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB)) {
+    if (SDFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB, NULL, NULL)) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Filesystem: %s\r\n", fsType);
         printf("    Volume Label: %s\r\n", label[0] ? label : "(none)");
@@ -894,47 +877,6 @@ USB_UART_COMMAND(sdListFilesCommand, "SD List Files",
     }
 
     terminalTextAttributesReset();
-
-}
-
-USB_UART_COMMAND(sdReadFileCommand, "SD Read File:",
-        "\b\b <path>: Dumps the contents of a text file on the mounted microSD card to the terminal") {
-
-    char rx_path[64] = "";
-    sscanf(input_str, "SD Read File: %[^\t\n\r]", rx_path);
-
-    terminalTextAttributesReset();
-
-    if (!rx_path[0]) {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Please supply a file path, e.g. \"SD Read File: /README.TXT\"\r\n");
-        terminalTextAttributesReset();
-        return;
-    }
-
-    if (SD_Card_GetInfo() == NULL) {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("No microSD card mounted\r\n");
-        terminalTextAttributesReset();
-        return;
-    }
-
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    if (!SDFileIO_ReadTextFileToTerminal(rx_path)) {
-        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Failed to read %s\r\n", rx_path);
-    }
-
-    terminalTextAttributesReset();
-
-}
-
-USB_UART_COMMAND(sdSelfTestCommand, "SD Self Test",
-        "Writes, reads back, verifies, and deletes a throwaway test file on the mounted microSD card") {
-
-    (void) input_str;   // no arguments
-
-    SDFileIO_SelfTest();
 
 }
 
@@ -1019,7 +961,7 @@ USB_UART_COMMAND(flashFsInfoCommand, "Flash FS Info?",
 
     char fsType[8], label[16];
     uint32_t totalKB, freeKB;
-    if (FlashFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB)) {
+    if (FlashFileIO_GetVolumeInfo(fsType, sizeof(fsType), label, sizeof(label), &totalKB, &freeKB, NULL, NULL)) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
         printf("SPI Flash FAT Volume:\r\n");
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -1031,6 +973,149 @@ USB_UART_COMMAND(flashFsInfoCommand, "Flash FS Info?",
     } else {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI flash FAT volume not currently mounted\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+// Prints one volume's total/used/free space in bytes and percent for
+// storageUsageCommand below. `usedPercentColor` highlights the Used line
+// yellow past 90% full, green otherwise -- an early warning, not an error.
+static void printStorageUsageLine(uint32_t totalBytes, uint32_t freeBytes) {
+
+    uint32_t usedBytes = totalBytes - freeBytes;
+
+    // Tenths of a percent (e.g. 423 -> "42.3%"), avoiding float and the
+    // 32-bit overflow a plain "usedBytes * 1000" risks on a multi-GB card
+    uint32_t usedPermille = (totalBytes > 0)
+            ? (uint32_t)(((uint64_t) usedBytes * 1000u) / totalBytes) : 0;
+    uint32_t freePermille = 1000u - usedPermille;
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Total: %10lu bytes (%lu KB)\r\n", (unsigned long) totalBytes, (unsigned long) (totalBytes / 1024u));
+
+    terminalTextAttributes((usedPermille >= 900u) ? YELLOW_COLOR : GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Used:  %10lu bytes (%lu.%lu%%)\r\n", (unsigned long) usedBytes,
+            (unsigned long) (usedPermille / 10u), (unsigned long) (usedPermille % 10u));
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Free:  %10lu bytes (%lu.%lu%%)\r\n", (unsigned long) freeBytes,
+            (unsigned long) (freePermille / 10u), (unsigned long) (freePermille % 10u));
+
+}
+
+// Prints one labeled region's byte count and its percentage of `totalBytes`
+// -- used for the DDR2 known-reservations breakdown below, where there's
+// no "free" concept (DDR2 has no allocator, just documented firmware
+// reservations), only a proportion of the whole.
+static void printStorageReservationLine(const char *label, uint32_t bytes, uint32_t totalBytes) {
+
+    uint32_t permille = (totalBytes > 0)
+            ? (uint32_t)(((uint64_t) bytes * 1000u) / totalBytes) : 0;
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    %-22s%10lu bytes (%lu.%lu%%)\r\n", label, (unsigned long) bytes,
+            (unsigned long) (permille / 10u), (unsigned long) (permille % 10u));
+
+}
+
+// Linker-provided symbols (PIC32MZ2064DAR176 device-specific linker
+// script): _end marks the first free byte after all linked .data/.bss
+// (i.e. total static RAM usage from the region base); _min_heap_size is
+// this project's own "--defsym=_min_heap_size=115200" build flag
+// (cmake/Thermal_Camera/default/user.cmake) echoed back by the linker.
+// Neither is an actual variable -- per the standard GNU linker-symbol
+// idiom, the SYMBOL'S ADDRESS is the value. Declared as arrays-of-unknown-
+// size (not "extern uint32_t x;" + "&x") because MIPS/XC32 tries to
+// access a plain scalar extern via GP-relative (small-data) addressing,
+// which only encodes a tiny offset window and fails to link
+// ("relocation truncated to fit: R_MIPS_GPREL16") once the symbol's
+// linked value exceeds it -- the array form sidesteps that code path,
+// and the identifier itself (no "&") already decays to the address.
+extern uint32_t _end[];
+extern uint32_t _min_heap_size[];
+
+USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
+        "Prints consumed vs. total space, in bytes and percent, for every mounted FAT volume (microSD card and SPI flash), plus internal SRAM/Flash and DDR2 SDRAM utilization") {
+
+    (void) input_str;   // no arguments
+
+    terminalTextAttributesReset();
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("microSD Card (0:):\r\n");
+    {
+        uint32_t totalBytes, freeBytes;
+        if (SDFileIO_GetVolumeInfo(NULL, 0, NULL, 0, NULL, NULL, &totalBytes, &freeBytes)) {
+            printStorageUsageLine(totalBytes, freeBytes);
+        } else {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Not currently mounted\r\n");
+        }
+    }
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("SPI Flash (1:):\r\n");
+    {
+        uint32_t totalBytes, freeBytes;
+        if (FlashFileIO_GetVolumeInfo(NULL, 0, NULL, 0, NULL, NULL, &totalBytes, &freeBytes)) {
+            printStorageUsageLine(totalBytes, freeBytes);
+        } else {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Not currently mounted\r\n");
+        }
+    }
+
+    // Internal SRAM: static (.data+.bss) usage is read live from the
+    // linker-provided _end symbol; heap and stack are NOT independently
+    // trackable at runtime with this toolchain's C library (no mallinfo()-
+    // style introspection is exposed), so both are reported as the fixed
+    // capacity the linker's best-fit allocator reserved for them at link
+    // time (per p32MZ2064DAR176.ld: "heap and stack are best-fit allocated
+    // ... after other data and bss sections" -- heap gets exactly
+    // _min_heap_size, stack gets whatever's left over) rather than a true
+    // current-usage figure.
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Internal SRAM:\r\n");
+    {
+        uint32_t staticBytes = (uint32_t) _end - MCU_SRAM_BASE_ADDRESS;
+        uint32_t heapReservedBytes = (uint32_t) _min_heap_size;
+        uint32_t stackReservedBytes = MCU_SRAM_TOTAL_BYTES - staticBytes - heapReservedBytes;
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Total: %10lu bytes (%lu KB)\r\n",
+                (unsigned long) MCU_SRAM_TOTAL_BYTES, (unsigned long) (MCU_SRAM_TOTAL_BYTES / 1024u));
+        printStorageReservationLine("Static (.data+.bss):", staticBytes, MCU_SRAM_TOTAL_BYTES);
+        printStorageReservationLine("Heap (reserved):", heapReservedBytes, MCU_SRAM_TOTAL_BYTES);
+        printStorageReservationLine("Stack (reserved):", stackReservedBytes, MCU_SRAM_TOTAL_BYTES);
+    }
+
+    // Internal program Flash: this device's linker script exposes no
+    // symbol marking the end of used flash (unlike _end for RAM, above),
+    // so only total capacity is available here -- not a live "used" figure.
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("Internal Program Flash:\r\n");
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Total: %10lu bytes (%lu KB)\r\n",
+            (unsigned long) MCU_FLASH_TOTAL_BYTES, (unsigned long) (MCU_FLASH_TOTAL_BYTES / 1024u));
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    Used: not available (no linker symbol exposes this on this device)\r\n");
+
+    // DDR2 SDRAM: there is no allocator over this memory (core/ddr2.h),
+    // just a small number of fixed, documented firmware reservations --
+    // this reports those known reservations, not a true live "used" figure
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("DDR2 SDRAM (known firmware reservations, not a live allocator):\r\n");
+    {
+        uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES + IMAGE_LOADER_ARENA_SIZE;
+
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Total: %10lu bytes (%lu KB)\r\n",
+                (unsigned long) DDR2_SIZE_BYTES, (unsigned long) (DDR2_SIZE_BYTES / 1024u));
+        printStorageReservationLine("GLCD Frame Buffer:", GLCD_FRAMEBUFFER_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("PNG Decode Arena:", IMAGE_LOADER_ARENA_SIZE, DDR2_SIZE_BYTES);
+        printStorageReservationLine("Unreserved:", DDR2_SIZE_BYTES - reservedBytes, DDR2_SIZE_BYTES);
     }
 
     terminalTextAttributesReset();
@@ -1051,31 +1136,6 @@ USB_UART_COMMAND(flashListFilesCommand, "Flash List Files",
     if (!FlashFileIO_ListFiles(rx_path[0] ? rx_path : NULL, printSDFileLine)) {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Failed to open directory (volume mounted?)\r\n");
-    }
-
-    terminalTextAttributesReset();
-
-}
-
-USB_UART_COMMAND(flashReadFileCommand, "Flash Read File:",
-        "\b\b <path>: Dumps the contents of a text file on the SPI flash FAT volume to the terminal") {
-
-    char rx_path[64] = "";
-    sscanf(input_str, "Flash Read File: %[^\t\n\r]", rx_path);
-
-    terminalTextAttributesReset();
-
-    if (!rx_path[0]) {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Please supply a file path, e.g. \"Flash Read File: /LOG.TXT\"\r\n");
-        terminalTextAttributesReset();
-        return;
-    }
-
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    if (!FlashFileIO_ReadTextFileToTerminal(rx_path)) {
-        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Failed to read %s (volume mounted?)\r\n", rx_path);
     }
 
     terminalTextAttributesReset();
@@ -1145,45 +1205,3 @@ USB_UART_COMMAND(flashWriteProtectCommand, "Flash Write Protect:",
 
 }
 
-USB_UART_COMMAND(flashFsFormatCommand, "Flash FS Format",
-        "DESTRUCTIVELY re-formats the SPI flash FAT volume (FAT/superfloppy, labeled THERMAL SPI) and remounts it") {
-
-    (void) input_str;   // no arguments
-
-    terminalTextAttributesReset();
-
-    if (SST25VF080B_WriteProtectIsEnabled()) {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
-        terminalTextAttributesReset();
-        return;
-    }
-
-    if (FlashFileIO_Format()) {
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("SPI flash FAT volume formatted and remounted\r\n");
-    } else {
-        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Failed to format SPI flash FAT volume\r\n");
-    }
-
-    terminalTextAttributesReset();
-
-}
-
-USB_UART_COMMAND(flashFsSelfTestCommand, "Flash FS Self Test",
-        "Writes, reads back, verifies, and deletes a throwaway test file on the SPI flash FAT volume") {
-
-    (void) input_str;   // no arguments
-
-    if (SST25VF080B_WriteProtectIsEnabled()) {
-        terminalTextAttributesReset();
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
-        terminalTextAttributesReset();
-        return;
-    }
-
-    FlashFileIO_SelfTest();
-
-}

@@ -25,11 +25,8 @@
 // *****************************************************************************
 // Section: DDR2 decode arena (lodepng allocator backing store)
 // *****************************************************************************
-
-// Physical DDR2 offset +1MB..+5MB, through the CACHED (KSEG0) alias -- see
-// image_loader.h for the partitioning/coherency rationale.
-#define IMAGE_LOADER_ARENA_BASE   ((uint8_t *)(DDR2_KSEG0_BASE_ADDRESS + 0x00100000u))
-#define IMAGE_LOADER_ARENA_SIZE   0x00400000u
+// IMAGE_LOADER_ARENA_BASE/SIZE now live in image_loader.h (public) -- see
+// that header for the partitioning/coherency rationale.
 
 // Refuse absurd input files early (the arena must hold the file, zlib's
 // inflated scanlines, and the converted output simultaneously)
