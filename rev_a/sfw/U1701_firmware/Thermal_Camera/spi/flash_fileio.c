@@ -71,7 +71,13 @@ static void flashFileIOEnsureLabel(void)
     if (f_getlabel(FLASH_DRIVE_PREFIX, label, &vsn) == FR_OK
             && ((label[0] == '\0') || (strcmp(label, "FLASH") == 0)))
     {
-        f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+        FRESULT fr = f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+        if (fr != FR_OK)
+        {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    flashFileIOEnsureLabel: f_setlabel failed (FRESULT %d)\r\n", (int)fr);
+            terminalTextAttributesReset();
+        }
     }
 }
 
@@ -83,13 +89,27 @@ static void flashFileIOEnsureAutorun(void)
     static const char autorun[] =
             "[autorun]\r\nlabel=Thermal Camera SPI Flash\r\n";
     FIL file;
+    FRESULT fr = f_open(&file, FLASH_DRIVE_PREFIX "/autorun.inf", FA_CREATE_NEW | FA_WRITE);
 
-    if (f_open(&file, FLASH_DRIVE_PREFIX "/autorun.inf",
-            FA_CREATE_NEW | FA_WRITE) == FR_OK)
+    if (fr == FR_OK)
     {
-        UINT written;
-        f_write(&file, autorun, sizeof(autorun) - 1u, &written);
-        f_close(&file);
+        UINT written = 0;
+        FRESULT writeFr = f_write(&file, autorun, sizeof(autorun) - 1u, &written);
+        FRESULT closeFr = f_close(&file);
+
+        if ((writeFr != FR_OK) || (written != (sizeof(autorun) - 1u)) || (closeFr != FR_OK))
+        {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    flashFileIOEnsureAutorun: write/close failed (write FRESULT %d, wrote %u/%u, close FRESULT %d)\r\n",
+                    (int)writeFr, (unsigned)written, (unsigned)(sizeof(autorun) - 1u), (int)closeFr);
+            terminalTextAttributesReset();
+        }
+    }
+    else if (fr != FR_EXIST)
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    flashFileIOEnsureAutorun: f_open failed (FRESULT %d)\r\n", (int)fr);
+        terminalTextAttributesReset();
     }
 }
 
@@ -123,13 +143,26 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
             return false;
         }
 
-        bool mkfsOk = (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm,
-                mkfs_work, sizeof(mkfs_work)) == FR_OK);
+        FRESULT mkfsFr = f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work));
+        bool mkfsOk = (mkfsFr == FR_OK);
+
+        if (!mkfsOk)
+        {
+            terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    f_mkfs failed (FRESULT %d)\r\n", (int)mkfsFr);
+            terminalTextAttributesReset();
+        }
 
         if (mkfsOk)
         {
             fr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
-            if (fr == FR_OK)
+            if (fr != FR_OK)
+            {
+                terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+                printf("    post-mkfs f_mount failed (FRESULT %d)\r\n", (int)fr);
+                terminalTextAttributesReset();
+            }
+            else
             {
                 // Label/autorun also need WP off, so provision them
                 // before re-protecting (the post-if copies of these
@@ -192,18 +225,34 @@ bool FlashFileIO_Format(void)
     f_mount(NULL, FLASH_DRIVE_PREFIX, 0);
     flash_mounted = false;
 
-    if (f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work)) != FR_OK)
+    FRESULT mkfsFr = f_mkfs(FLASH_DRIVE_PREFIX, &flash_mkfs_parm, mkfs_work, sizeof(mkfs_work));
+    if (mkfsFr != FR_OK)
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    f_mkfs failed (FRESULT %d)\r\n", (int)mkfsFr);
+        terminalTextAttributesReset();
         return false;
     }
 
-    if (f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1) != FR_OK)
+    FRESULT mountFr = f_mount(&flash_fatfs, FLASH_DRIVE_PREFIX, 1);
+    if (mountFr != FR_OK)
     {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    post-mkfs f_mount failed (FRESULT %d)\r\n", (int)mountFr);
+        terminalTextAttributesReset();
         return false;
     }
 
     flash_mounted = true;
-    f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+
+    FRESULT labelFr = f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
+    if (labelFr != FR_OK)
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    f_setlabel failed (FRESULT %d)\r\n", (int)labelFr);
+        terminalTextAttributesReset();
+    }
+
     flashFileIOEnsureAutorun();
     return Flash_Disk_Sync();
 }

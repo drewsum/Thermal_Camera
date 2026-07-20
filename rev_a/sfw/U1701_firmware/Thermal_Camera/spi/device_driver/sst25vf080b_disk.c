@@ -25,8 +25,13 @@
 static bool flash_disk_initialized = false;
 
 // The one staging buffer -- holds the current contents of erase page
-// staged_page (possibly with unsynced modifications, per staged_dirty)
-static uint8_t staging[FLASH_DISK_PAGE_SIZE];
+// staged_page (possibly with unsynced modifications, per staged_dirty).
+// 16-byte aligned so flashDiskStagePage()'s SST25VF080B_Read() into this
+// buffer can safely use spi3.c's DMA path -- see SPI3_TransferBlock()'s
+// comment for why an unaligned DMA destination is a real memory-
+// corruption risk (found via SST25VF080B_SelfTest() corrupting an
+// adjacent buffer, 2026-07-20), not just a missed performance opportunity.
+static __attribute__((aligned(16))) uint8_t staging[FLASH_DISK_PAGE_SIZE];
 static uint32_t staged_page = FLASH_DISK_NO_STAGED_PAGE;
 static bool staged_dirty = false;
 static uint32_t last_write_tick = 0;

@@ -315,8 +315,12 @@ bool SST25VF080B_EraseChip(void)
 
 bool SST25VF080B_SelfTest(void)
 {
-    static uint8_t writeBuffer[SST25VF080B_SECTOR_SIZE];
-    static uint8_t readBuffer[SST25VF080B_SECTOR_SIZE];
+    // 16-byte aligned so SST25VF080B_Read()'s DMA path (spi3.c) can safely
+    // target readBuffer -- see spi3.c's SPI3_TransferBlock() comment on
+    // why an unaligned buffer there is a real corruption risk, not just a
+    // performance one.
+    static __attribute__((aligned(16))) uint8_t writeBuffer[SST25VF080B_SECTOR_SIZE];
+    static __attribute__((aligned(16))) uint8_t readBuffer[SST25VF080B_SECTOR_SIZE];
     bool overallPass = true;
     uint32_t i;
 

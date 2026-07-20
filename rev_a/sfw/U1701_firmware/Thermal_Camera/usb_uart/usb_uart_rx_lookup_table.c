@@ -985,6 +985,20 @@ USB_UART_COMMAND(flashFsInfoCommand, "Flash FS Info?",
 
 }
 
+USB_UART_COMMAND(flashSelfTestCommand, "Flash Self Test",
+        "Destructive erase/write/read/verify self-test confined to the SPI flash's reserved last 4KB sector (0xFF000-0xFFFFF, not part of the FAT volume) -- run \"Flash Write Protect: Off\" first") {
+
+    (void) input_str;   // no arguments
+    SST25VF080B_SelfTest();
+}
+
+USB_UART_COMMAND(flashFsSelfTestCommand, "Flash FS Self Test",
+        "Write/read-back/delete round-trip on a throwaway test file on the mounted SPI flash FAT volume") {
+
+    (void) input_str;   // no arguments
+    FlashFileIO_SelfTest();
+}
+
 // Prints one volume's total/used/free space in bytes and percent for
 // storageUsageCommand below. `usedPercentColor` highlights the Used line
 // yellow past 90% full, green otherwise -- an early warning, not an error.

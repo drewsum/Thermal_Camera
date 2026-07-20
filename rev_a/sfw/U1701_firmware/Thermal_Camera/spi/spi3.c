@@ -42,6 +42,20 @@
 // straight to the calculated ceiling.
 #define SPI3_DEFAULT_CLK_HZ          10000000UL
 
+// Gates SPI3_TransferBlock()'s DMA fast path (DCH2/DCH3, see the "DMA-
+// accelerated bulk transfer" section below) and its interrupt setup.
+// Confirmed working on real hardware 2026-07-20 with SPI3_DEFAULT_CLK_HZ
+// at the 10MHz above -- see [[spi3-flash-speed-and-dma]] memory. Flip to
+// 0 to fall back to the plain SPI3_TransferByte() loop if this is ever
+// suspected again.
+#define SPI3_DMA_ENABLED   1
+
+#if SPI3_DMA_ENABLED
+// Defined in the "DMA-accelerated bulk transfer" section below; forward
+// declared here so SPI3_Initialize() can call it once at bring-up.
+static void SPI3_DMAInterruptSetup(void);
+#endif
+
 bool SPI3_TransferSetup(SPI3_TRANSFER_SETUP *setup, uint32_t srcClkFreq)
 {
     uint32_t baudValue;
@@ -117,6 +131,10 @@ bool SPI3_Initialize(void)
 
     SPI3CONbits.ON = 1;
 
+#if SPI3_DMA_ENABLED
+    SPI3_DMAInterruptSetup();
+#endif
+
     return (SPI3CONbits.ON == 1);
 }
 
@@ -136,16 +154,17 @@ uint8_t SPI3_TransferByte(uint8_t data)
 // --- DMA-accelerated bulk transfer -----------------------------------
 //
 // DCH2 (TX) and DCH3 (RX) -- DCH0/DCH1 are already claimed by
-// usb_uart.c's console DMA (see its file header). Neither channel here
-// raises a CPU interrupt: SPI3_TransferBlockDMA() busy-waits on the RX
-// channel's own CHBCIF completion flag instead of registering a DMA ISR,
-// which keeps this addition small and avoids adding two new interrupt
-// vectors for a driver whose only caller (SST25VF080B_Read(), via
-// flash_fileio.c) already calls it synchronously and has nothing useful
-// to do while waiting. The CPU-side win is real anyway: the DMA engine
-// shuttles every byte between SPI3BUF and RAM in hardware, instead of
-// this driver's SPI3_TransferByte() loop doing it one SPIBUF load/store
-// and two status-bit polls at a time.
+// usb_uart.c's console DMA (see its file header). Interrupt-driven,
+// mirroring usb_uart.c's DMA ISR pattern: SPI3_DMAInterruptSetup() (called
+// once from SPI3_Initialize()) registers spi3TxDmaISR()/spi3RxDmaISR() at
+// IPL1/IPL2 (same levels usb_uart.c uses for its TX/RX DMA, respectively)
+// with CHBCIE/CHERIE enabled; the ISRs just latch CHBCIF/CHERIF into the
+// software flags below and clear the hardware, same minimal-ISR shape as
+// sdhcISR() (sdhc.c). SPI3_TransferBlockDMA() waits on those flags instead
+// of polling DCH3INTbits.CHBCIF directly -- the actual byte-shuttling
+// between SPI3BUF and RAM still happens entirely in the DMA engine either
+// way; this just lets the CPU be interrupted rather than spin-poll a
+// register while it waits.
 #define SPI3_TX_DMA_CON_BITFIELD    DCH2CONbits
 #define SPI3_TX_DMA_ECON_BITFIELD   DCH2ECONbits
 #define SPI3_TX_DMA_INT_BITFIELD    DCH2INTbits
@@ -155,6 +174,8 @@ uint8_t SPI3_TransferByte(uint8_t data)
 #define SPI3_TX_DMA_SSIZ_REG        DCH2SSIZ
 #define SPI3_TX_DMA_DSIZ_REG        DCH2DSIZ
 #define SPI3_TX_DMA_CSIZ_REG        DCH2CSIZ
+#define SPI3_TX_DMA_INT_SOURCE      dma_channel_2
+#define SPI3_TX_DMA_INT_VECTOR      _DMA2_VECTOR
 
 #define SPI3_RX_DMA_CON_BITFIELD    DCH3CONbits
 #define SPI3_RX_DMA_ECON_BITFIELD   DCH3ECONbits
@@ -165,15 +186,8 @@ uint8_t SPI3_TransferByte(uint8_t data)
 #define SPI3_RX_DMA_SSIZ_REG        DCH3SSIZ
 #define SPI3_RX_DMA_DSIZ_REG        DCH3DSIZ
 #define SPI3_RX_DMA_CSIZ_REG        DCH3CSIZ
-
-// Re-enabled 2026-07-20 for bench testing, clock speed left untouched at
-// the known-good 10MHz default above (see the SPI3_DEFAULT_CLK_HZ
-// comment) -- this isolates the DMA path itself as the only variable
-// under test, after the SDHC ADMA2 path hung real hardware in the same
-// session (see sd_card.c's useDMA comment / [[sdhc-sd-card-driver]]
-// memory). If this also causes a boot/read failure, flip back to 0 and
-// treat DMA itself (not clock speed) as the suspect.
-#define SPI3_DMA_ENABLED   1
+#define SPI3_RX_DMA_INT_SOURCE      dma_channel_3
+#define SPI3_RX_DMA_INT_VECTOR      _DMA3_VECTOR
 
 // Below this length, DMA channel setup/teardown overhead exceeds
 // whatever it would save over the plain byte loop -- SPI3_TransferBlock()
@@ -200,6 +214,81 @@ uint8_t SPI3_TransferByte(uint8_t data)
 static __attribute__((coherent)) uint8_t spi3_dma_tx_dummy[SPI3_DMA_MAX_LENGTH];
 
 #define SPI3_DMA_TIMEOUT_TICKS   ((uint32_t)(((uint64_t)SYSCLK_INT / 2u) * 50000u / 1000000u))  // 50ms
+
+// Set by spi3RxDmaISR()/spi3TxDmaISR(), consumed by SPI3_TransferBlockDMA()'s
+// wait loop -- the interrupt-driven equivalent of sdhc.c's sdhc_isr_events
+// accumulator. Reset to false right before arming the channels for a new
+// transfer (nothing is in flight at that point, so no event can be lost).
+static volatile bool spi3_dma_rx_done = false;
+static volatile bool spi3_dma_error = false;
+
+// Minimal ISRs (see the "DMA-accelerated bulk transfer" section header
+// comment): latch the channel's own status into the software flags above,
+// then clear the channel interrupt-status register and the CPU interrupt
+// flag. No SPI/flash protocol logic runs here.
+void __ISR(SPI3_TX_DMA_INT_VECTOR, IPL1SRS) spi3TxDmaISR(void)
+{
+    if (SPI3_TX_DMA_INT_BITFIELD.CHERIF)
+    {
+        spi3_dma_error = true;
+    }
+
+    SPI3_TX_DMA_INTCLR_REG = 0x000000FFu;
+    clearInterruptFlag(SPI3_TX_DMA_INT_SOURCE);
+}
+
+void __ISR(SPI3_RX_DMA_INT_VECTOR, IPL2SRS) spi3RxDmaISR(void)
+{
+    if (SPI3_RX_DMA_INT_BITFIELD.CHBCIF)
+    {
+        spi3_dma_rx_done = true;
+    }
+    else if (SPI3_RX_DMA_INT_BITFIELD.CHERIF)
+    {
+        spi3_dma_error = true;
+    }
+
+    SPI3_RX_DMA_INTCLR_REG = 0x000000FFu;
+    clearInterruptFlag(SPI3_RX_DMA_INT_SOURCE);
+}
+
+// One-time bring-up, called from SPI3_Initialize(): enables the Block-
+// Complete and Error interrupts (CHBCIE/CHERIE) at the channel level and
+// registers spi3TxDmaISR()/spi3RxDmaISR() with the CPU interrupt
+// controller. These channel-level enables and the CPU-level priority/
+// enable both persist across the CHEN=0/CHEN=1 toggling
+// SPI3_TransferBlockDMA() does on every call, so this only needs to run
+// once -- matching usb_uart.c's usbUartTrasmitDmaInitialize()/
+// usbUartReceiveDmaInitialize(), which set CHBCIE/CHERIE once at their own
+// one-time init rather than per-transfer.
+static void SPI3_DMAInterruptSetup(void)
+{
+    disableInterrupt(SPI3_TX_DMA_INT_SOURCE);
+    disableInterrupt(SPI3_RX_DMA_INT_SOURCE);
+
+    SPI3_TX_DMA_INTCLR_REG = 0x000000FFu;
+    SPI3_TX_DMA_INT_BITFIELD.CHBCIE = 1;
+    SPI3_TX_DMA_INT_BITFIELD.CHERIE = 1;
+
+    SPI3_RX_DMA_INTCLR_REG = 0x000000FFu;
+    SPI3_RX_DMA_INT_BITFIELD.CHBCIE = 1;
+    SPI3_RX_DMA_INT_BITFIELD.CHERIE = 1;
+
+    // Same IPL/subpriority levels usb_uart.c uses for its own TX/RX DMA
+    // (IPL1/sub3 for TX, IPL2/sub3 for RX) -- sharing an existing,
+    // already-proven IPL rather than inventing a new one.
+    setInterruptPriority(SPI3_TX_DMA_INT_SOURCE, 1);
+    setInterruptSubpriority(SPI3_TX_DMA_INT_SOURCE, 3);
+    clearInterruptFlag(SPI3_TX_DMA_INT_SOURCE);
+    enableInterrupt(SPI3_TX_DMA_INT_SOURCE);
+
+    setInterruptPriority(SPI3_RX_DMA_INT_SOURCE, 2);
+    setInterruptSubpriority(SPI3_RX_DMA_INT_SOURCE, 3);
+    clearInterruptFlag(SPI3_RX_DMA_INT_SOURCE);
+    enableInterrupt(SPI3_RX_DMA_INT_SOURCE);
+
+    DMACONbits.ON = 1;
+}
 
 // D-cache line size (microAptiv/PIC32MZ-DA) and MIPS32 CACHE op-field
 // encodings -- same values and same rationale as sdhc.c's
@@ -249,6 +338,11 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
     clearInterruptFlag(spi3_receive_done);
     clearInterruptFlag(spi3_transfer_done);
 
+    // Nothing is in flight yet at this point, so no event can be lost by
+    // clearing these now (see the comment on the flags' declaration).
+    spi3_dma_rx_done = false;
+    spi3_dma_error = false;
+
     // RX: SPI3BUF (fixed, 1 byte) -> rxData (grows to `length` bytes)
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
     SPI3_RX_DMA_CON_BITFIELD.CHPRI = 2;
@@ -288,11 +382,16 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
     // hardware shifts each byte in and out.
     SPI3_TX_DMA_ECON_BITFIELD.CFORCE = 1;
 
+    // Wait on the ISR-latched flags, NOT the DCH3INT SFR directly -- the
+    // ISR W1C-clears its own interrupt-status bits as soon as it fires
+    // (see spi3RxDmaISR()), so racing a second reader against that
+    // clear is exactly the hazard sdhc.c's sdhc_isr_events comment
+    // documents; consuming the software flags instead avoids it.
     uint32_t start = _CP0_GET_COUNT();
     bool timedOut = true;
     while ((uint32_t)(_CP0_GET_COUNT() - start) < SPI3_DMA_TIMEOUT_TICKS)
     {
-        if (SPI3_RX_DMA_INT_BITFIELD.CHBCIF)
+        if (spi3_dma_rx_done || spi3_dma_error)
         {
             timedOut = false;
             break;
@@ -302,12 +401,14 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
     SPI3_TX_DMA_CON_BITFIELD.CHEN = 0;
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
 
-    if (!timedOut)
+    bool success = !timedOut && spi3_dma_rx_done && !spi3_dma_error;
+
+    if (success)
     {
         SPI3_DCacheInvalidate(rxData, length);
     }
 
-    return !timedOut;
+    return success;
 }
 #endif /* SPI3_DMA_ENABLED */
 
@@ -318,12 +419,27 @@ void SPI3_TransferBlock(const uint8_t *txData, uint8_t *rxData, size_t length)
     // spi3_dma_tx_dummy[] for why that's what makes the DMA path
     // tractable without a real TX payload buffer). Falls back to the
     // byte loop for anything else -- arbitrary txData, no rxData, a
-    // length outside the DMA path's sized/worthwhile range, or a DMA
-    // timeout -- none of which this codebase currently exercises except
-    // the size bounds.
+    // length outside the DMA path's sized/worthwhile range, a
+    // misaligned/oddly-sized rxData (see below), or a DMA timeout.
 #if SPI3_DMA_ENABLED
+    // rxData must be 16-byte cache-line aligned AND length a multiple of
+    // 16 -- SPI3_DCacheInvalidate() operates on whole cache lines, so an
+    // unaligned start or a length that doesn't end on a line boundary
+    // makes it round into memory OUTSIDE [rxData, rxData+length) and
+    // discard (without writeback) whatever dirty cache line happens to
+    // share that boundary with unrelated data. This is exactly what
+    // corrupted sst25vf080b.c's SST25VF080B_SelfTest() writeBuffer[]
+    // (plain `static uint8_t[]`, no alignment guarantee, sitting adjacent
+    // to readBuffer[] in memory) on 2026-07-20 -- readBuffer[]'s DMA
+    // capture path invalidated a cache line that also covered part of
+    // writeBuffer[], silently reverting bytes the CPU had just written
+    // there. Callers that want the DMA speedup need
+    // __attribute__((aligned(16))) on the buffer, like sst25vf080b.c's
+    // writeBuffer/readBuffer and sst25vf080b_disk.c's staging[] now have.
     if ((txData == NULL) && (rxData != NULL)
-            && (length >= SPI3_DMA_MIN_LENGTH) && (length <= SPI3_DMA_MAX_LENGTH))
+            && (length >= SPI3_DMA_MIN_LENGTH) && (length <= SPI3_DMA_MAX_LENGTH)
+            && (((uintptr_t)rxData % SPI3_DCACHE_LINE_SIZE) == 0)
+            && ((length % SPI3_DCACHE_LINE_SIZE) == 0))
     {
         if (SPI3_TransferBlockDMA(rxData, length))
         {

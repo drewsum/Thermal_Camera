@@ -23,6 +23,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <sys/attribs.h>
+// _DMA2_VECTOR/_DMA3_VECTOR (used by the ISR declarations below) come from
+// the processor header xc.h pulls in. Included here rather than relying on
+// every .c that includes this header to have already included xc.h first
+// -- sst25vf080b.c doesn't (it includes this header before xc.h), which is
+// exactly what broke the build the first time these declarations were added.
+#include <xc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +76,16 @@ uint32_t SPI3_GetBusSpeed(void);
 // Prints SPI3 controller/status register state and calculated bus speed to
 // the terminal.
 void SPI3_PrintStatus(void);
+
+// SPI3 DMA (DCH2 TX / DCH3 RX) interrupt service routines -- only defined
+// in spi3.c (and their vectors only registered by SPI3_Initialize()) when
+// SPI3_DMA_ENABLED is set there. Each just latches CHBCIF/CHERIF into a
+// software flag SPI3_TransferBlock()'s DMA path waits on, then clears the
+// channel's own interrupt-status bits and the CPU interrupt flag -- no
+// SPI/flash protocol logic runs here, matching sdhcISR()'s minimal-ISR
+// convention (sdhc/sdhc.h).
+void __ISR(_DMA2_VECTOR, IPL1SRS) spi3TxDmaISR(void);
+void __ISR(_DMA3_VECTOR, IPL2SRS) spi3RxDmaISR(void);
 
 #ifdef __cplusplus
 }
