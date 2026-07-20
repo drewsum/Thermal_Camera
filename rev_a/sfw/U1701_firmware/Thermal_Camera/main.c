@@ -355,6 +355,43 @@ void main(void) {
 
     BacklightPWM_SetBrightness(100);
 
+    // Battery presence heuristic: the BQ27441's BAT_DET flag (Flags()
+    // bit3) is forced to 1 on this board -- BIN's NTC + pull-up
+    // (TH1401/R1402) is a fixed board component that doesn't disconnect
+    // when the 18650 cell is removed from this 2-contact holder -- so it
+    // can't distinguish "cell installed" from "cell absent". Use a
+    // voltage-threshold heuristic on Voltage() instead: comfortably below
+    // any real Li-ion cell's resting voltage (~3.0V+), but a named
+    // constant so it's easy to retune.
+    #define BATTERY_PRESENT_VOLTAGE_THRESHOLD_V   2.0f
+    {
+        float battVoltage = 0.0f;
+        bool batteryPresent = false;
+
+        if (I2CDevices_IsPresent(I2C_DEV_BATT_1) &&
+            I2CDevices_ReadBatteryVoltage(I2C_DEV_BATT_1, &battVoltage)) {
+            batteryPresent = (battVoltage >= BATTERY_PRESENT_VOLTAGE_THRESHOLD_V);
+        }
+
+        telemetry.battery.present = batteryPresent;
+
+        if (batteryPresent) {
+            // Battery installed: let the MAX8903G charge it, and select
+            // the higher 500mA USB input current limit.
+            BATT_IUSB_PIN = HIGH;    // 500mA USB current limit
+            nBATT_CEN_PIN = LOW;     // active-low charge-enable: LOW = enabled
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    Battery detected (%.3f V) -- charging enabled, USB current limit set to 500mA\r\n", battVoltage);
+        } else {
+            // No battery (or gauge unreachable): leave the boot-default
+            // state alone (charging disabled, 100mA limit).
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("    No battery detected (%.3f V) -- charging left disabled, USB current limit left at 100mA\r\n", battVoltage);
+        }
+        terminalTextAttributesReset();
+        while(usbUartCheckIfBusy());
+    }
+
     // Disable reset LED
     RESET_LED_PIN = LOW;
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -448,6 +485,12 @@ void main(void) {
             power_monitor_data_request = 0;
         }
 
+        // queue I2C fuel-gauge telemetry read if heartbeatServices() requested it
+        if (battery_data_request) {
+            updateBatteryTelemetry();
+            battery_data_request = 0;
+        }
+
         // time out wedged I2C transfers and restart the queue after a bus error
         I2C_Tasks();
 
@@ -476,7 +519,10 @@ void main(void) {
         
         // check to see if a clock fail has occurred and latch it
         clockFailCheck();
-        
+
+        // check to see if the battery charger has flagged a fault and latch it
+        batteryFaultCheck();
+
         if (hlvdCheckAndClearLatchedEvent()) {
             error_handler.flags.mcu_vdd_hlvd_brownout = 1;
         }

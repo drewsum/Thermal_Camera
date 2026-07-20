@@ -15,6 +15,7 @@
 #include "i2c/device_driver/ina231a.h"
 #include "i2c/device_driver/ds1683.h"
 #include "i2c/device_driver/gt911.h"
+#include "i2c/device_driver/bq27441.h"
 #include "usb_uart/terminal_control.h"
 #include "application/error_handler.h"
 
@@ -88,6 +89,9 @@ static bool I2CDevices_Verify(I2C_DEVICE_ID id)
         case I2C_DEVICE_KIND_GT911:
             return GT911_Verify(i2cDeviceAddresses[id]);
 
+        case I2C_DEVICE_KIND_BQ27441:
+            return BQ27441_Verify(i2cDeviceAddresses[id]);
+
         default:
             return false;
     }
@@ -114,6 +118,9 @@ static bool I2CDevices_ConfigureOne(I2C_DEVICE_ID id)
         case I2C_DEVICE_KIND_GT911:
             return true;
 
+        case I2C_DEVICE_KIND_BQ27441:
+            return BQ27441_ConfigureOpConfig(i2cDeviceAddresses[id]);
+
         default:
             return false;
     }
@@ -138,6 +145,10 @@ static void I2CDevices_PrintOne(I2C_DEVICE_ID id)
 
         case I2C_DEVICE_KIND_GT911:
             GT911_PrintStatus(i2cDeviceAddresses[id]);
+            break;
+
+        case I2C_DEVICE_KIND_BQ27441:
+            BQ27441_PrintStatus(i2cDeviceAddresses[id]);
             break;
 
         default:
@@ -464,5 +475,328 @@ bool I2CDevices_DecodePower(I2C_DEVICE_ID id, const uint8_t raw[2], float *watts
     }
 
     *watts = INA231A_DecodePowerRaw(raw, i2cDeviceCurrentLSB[id]);
+    return true;
+}
+
+// --- BQ27441 fuel gauge accessors -----------------------------------------
+
+bool I2CDevices_ReadBatteryVoltage(I2C_DEVICE_ID id, float *volts)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadVoltage(i2cDeviceAddresses[id], volts))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryCurrent(I2C_DEVICE_ID id, float *amps)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadAverageCurrent(i2cDeviceAddresses[id], amps))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryTemperature(I2C_DEVICE_ID id, float *celsius)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadTemperature(i2cDeviceAddresses[id], celsius))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryStateOfCharge(I2C_DEVICE_ID id, uint8_t *percent)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadStateOfCharge(i2cDeviceAddresses[id], percent))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryStateOfHealth(I2C_DEVICE_ID id, uint8_t *percent)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadStateOfHealth(i2cDeviceAddresses[id], percent))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryRemainingCapacity(I2C_DEVICE_ID id, float *milliamphours)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadRemainingCapacity(i2cDeviceAddresses[id], milliamphours))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryFullChargeCapacity(I2C_DEVICE_ID id, float *milliamphours)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadFullChargeCapacity(i2cDeviceAddresses[id], milliamphours))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
+bool I2CDevices_ReadBatteryFlags(I2C_DEVICE_ID id, I2C_DEVICE_BATTERY_FLAGS *flags)
+{
+    BQ27441_FLAG_STATUS status;
+
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    if (!BQ27441_ReadFlags(i2cDeviceAddresses[id], &status))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    flags->overTemperature     = status.overTemperature;
+    flags->underTemperature    = status.underTemperature;
+    flags->fullyCharged        = status.fullyCharged;
+    flags->fastChargingAllowed = status.fastChargingAllowed;
+    flags->dischargeDetected   = status.dischargeDetected;
+    flags->lowStateOfCharge    = status.lowStateOfCharge;
+    return true;
+}
+
+bool I2CDevices_QueueBatteryVoltageRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                        I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadVoltage(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryCurrentRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                        I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadAverageCurrent(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryTemperatureRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                            I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadTemperature(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryStateOfChargeRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                              I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadStateOfCharge(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryStateOfHealthRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                              I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadStateOfHealth(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryRemainingCapacityRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                                  I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadRemainingCapacity(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryFullChargeCapacityRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                                   I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadFullChargeCapacity(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_QueueBatteryFlagsRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                     I2C_TRANSFER_CALLBACK callback, uintptr_t context)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    return BQ27441_QueueReadFlags(i2cDeviceAddresses[id], raw, callback, context);
+}
+
+bool I2CDevices_DecodeBatteryVoltage(I2C_DEVICE_ID id, const uint8_t raw[2], float *volts)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *volts = BQ27441_DecodeVoltageRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryCurrent(I2C_DEVICE_ID id, const uint8_t raw[2], float *amps)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *amps = BQ27441_DecodeAverageCurrentRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryTemperature(I2C_DEVICE_ID id, const uint8_t raw[2], float *celsius)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *celsius = BQ27441_DecodeTemperatureRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryStateOfCharge(I2C_DEVICE_ID id, const uint8_t raw[2], uint8_t *percent)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *percent = BQ27441_DecodeStateOfChargeRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryStateOfHealth(I2C_DEVICE_ID id, const uint8_t raw[2], uint8_t *percent)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *percent = BQ27441_DecodeStateOfHealthRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryRemainingCapacity(I2C_DEVICE_ID id, const uint8_t raw[2], float *milliamphours)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *milliamphours = BQ27441_DecodeRemainingCapacityRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryFullChargeCapacity(I2C_DEVICE_ID id, const uint8_t raw[2], float *milliamphours)
+{
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    *milliamphours = BQ27441_DecodeFullChargeCapacityRaw(raw);
+    return true;
+}
+
+bool I2CDevices_DecodeBatteryFlags(I2C_DEVICE_ID id, const uint8_t raw[2], I2C_DEVICE_BATTERY_FLAGS *flags)
+{
+    BQ27441_FLAG_STATUS status;
+
+    if (!I2CDevices_IdIsKind(id, I2C_DEVICE_KIND_BQ27441))
+    {
+        return false;
+    }
+
+    BQ27441_DecodeFlagsRaw(raw, &status);
+
+    flags->overTemperature     = status.overTemperature;
+    flags->underTemperature    = status.underTemperature;
+    flags->fullyCharged        = status.fullyCharged;
+    flags->fastChargingAllowed = status.fastChargingAllowed;
+    flags->dischargeDetected   = status.dischargeDetected;
+    flags->lowStateOfCharge    = status.lowStateOfCharge;
     return true;
 }

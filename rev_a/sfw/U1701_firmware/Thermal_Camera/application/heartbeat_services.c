@@ -21,6 +21,9 @@ void heartbeatServices(void) {
         // get new power monitor telemetry data every 200ms
         if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
 
+        // get new battery fuel gauge telemetry data every 200ms
+        if ((heartbeat_systick + 0) % 20 == 0) battery_data_request = 1;
+
         /* Trigger an ADC conversion scan */
         if ((heartbeat_systick + 15) % 20 == 0) ADCCON3bits.GSWTRG = 1;
 

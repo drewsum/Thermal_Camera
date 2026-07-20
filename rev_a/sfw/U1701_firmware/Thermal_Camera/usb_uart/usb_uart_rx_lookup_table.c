@@ -22,6 +22,7 @@
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
 #include "application/pgood_monitor.h"
+#include "application/battery_monitor.h"
 #include "application/telemetry.h"
 #include "i2c/i2c_master.h"
 #include "adc/adc.h"
@@ -428,6 +429,7 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         "\b\b <section>: Prints current state of surrounding circuitry. If no argument is passed, prints everything. Available sections:\r\n"
         "       Revision\r\n"
         "       PGOOD\r\n"
+        "       Battery\r\n"
         "       Elapsed Time\r\n"
         "       I2C Slaves\r\n"
         "       SPI Flash Device\r\n"
@@ -442,11 +444,12 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
 
     bool want_revision = print_all || (strcmp(rx_section_name, "Revision") == 0);
     bool want_pgood     = print_all || (strcmp(rx_section_name, "PGOOD") == 0);
+    bool want_battery   = print_all || (strcmp(rx_section_name, "Battery") == 0);
     bool want_elapsed   = print_all || (strcmp(rx_section_name, "Elapsed Time") == 0);
     bool want_i2c       = print_all || (strcmp(rx_section_name, "I2C Slaves") == 0);
     bool want_spiflash  = print_all || (strcmp(rx_section_name, "SPI Flash Device") == 0);
     bool want_usb       = print_all || (strcmp(rx_section_name, "USB Device") == 0);
-    bool matched_any = want_revision || want_pgood || want_elapsed || want_i2c || want_spiflash || want_usb;
+    bool matched_any = want_revision || want_pgood || want_battery || want_elapsed || want_i2c || want_spiflash || want_usb;
 
     if (want_revision) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -455,6 +458,8 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
     }
 
     if (want_pgood) printPGOODStatus();
+
+    if (want_battery) printBatteryStatus();
 
     // Total elapsed on-time and power-cycle count, from the DS1683 total-
     // elapsed-time and event recorder (I2C_DEV_ETR_1) -- broken out as its
@@ -525,6 +530,7 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         printf("Sections that can be printed include:\r\n"
                 "   Revision\r\n"
                 "   PGOOD\r\n"
+                "   Battery\r\n"
                 "   Elapsed Time\r\n"
                 "   I2C Slaves\r\n"
                 "   SPI Flash Device\r\n"

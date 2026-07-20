@@ -74,7 +74,8 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(flash_fs_init_error,             "SPI Flash Filesystem Init") \
     X(usb_msd_init_error,              "USB Mass Storage Init") \
     X(glcd_init_error,                 "GLCD Init") \
-    X(backlight_pwm_init_error,        "Backlight PWM Init")
+    X(backlight_pwm_init_error,        "Backlight PWM Init") \
+    X(battery_charger_fault,           "Battery Charger Fault (MAX8903 nFLT)")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,
@@ -170,6 +171,9 @@ void exceptionPrintHex(char *label, uint32_t value);
 
 // this function checks for clock failures and records them into the error handler
 void clockFailCheck(void);
+
+// this function checks for a MAX8903 battery charger fault and records it into the error handler
+void batteryFaultCheck(void);
 
 #endif /* _ERROR_HANDLER_H */
 

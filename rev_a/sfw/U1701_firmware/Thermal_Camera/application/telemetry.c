@@ -100,7 +100,41 @@ void printCurrentTelemetry(void) {
     printf("\t\tMCU ADC Reference Voltage: %.3fV\033[K\r\n", telemetry.adc_vref_voltage);
     printf("\t\tMCU Battery Voltage: %.3fV\033[K\r\n", telemetry.mcu_battery_voltage);
     printf("\t\tAmbient Temperature: %.3fC\033[K\r\n", telemetry.ambient_temperature);
-    
+
+    // print off battery fuel gauge telemetry
+    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
+    printf("\tBattery (BQ27441 Fuel Gauge):\033[K\r\n");
+    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    if (telemetry.battery.present) {
+        printf("\t\tVoltage: %.3fV"
+               "\tCurrent: %.3fA"
+               "\tTemp: %.3fC\033[K\r\n"
+               "\t\tSOC: %.1f%%"
+               "\tSOH: %.1f%%"
+               "\tRemaining: %.1f / %.1f mAh\033[K\r\n"
+               "\t\tStatus: %s%s%s%s%s\033[K\r\n\033[K\r\n",
+               telemetry.battery.voltage,
+               telemetry.battery.current,
+               telemetry.battery.temperature,
+               telemetry.battery.state_of_charge,
+               telemetry.battery.state_of_health,
+               telemetry.battery.remaining_capacity,
+               telemetry.battery.full_charge_capacity,
+               telemetry.battery.charging       ? "CHARGING "      : "",
+               telemetry.battery.discharging    ? "DISCHARGING "   : "",
+               telemetry.battery.fully_charged  ? "FULLY-CHARGED " : "",
+               telemetry.battery.over_temperature  ? "OVER-TEMP "  : "",
+               telemetry.battery.under_temperature ? "UNDER-TEMP " : "");
+        if (telemetry.battery.low_battery) {
+            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("\t\tLOW BATTERY\033[K\r\n");
+            terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        }
+    } else {
+        printf("\t\tNo battery detected at boot\033[K\r\n");
+    }
+    printf("\033[K\r\n");
+
     // print out state of PGOOD pins
     printPGOODStatus();
 
@@ -202,6 +236,25 @@ static bool (* const telemPwrQueueRead[TELEM_PWR_QTY])(I2C_DEVICE_ID, uint8_t*, 
 
 static telem_i2c_slot_t telemPwrSlot[TELEM_PWR_COUNT][TELEM_PWR_QTY];
 
+// Only one BQ27441 fuel gauge on this board (I2C_DEV_BATT_1), but it
+// needs 8 quantities queued per cycle -- more than any other single
+// device kind -- so this uses a flat per-quantity slot array rather than
+// the 2D [device][qty] shape telemPwrSlot above uses for its 5 devices.
+#define TELEM_BATT_QTY   8u   // voltage, current, temperature, soc, remcap, fullcap, soh, flags
+
+static telem_i2c_slot_t telemBattSlot[TELEM_BATT_QTY];
+
+static bool (* const telemBattQueueRead[TELEM_BATT_QTY])(I2C_DEVICE_ID, uint8_t*, I2C_TRANSFER_CALLBACK, uintptr_t) = {
+    I2CDevices_QueueBatteryVoltageRead,
+    I2CDevices_QueueBatteryCurrentRead,
+    I2CDevices_QueueBatteryTemperatureRead,
+    I2CDevices_QueueBatteryStateOfChargeRead,
+    I2CDevices_QueueBatteryRemainingCapacityRead,
+    I2CDevices_QueueBatteryFullChargeCapacityRead,
+    I2CDevices_QueueBatteryStateOfHealthRead,
+    I2CDevices_QueueBatteryFlagsRead
+};
+
 void updateTemperatureTelemetry(void) {
 
     uint8_t i;
@@ -221,6 +274,16 @@ void updatePowerMonitorTelemetry(void) {
         for (qty = 0; qty < TELEM_PWR_QTY; qty++) {
             telemetryQueueSlot(&telemPwrSlot[dev][qty], telemPwrDevice[dev], telemPwrQueueRead[qty]);
         }
+    }
+
+}
+
+void updateBatteryTelemetry(void) {
+
+    uint8_t qty;
+
+    for (qty = 0; qty < TELEM_BATT_QTY; qty++) {
+        telemetryQueueSlot(&telemBattSlot[qty], I2C_DEV_BATT_1, telemBattQueueRead[qty]);
     }
 
 }
@@ -287,6 +350,87 @@ void telemetryTasks(void) {
             }
 
         }
+    }
+
+    for (qty = 0; qty < TELEM_BATT_QTY; qty++) {
+
+        telem_i2c_slot_t *slot = &telemBattSlot[qty];
+
+        if (slot->state == TELEM_SLOT_READY) {
+
+            switch (qty) {
+                case 0: {
+                    float value;
+                    if (I2CDevices_DecodeBatteryVoltage(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.voltage = value;
+                    }
+                    break;
+                }
+                case 1: {
+                    float value;
+                    if (I2CDevices_DecodeBatteryCurrent(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.current = value;
+                    }
+                    break;
+                }
+                case 2: {
+                    float value;
+                    if (I2CDevices_DecodeBatteryTemperature(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.temperature = value;
+                    }
+                    break;
+                }
+                case 3: {
+                    uint8_t value;
+                    if (I2CDevices_DecodeBatteryStateOfCharge(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.state_of_charge = value;
+                    }
+                    break;
+                }
+                case 4: {
+                    float value;
+                    if (I2CDevices_DecodeBatteryRemainingCapacity(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.remaining_capacity = value;
+                    }
+                    break;
+                }
+                case 5: {
+                    float value;
+                    if (I2CDevices_DecodeBatteryFullChargeCapacity(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.full_charge_capacity = value;
+                    }
+                    break;
+                }
+                case 6: {
+                    uint8_t value;
+                    if (I2CDevices_DecodeBatteryStateOfHealth(I2C_DEV_BATT_1, slot->raw, &value)) {
+                        telemetry.battery.state_of_health = value;
+                    }
+                    break;
+                }
+                case 7: {
+                    I2C_DEVICE_BATTERY_FLAGS flags;
+                    if (I2CDevices_DecodeBatteryFlags(I2C_DEV_BATT_1, slot->raw, &flags)) {
+                        telemetry.battery.charging          = flags.fastChargingAllowed;
+                        telemetry.battery.discharging        = flags.dischargeDetected;
+                        telemetry.battery.fully_charged      = flags.fullyCharged;
+                        telemetry.battery.over_temperature   = flags.overTemperature;
+                        telemetry.battery.under_temperature  = flags.underTemperature;
+                        telemetry.battery.low_battery         = flags.lowStateOfCharge;
+                    }
+                    break;
+                }
+                default: break;
+            }
+            slot->state = TELEM_SLOT_IDLE;
+
+        } else if (slot->state == TELEM_SLOT_FAILED) {
+            // fuel gauge didn't respond; keep the last good value, but latch
+            // it against this device's error_handler.flags.*_i2c_error
+            I2CDevices_ReportI2CError(I2C_DEV_BATT_1);
+            slot->state = TELEM_SLOT_IDLE;
+        }
+
     }
 
 }

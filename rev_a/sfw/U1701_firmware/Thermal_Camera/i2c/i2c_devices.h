@@ -33,6 +33,7 @@
 #include "i2c/device_driver/ina231a.h"
 #include "i2c/device_driver/ds1683.h"
 #include "i2c/device_driver/gt911.h"
+#include "i2c/device_driver/bq27441.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,7 @@ typedef enum
     I2C_DEVICE_KIND_INA231A,   // current/power monitor
     I2C_DEVICE_KIND_DS1683,    // total-elapsed-time and event recorder
     I2C_DEVICE_KIND_GT911,     // LCD capacitive touch controller
+    I2C_DEVICE_KIND_BQ27441,   // Li-Ion fuel gauge
 } I2C_DEVICE_KIND;
 
 // TODO: addresses/labels below for the 6x INA231A power monitors are
@@ -66,7 +68,8 @@ typedef enum
     X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
     X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
-    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301")
+    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301") \
+    X(I2C_DEV_BATT_1, I2C_DEVICE_KIND_BQ27441, 0x55, "Li-Ion Fuel Gauge", "U1401")
     //X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
 
 #define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
@@ -179,6 +182,64 @@ bool I2CDevices_DecodeTemperature(I2C_DEVICE_ID id, const uint8_t raw[2],
 bool I2CDevices_DecodeVoltage(I2C_DEVICE_ID id, const uint8_t raw[2], float *volts);
 bool I2CDevices_DecodeCurrent(I2C_DEVICE_ID id, const uint8_t raw[2], float *amps);
 bool I2CDevices_DecodePower(I2C_DEVICE_ID id, const uint8_t raw[2], float *watts);
+
+// --- BQ27441 fuel gauge accessors -----------------------------------------
+// Separate from the INA231A-only I2CDevices_Read{Voltage,Current,Power}()
+// above (different device kind, different scaling/units) -- do not reuse
+// those for the fuel gauge.
+
+// Per-device battery flag snapshot, valid only for I2C_DEVICE_KIND_BQ27441
+// devices. Mirrors BQ27441_FLAG_STATUS (bq27441.h) minus the
+// diagnostic-only configUpdateMode field.
+typedef struct
+{
+    bool overTemperature;
+    bool underTemperature;
+    bool fullyCharged;
+    bool fastChargingAllowed;
+    bool dischargeDetected;
+    bool lowStateOfCharge;
+} I2C_DEVICE_BATTERY_FLAGS;
+
+// Blocking reads. Each returns false if `id` isn't an
+// I2C_DEVICE_KIND_BQ27441 device, or on I2C error (call I2C_ErrorGet() for
+// the reason).
+bool I2CDevices_ReadBatteryVoltage(I2C_DEVICE_ID id, float *volts);
+bool I2CDevices_ReadBatteryCurrent(I2C_DEVICE_ID id, float *amps);
+bool I2CDevices_ReadBatteryTemperature(I2C_DEVICE_ID id, float *celsius);
+bool I2CDevices_ReadBatteryStateOfCharge(I2C_DEVICE_ID id, uint8_t *percent);
+bool I2CDevices_ReadBatteryStateOfHealth(I2C_DEVICE_ID id, uint8_t *percent);
+bool I2CDevices_ReadBatteryRemainingCapacity(I2C_DEVICE_ID id, float *milliamphours);
+bool I2CDevices_ReadBatteryFullChargeCapacity(I2C_DEVICE_ID id, float *milliamphours);
+bool I2CDevices_ReadBatteryFlags(I2C_DEVICE_ID id, I2C_DEVICE_BATTERY_FLAGS *flags);
+
+// Queued (non-blocking) reads -- same shape/contract as the queued reads
+// further up this header.
+bool I2CDevices_QueueBatteryVoltageRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                        I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryCurrentRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                        I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryTemperatureRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                            I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryStateOfChargeRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                              I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryStateOfHealthRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                              I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryRemainingCapacityRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                                  I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryFullChargeCapacityRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                                   I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+bool I2CDevices_QueueBatteryFlagsRead(I2C_DEVICE_ID id, uint8_t raw[2],
+                                     I2C_TRANSFER_CALLBACK callback, uintptr_t context);
+
+bool I2CDevices_DecodeBatteryVoltage(I2C_DEVICE_ID id, const uint8_t raw[2], float *volts);
+bool I2CDevices_DecodeBatteryCurrent(I2C_DEVICE_ID id, const uint8_t raw[2], float *amps);
+bool I2CDevices_DecodeBatteryTemperature(I2C_DEVICE_ID id, const uint8_t raw[2], float *celsius);
+bool I2CDevices_DecodeBatteryStateOfCharge(I2C_DEVICE_ID id, const uint8_t raw[2], uint8_t *percent);
+bool I2CDevices_DecodeBatteryStateOfHealth(I2C_DEVICE_ID id, const uint8_t raw[2], uint8_t *percent);
+bool I2CDevices_DecodeBatteryRemainingCapacity(I2C_DEVICE_ID id, const uint8_t raw[2], float *milliamphours);
+bool I2CDevices_DecodeBatteryFullChargeCapacity(I2C_DEVICE_ID id, const uint8_t raw[2], float *milliamphours);
+bool I2CDevices_DecodeBatteryFlags(I2C_DEVICE_ID id, const uint8_t raw[2], I2C_DEVICE_BATTERY_FLAGS *flags);
 
 #ifdef __cplusplus
 }

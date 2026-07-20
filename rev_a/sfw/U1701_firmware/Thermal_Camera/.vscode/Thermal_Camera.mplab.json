@@ -131,7 +131,11 @@
                 "application/lodepng/lodepng.h",
                 "application/lodepng/lodepng.c",
                 "application/image_loader.h",
-                "application/image_loader.c"
+                "application/image_loader.c",
+                "i2c/device_driver/bq27441.h",
+                "i2c/device_driver/bq27441.c",
+                "application/battery_monitor.h",
+                "application/battery_monitor.c"
             ]
         }
     ]

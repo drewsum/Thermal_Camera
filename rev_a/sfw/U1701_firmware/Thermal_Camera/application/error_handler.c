@@ -261,5 +261,12 @@ void exceptionPrint(char *input_string) {
 void clockFailCheck(void) {
 
     if (OSCCONbits.CF) error_handler.flags.clock_failure = 1;
-    
+
+}
+
+// this function checks for a MAX8903 battery charger fault and records it into the error handler
+void batteryFaultCheck(void) {
+
+    if (!nBATT_FLT_PIN) error_handler.flags.battery_charger_fault = 1;
+
 }
