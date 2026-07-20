@@ -112,6 +112,8 @@
                 "sdhc/fatfs/LICENSE.txt",
                 "spi/flash_fileio.c",
                 "spi/flash_fileio.h",
+                "spi/flash_async.c",
+                "spi/flash_async.h",
                 "spi/device_driver/sst25vf080b_disk.c",
                 "spi/device_driver/sst25vf080b_disk.h",
                 "usb/device_driver/usb_descriptors.h",
@@ -135,7 +137,9 @@
                 "i2c/device_driver/bq27441.h",
                 "i2c/device_driver/bq27441.c",
                 "application/battery_monitor.h",
-                "application/battery_monitor.c"
+                "application/battery_monitor.c",
+                "spi/flash_async.h",
+                "spi/flash_async.c"
             ]
         }
     ]

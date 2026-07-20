@@ -57,6 +57,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+// For SPI3_DMA_BUFFER_ALIGNMENT: callers supplying a read buffer need it to
+// get the DMA path (and MUST honor it to use SST25VF080B_ReadAsync() at
+// all), so this device header re-exposes the bus layer's requirement
+// rather than making every caller include spi3.h separately.
+#include "spi/spi3.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,6 +118,48 @@ bool SST25VF080B_ReadStatus(uint8_t *status);
 // silently truncated to fit, matching this project's other bounds-checked
 // helpers (e.g. ddr2Read()).
 void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length);
+
+// --- Asynchronous (non-blocking) read ---------------------------------
+//
+// Same Fast Read as SST25VF080B_Read(), but returns as soon as the bulk
+// data phase has been handed to DMA instead of waiting it out. Usage:
+//
+//     if (SST25VF080B_ReadAsync(addr, buf, len)) {
+//         while (SST25VF080B_ReadIsBusy()) { ... other work ... }
+//         if (SST25VF080B_ReadGetResult()) { /* buf is valid */ }
+//     } else {
+//         SST25VF080B_Read(addr, buf, len);   // blocking fallback
+//     }
+//
+// `data` must be declared __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT)))
+// with a length that is a multiple of that alignment, and must stay
+// untouched by the caller until SST25VF080B_ReadIsBusy() returns false --
+// DMA is writing it in the background, and the D-cache invalidate that
+// makes it readable happens as part of observing completion. Reading it
+// early can return stale cached bytes.
+//
+// Returns false (nothing started, chip select released, nothing to poll)
+// if another async read is already in flight, the address is out of
+// range, or the buffer doesn't qualify for DMA -- fall back to the
+// blocking SST25VF080B_Read() in that case.
+//
+// NOTE: no caller uses this today. The whole flash stack above this layer
+// (sst25vf080b_disk.c -> sdhc/fatfs/diskio.c -> FatFs -> flash_fileio.c)
+// is synchronous because FatFs's disk_read()/disk_write() contract
+// requires returning with the data in hand -- there is no "call me back"
+// form. Using this path means restructuring a caller to poll, which is
+// why the blocking API remains the default everywhere.
+bool SST25VF080B_ReadAsync(uint32_t address, uint8_t *data, size_t length);
+
+// True while an async read is still running. Poll to completion: the
+// transition to false is what releases chip select, latches the result,
+// and (via spi3.h's SPI3_TransferIsBusy()) makes the receive buffer
+// coherent for the CPU.
+bool SST25VF080B_ReadIsBusy(void);
+
+// Whether the most recently completed async read succeeded. Meaningful
+// only once SST25VF080B_ReadIsBusy() has returned false.
+bool SST25VF080B_ReadGetResult(void);
 
 // Programs `length` bytes starting at `address`, one Byte Program (02h)
 // instruction (with its own Write Enable + BUSY poll) per byte -- see the

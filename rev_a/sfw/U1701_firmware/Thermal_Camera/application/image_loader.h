@@ -36,10 +36,12 @@
     (sdhc/fatfs/ffconf.h), so filenames must be 8.3 short names (e.g.
     "TEST.PNG"; matching is case-insensitive).
 
-    Blocking: a load takes filesystem reads plus a full inflate pass --
-    call it from thread/command context only (it's wired to the "Display
-    Image:" USB UART command), never from an ISR. The watchdog is kicked
-    around the decode.
+    Incremental: a load is started by ImageLoader_StartPNG() (wired to the
+    "Display Image:" USB UART command) and then carried to completion by
+    ImageLoader_Tasks(), pumped once per main-loop iteration from main.c
+    -- the same cooperative-task shape as SDFileIO_HotSwapTasks() and
+    USB_MSD_TimedTasks(). Both are main-loop/command context only, never
+    an ISR. The watchdog is kicked around the decode.
 *******************************************************************************/
 
 #ifndef IMAGE_LOADER_H
@@ -71,12 +73,36 @@ typedef enum
     IMAGE_MEDIA_SPI_FLASH,  // FatFs volume "1:" (SST25VF080B SPI flash)
 } IMAGE_MEDIA;
 
-// Reads `filename` (8.3 name, no volume prefix) from `media`, decodes it
-// as a PNG, and blits it into the GLCD frame buffer. Prints its own
-// colored success/failure diagnostics to the terminal (file errors, PNG
-// decode errors via lodepng_error_text(), dimension mismatches). Returns
-// true only if the frame buffer was actually updated.
-bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename);
+// Begins loading `filename` (8.3 name, no volume prefix) from `media`,
+// and returns as soon as the file is open and validated -- the read and
+// decode are then carried out incrementally by ImageLoader_Tasks().
+// Returns false if the load could not be STARTED (already busy, file
+// missing, implausible size, arena exhausted); a true return means the
+// load is under way, not that it succeeded.
+//
+// All success/failure diagnostics -- file errors, PNG decode errors via
+// lodepng_error_text(), dimension mismatches, and the final timing line
+// -- are printed by this module, from whichever call actually detects
+// them (so late failures surface out of ImageLoader_Tasks(), after this
+// function has already returned true).
+bool ImageLoader_StartPNG(IMAGE_MEDIA media, const char *filename);
+
+// Pump once per main-loop iteration. Cheap no-op when idle. Carries an
+// in-progress load forward by one step: one file chunk per call during
+// the read phase, then the decode+blit as a single step.
+//
+// This is what keeps a large image from freezing the main loop: a 220KB
+// PNG off SPI flash is ~180ms of bus time, which as one read would starve
+// USB_Tasks(), the watchdog kick and every other main-loop service for
+// that whole window. Note the decode phase is NOT divisible (lodepng is
+// vendored and decodes in one call), so it remains a single blocking
+// step with watchdog kicks either side.
+void ImageLoader_Tasks(void);
+
+// True from a successful ImageLoader_StartPNG() until the load has
+// finished or failed. Callers that need to serialize against a load (or
+// avoid stacking a second one) should test this first.
+bool ImageLoader_IsBusy(void);
 
 #ifdef __cplusplus
 }

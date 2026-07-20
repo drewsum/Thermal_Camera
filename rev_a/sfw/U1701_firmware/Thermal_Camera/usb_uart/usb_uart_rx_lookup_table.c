@@ -393,8 +393,11 @@ USB_UART_COMMAND(displayImageCommand, "Display Image:",
         return;
     }
 
-    // ImageLoader_DisplayPNG() prints its own success/failure diagnostics
-    ImageLoader_DisplayPNG(media, filename_str);
+    // Starts the load and returns immediately -- ImageLoader_Tasks() (main
+    // loop) carries it through the chunked read and the decode, and the
+    // image loader prints its own success/failure diagnostics from
+    // whichever step detects them
+    ImageLoader_StartPNG(media, filename_str);
 
 }
 
@@ -998,6 +1001,7 @@ USB_UART_COMMAND(flashFsSelfTestCommand, "Flash FS Self Test",
     (void) input_str;   // no arguments
     FlashFileIO_SelfTest();
 }
+
 
 // Prints one volume's total/used/free space in bytes and percent for
 // storageUsageCommand below. `usedPercentColor` highlights the Used line

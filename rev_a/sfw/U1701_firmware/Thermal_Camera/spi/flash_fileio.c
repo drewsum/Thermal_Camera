@@ -68,6 +68,16 @@ static void flashFileIOEnsureLabel(void)
     char label[24];
     DWORD vsn;
 
+    // Nothing to do (and nothing wrong) while the part is write
+    // protected -- which is the normal boot state, since
+    // SST25VF080B_Initialize() deliberately ends PROTECTED. Bailing here
+    // rather than letting f_setlabel() come back FR_WRITE_PROTECTED keeps
+    // the expected case from printing a scary diagnostic on every boot.
+    if (SST25VF080B_WriteProtectIsEnabled())
+    {
+        return;
+    }
+
     if (f_getlabel(FLASH_DRIVE_PREFIX, label, &vsn) == FR_OK
             && ((label[0] == '\0') || (strcmp(label, "FLASH") == 0)))
     {
@@ -89,6 +99,16 @@ static void flashFileIOEnsureAutorun(void)
     static const char autorun[] =
             "[autorun]\r\nlabel=Thermal Camera SPI Flash\r\n";
     FIL file;
+
+    // Same rationale as flashFileIOEnsureLabel(): a write-protected part
+    // is the normal boot state, and FatFs checks write protection BEFORE
+    // file existence, so this would report FR_WRITE_PROTECTED every boot
+    // even though autorun.inf is already present and nothing is wrong.
+    if (SST25VF080B_WriteProtectIsEnabled())
+    {
+        return;
+    }
+
     FRESULT fr = f_open(&file, FLASH_DRIVE_PREFIX "/autorun.inf", FA_CREATE_NEW | FA_WRITE);
 
     if (fr == FR_OK)

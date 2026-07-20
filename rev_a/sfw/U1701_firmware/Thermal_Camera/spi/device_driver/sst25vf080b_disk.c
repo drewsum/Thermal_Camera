@@ -31,7 +31,7 @@ static bool flash_disk_initialized = false;
 // comment for why an unaligned DMA destination is a real memory-
 // corruption risk (found via SST25VF080B_SelfTest() corrupting an
 // adjacent buffer, 2026-07-20), not just a missed performance opportunity.
-static __attribute__((aligned(16))) uint8_t staging[FLASH_DISK_PAGE_SIZE];
+static __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT))) uint8_t staging[FLASH_DISK_PAGE_SIZE];
 static uint32_t staged_page = FLASH_DISK_NO_STAGED_PAGE;
 static bool staged_dirty = false;
 static uint32_t last_write_tick = 0;

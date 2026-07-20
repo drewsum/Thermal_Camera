@@ -26,6 +26,8 @@
 #include "spi/device_driver/sst25vf080b.h"
 #include "spi/device_driver/sst25vf080b_disk.h"
 #include "spi/flash_fileio.h"
+#include "spi/flash_async.h"
+#include "application/image_loader.h"
 
 // SDHC / microSD
 #include "sdhc/sdhc.h"
@@ -463,6 +465,20 @@ void main(void) {
         // run the USB device stack if the ISR latched events (bus events,
         // EP0 control traffic, mass storage bulk transfers)
         if (usb_event_pending) USB_Tasks();
+
+        // carry an in-flight non-blocking SPI flash read to completion
+        // (cheap flag test when idle). Deliberately pumped BEFORE the
+        // staging flush below: that flush issues blocking flash writes,
+        // which transparently wait for any async read to finish first
+        // (sst25vf080b.c), so giving the async transfer its completion
+        // check earlier is what keeps the two from serializing needlessly
+        FlashAsync_Tasks();
+
+        // advance an in-progress "Display Image:" load by one step -- one
+        // file chunk per pass during the read, then the decode. Keeps a
+        // large PNG from stalling this loop for its whole read (cheap
+        // state test when no load is running)
+        ImageLoader_Tasks();
 
         // flush the SPI flash staging buffer after a write-idle period
         // (cheap compare when nothing is dirty)

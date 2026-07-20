@@ -215,12 +215,25 @@ static __attribute__((coherent)) uint8_t spi3_dma_tx_dummy[SPI3_DMA_MAX_LENGTH];
 
 #define SPI3_DMA_TIMEOUT_TICKS   ((uint32_t)(((uint64_t)SYSCLK_INT / 2u) * 50000u / 1000000u))  // 50ms
 
-// Set by spi3RxDmaISR()/spi3TxDmaISR(), consumed by SPI3_TransferBlockDMA()'s
-// wait loop -- the interrupt-driven equivalent of sdhc.c's sdhc_isr_events
-// accumulator. Reset to false right before arming the channels for a new
-// transfer (nothing is in flight at that point, so no event can be lost).
+// Set by spi3RxDmaISR()/spi3TxDmaISR(), consumed by the completion poll in
+// SPI3_TransferIsBusy() -- the interrupt-driven equivalent of sdhc.c's
+// sdhc_isr_events accumulator. Reset right before arming the channels for
+// a new transfer (nothing is in flight at that point, so no event can be
+// lost).
 static volatile bool spi3_dma_rx_done = false;
 static volatile bool spi3_dma_error = false;
+
+// In-flight transfer bookkeeping, shared by the async API and the
+// blocking wrapper built on it. rxBuffer/rxLength are retained from arm
+// time so the D-cache invalidate can run at COMPLETION time (the only
+// point at which the DMA engine is done writing the buffer). startTick
+// bounds a wedged transfer; lastResult survives finalization so
+// SPI3_TransferGetResult() can report it after the fact.
+static bool      spi3_dma_in_flight = false;
+static uint8_t  *spi3_dma_rx_buffer = NULL;
+static size_t    spi3_dma_rx_length = 0;
+static uint32_t  spi3_dma_start_tick = 0;
+static bool      spi3_dma_last_result = false;
 
 // Minimal ISRs (see the "DMA-accelerated bulk transfer" section header
 // comment): latch the channel's own status into the software flags above,
@@ -298,7 +311,7 @@ static void SPI3_DMAInterruptSetup(void)
 // the RX DMA channel writes it via physical memory directly, bypassing
 // the CPU entirely, so without this the caller's very next load of
 // rxData could return stale cached bytes instead of what DCH3 just wrote.
-#define SPI3_DCACHE_LINE_SIZE            16u
+#define SPI3_DCACHE_LINE_SIZE            SPI3_DMA_BUFFER_ALIGNMENT  // 16 bytes, spi3.h
 #define SPI3_CACHE_OP_HIT_INVALIDATE_D   0x11u
 
 static void SPI3_DCacheInvalidate(const void *addr, size_t length)
@@ -314,12 +327,25 @@ static void SPI3_DCacheInvalidate(const void *addr, size_t length)
     __asm__ __volatile__ ("sync" ::: "memory");
 }
 
-// Captures `length` bytes (>= SPI3_DMA_MIN_LENGTH, <= SPI3_DMA_MAX_LENGTH)
-// from SPI3BUF into `rxData` via DCH2/DCH3, transmitting spi3_dma_tx_dummy
-// as filler. Returns false on a DMA timeout (SPI3_TransferBlock() falls
-// back to the byte loop in that case, so this never leaves the caller
-// without a correct, if slower, result).
-static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
+// Shared DMA-eligibility test for both the blocking and async entry
+// points. See SPI3_TransferBlock()'s comment for why the alignment and
+// length-granularity rules are a correctness requirement (cache-line
+// rounding), not a performance preference.
+static bool SPI3_DMAEligible(const uint8_t *txData, const uint8_t *rxData, size_t length)
+{
+    return (txData == NULL) && (rxData != NULL)
+            && (length >= SPI3_DMA_MIN_LENGTH) && (length <= SPI3_DMA_MAX_LENGTH)
+            && (((uintptr_t)rxData % SPI3_DCACHE_LINE_SIZE) == 0)
+            && ((length % SPI3_DCACHE_LINE_SIZE) == 0);
+}
+
+// Arms DCH2/DCH3 for a `length`-byte capture from SPI3BUF into `rxData`,
+// transmitting spi3_dma_tx_dummy as filler, and kicks the transfer off.
+// Returns with the transfer RUNNING -- completion is observed separately
+// (SPI3_TransferIsBusy()), which is what makes the async API possible.
+// Caller must have already checked SPI3_DMAEligible() and that no other
+// transfer is in flight.
+static void SPI3_DMAArm(uint8_t *rxData, size_t length)
 {
     DMACONbits.ON = 1;
 
@@ -342,6 +368,21 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
     // clearing these now (see the comment on the flags' declaration).
     spi3_dma_rx_done = false;
     spi3_dma_error = false;
+
+    // Drop any DIRTY cache lines covering the destination BEFORE the
+    // engine starts writing it. Without this, a dirty line left over from
+    // the CPU's own earlier stores to this buffer can be evicted (written
+    // back) at an arbitrary later moment -- including partway through the
+    // transfer -- landing stale bytes on top of what DMA already wrote.
+    // Discarding rather than writing back is correct here: the buffer is
+    // about to be overwritten wholesale, and the enforced alignment
+    // guarantees every line lies entirely inside it.
+    //
+    // This hazard is latent on the blocking path (the CPU just spins, so
+    // it touches almost no memory and rarely evicts anything) but becomes
+    // much more likely on the async path, where the whole main loop runs
+    // against the cache while the transfer is in flight.
+    SPI3_DCacheInvalidate(rxData, length);
 
     // RX: SPI3BUF (fixed, 1 byte) -> rxData (grows to `length` bytes)
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
@@ -382,33 +423,116 @@ static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
     // hardware shifts each byte in and out.
     SPI3_TX_DMA_ECON_BITFIELD.CFORCE = 1;
 
-    // Wait on the ISR-latched flags, NOT the DCH3INT SFR directly -- the
-    // ISR W1C-clears its own interrupt-status bits as soon as it fires
-    // (see spi3RxDmaISR()), so racing a second reader against that
-    // clear is exactly the hazard sdhc.c's sdhc_isr_events comment
-    // documents; consuming the software flags instead avoids it.
-    uint32_t start = _CP0_GET_COUNT();
-    bool timedOut = true;
-    while ((uint32_t)(_CP0_GET_COUNT() - start) < SPI3_DMA_TIMEOUT_TICKS)
+    spi3_dma_rx_buffer = rxData;
+    spi3_dma_rx_length = length;
+    spi3_dma_start_tick = _CP0_GET_COUNT();
+    spi3_dma_in_flight = true;
+}
+
+// Tears the channels down, applies the receive buffer's D-cache
+// invalidate, and latches the pass/fail result. Idempotent: safe to call
+// again once the transfer has already been finalized (just re-reports the
+// stored result), which is what lets SPI3_TransferIsBusy() and
+// SPI3_TransferGetResult() both be called freely by a polling caller.
+static bool SPI3_DMAFinalize(void)
+{
+    if (!spi3_dma_in_flight)
     {
-        if (spi3_dma_rx_done || spi3_dma_error)
-        {
-            timedOut = false;
-            break;
-        }
+        return spi3_dma_last_result;
     }
 
     SPI3_TX_DMA_CON_BITFIELD.CHEN = 0;
     SPI3_RX_DMA_CON_BITFIELD.CHEN = 0;
 
-    bool success = !timedOut && spi3_dma_rx_done && !spi3_dma_error;
+    bool success = spi3_dma_rx_done && !spi3_dma_error;
 
+    // Only meaningful once the engine has stopped writing the buffer --
+    // that's precisely why this is deferred to completion instead of
+    // being done at arm time.
     if (success)
     {
-        SPI3_DCacheInvalidate(rxData, length);
+        SPI3_DCacheInvalidate(spi3_dma_rx_buffer, spi3_dma_rx_length);
     }
 
+    spi3_dma_in_flight = false;
+    spi3_dma_rx_buffer = NULL;
+    spi3_dma_rx_length = 0;
+    spi3_dma_last_result = success;
+
     return success;
+}
+
+bool SPI3_TransferBlockAsync(uint8_t *rxData, size_t length)
+{
+    if (spi3_dma_in_flight || !SPI3_DMAEligible(NULL, rxData, length))
+    {
+        return false;
+    }
+
+    SPI3_DMAArm(rxData, length);
+    return true;
+}
+
+bool SPI3_TransferIsBusy(void)
+{
+    if (!spi3_dma_in_flight)
+    {
+        return false;
+    }
+
+    // Consume the ISR-latched flags, NOT the DCH3INT SFR directly -- the
+    // ISR W1C-clears its own interrupt-status bits as soon as it fires
+    // (see spi3RxDmaISR()), so racing a second reader against that clear
+    // is exactly the hazard sdhc.c's sdhc_isr_events comment documents.
+    if (spi3_dma_rx_done || spi3_dma_error)
+    {
+        SPI3_DMAFinalize();
+        return false;
+    }
+
+    // Bound a wedged transfer. Finalizing here reports failure (rx_done
+    // was never set), so a stuck DMA surfaces as a failed transfer rather
+    // than an async caller polling busy forever.
+    if ((uint32_t)(_CP0_GET_COUNT() - spi3_dma_start_tick) >= SPI3_DMA_TIMEOUT_TICKS)
+    {
+        SPI3_DMAFinalize();
+        return false;
+    }
+
+    return true;
+}
+
+bool SPI3_TransferGetResult(void)
+{
+    return spi3_dma_in_flight ? false : spi3_dma_last_result;
+}
+
+// Blocking convenience wrapper over the async API above -- both paths
+// therefore share one arm/finalize implementation rather than having two
+// copies of the channel setup to keep in sync.
+//
+// The wait here is a plain spin. An earlier revision offered a MIPS WAIT
+// (CPU Idle) alternative to avoid burning cycles, but it was removed:
+// idling only saves power, it cannot let the CPU run other work (the call
+// is still synchronous), and it depended on unverified wake-from-Idle
+// behavior with no rescue interrupt available (Timer1/Timer2 both set
+// SIDL = 1 in core/heartbeat_timer.c, so they stop in Idle). Callers that
+// actually want the CPU doing other work during a transfer use the async
+// API above -- see spi/flash_async.h for a main-loop-driven consumer.
+static bool SPI3_TransferBlockDMA(uint8_t *rxData, size_t length)
+{
+    if (!SPI3_TransferBlockAsync(rxData, length))
+    {
+        return false;
+    }
+
+    while (SPI3_TransferIsBusy())
+    {
+        // Interrupts stay enabled through this spin, so the DMA ISR (and
+        // every other ISR) is serviced normally while it runs.
+    }
+
+    return SPI3_TransferGetResult();
 }
 #endif /* SPI3_DMA_ENABLED */
 
@@ -421,30 +545,25 @@ void SPI3_TransferBlock(const uint8_t *txData, uint8_t *rxData, size_t length)
     // byte loop for anything else -- arbitrary txData, no rxData, a
     // length outside the DMA path's sized/worthwhile range, a
     // misaligned/oddly-sized rxData (see below), or a DMA timeout.
-#if SPI3_DMA_ENABLED
-    // rxData must be 16-byte cache-line aligned AND length a multiple of
-    // 16 -- SPI3_DCacheInvalidate() operates on whole cache lines, so an
-    // unaligned start or a length that doesn't end on a line boundary
-    // makes it round into memory OUTSIDE [rxData, rxData+length) and
-    // discard (without writeback) whatever dirty cache line happens to
-    // share that boundary with unrelated data. This is exactly what
-    // corrupted sst25vf080b.c's SST25VF080B_SelfTest() writeBuffer[]
-    // (plain `static uint8_t[]`, no alignment guarantee, sitting adjacent
-    // to readBuffer[] in memory) on 2026-07-20 -- readBuffer[]'s DMA
-    // capture path invalidated a cache line that also covered part of
+    // The alignment/granularity half of SPI3_DMAEligible() is a
+    // CORRECTNESS rule, not a performance one: SPI3_DCacheInvalidate()
+    // operates on whole cache lines, so a buffer that doesn't start AND
+    // end on a line boundary makes it round into memory OUTSIDE
+    // [rxData, rxData+length) and discard (without writeback) whatever
+    // dirty cache line shares that boundary with unrelated data. This is
+    // exactly what corrupted sst25vf080b.c's SST25VF080B_SelfTest()
+    // writeBuffer[] (plain `static uint8_t[]`, no alignment guarantee,
+    // sitting adjacent to readBuffer[]) on 2026-07-20 -- readBuffer[]'s
+    // DMA capture invalidated a line that also covered part of
     // writeBuffer[], silently reverting bytes the CPU had just written
-    // there. Callers that want the DMA speedup need
-    // __attribute__((aligned(16))) on the buffer, like sst25vf080b.c's
-    // writeBuffer/readBuffer and sst25vf080b_disk.c's staging[] now have.
-    if ((txData == NULL) && (rxData != NULL)
-            && (length >= SPI3_DMA_MIN_LENGTH) && (length <= SPI3_DMA_MAX_LENGTH)
-            && (((uintptr_t)rxData % SPI3_DCACHE_LINE_SIZE) == 0)
-            && ((length % SPI3_DCACHE_LINE_SIZE) == 0))
+    // there. Callers wanting the DMA speedup declare their buffer
+    // __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT))), as
+    // sst25vf080b.c's writeBuffer/readBuffer and sst25vf080b_disk.c's
+    // staging[] now do.
+#if SPI3_DMA_ENABLED
+    if (SPI3_DMAEligible(txData, rxData, length) && SPI3_TransferBlockDMA(rxData, length))
     {
-        if (SPI3_TransferBlockDMA(rxData, length))
-        {
-            return;
-        }
+        return;
     }
 #endif
 
