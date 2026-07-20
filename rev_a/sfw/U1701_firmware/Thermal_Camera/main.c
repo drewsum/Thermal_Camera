@@ -53,6 +53,7 @@
 #include "application/telemetry.h"
 #include "application/pgood_monitor.h"
 #include "application/pushbuttons.h"
+#include "application/backlight_pwm.h"
 
 
 ////// I2C
@@ -325,22 +326,34 @@ void main(void) {
             &error_handler.flags.glcd_init_error);
     while(usbUartCheckIfBusy());
 
-    // Enable the LCD backlight only if the panel's integrated GT911
-    // capacitive touch controller responded during I2C bring-up above --
-    // its I2C ACK is a reliable proxy for "the LCD module is actually
-    // populated on this board" (the GLCD Controller itself has no way to
-    // detect a physically-attached panel; it only configures MCU-internal
-    // registers). Left off entirely if I2C_DEV_CTP_1 wasn't found.
-    if (I2CDevices_IsPresent(I2C_DEV_CTP_1)) {
-        BACKLIGHT_ENABLE_PIN = HIGH;
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    LCD Backlight Enabled (touch controller present)\r\n");
-    } else {
-        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    LCD Backlight left OFF (touch controller not detected)\r\n");
-    }
-    terminalTextAttributesReset();
+    // Backlight brightness is PWM-driven (OC3/Timer4, application/backlight_pwm.c)
+    // rather than a plain digital enable pin -- must be initialized after
+    // clockInitialize() above (which sets CFGCON.OCACLK=1 under unlock,
+    // establishing the OC3-to-Timer4 pairing this driver verifies at init;
+    // see backlight_pwm.h for the full story).
+    reportInit("Backlight PWM", BacklightPWM_Initialize(),
+            &error_handler.flags.backlight_pwm_init_error);
     while(usbUartCheckIfBusy());
+
+    #warning "CTP touch controller detection is disabled for now, so the LCD backlight will always be enabled. Re-enable it when the touch controller is working."
+//    // Enable the LCD backlight only if the panel's integrated GT911
+//    // capacitive touch controller responded during I2C bring-up above --
+//    // its I2C ACK is a reliable proxy for "the LCD module is actually
+//    // populated on this board" (the GLCD Controller itself has no way to
+//    // detect a physically-attached panel; it only configures MCU-internal
+//    // registers). Left off entirely if I2C_DEV_CTP_1 wasn't found.
+//    if (I2CDevices_IsPresent(I2C_DEV_CTP_1)) {
+//        BacklightPWM_SetBrightness(100);
+//        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+//        printf("    LCD Backlight Enabled (touch controller present)\r\n");
+//    } else {
+//        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+//        printf("    LCD Backlight left OFF (touch controller not detected)\r\n");
+//    }
+//    terminalTextAttributesReset();
+//    while(usbUartCheckIfBusy());
+
+    BacklightPWM_SetBrightness(100);
 
     // Disable reset LED
     RESET_LED_PIN = LOW;

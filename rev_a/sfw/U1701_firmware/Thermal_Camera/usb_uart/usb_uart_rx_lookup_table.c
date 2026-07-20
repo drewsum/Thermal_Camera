@@ -39,6 +39,7 @@
 #include "usb/usb.h"
 #include "usb/device_driver/usb_msd.h"
 #include "glcd/glcd.h"
+#include "application/backlight_pwm.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -231,6 +232,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       SDHC\r\n"
         "       USB\r\n"
         "       GLCD\r\n"
+        "       Backlight PWM\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
  
@@ -297,6 +299,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     else if (strcmp(rx_peripheral_name, "GLCD") == 0) {
         GLCD_PrintStatus();
     }
+    else if (strcmp(rx_peripheral_name, "Backlight PWM") == 0) {
+        BacklightPWM_PrintStatus();
+    }
     else if (strcomp(rx_peripheral_name, "Timer ") == 0) {
         uint32_t read_timer_number;
         sscanf(rx_peripheral_name, "Timer %u", &read_timer_number);
@@ -330,10 +335,32 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
                 "   SDHC\r\n"
                 "   USB\r\n"
                 "   GLCD\r\n"
+                "   Backlight PWM\r\n"
                 "   RTCC\r\n"
                 "   Timer <x> (x = 1-9)\r\n");
         terminalTextAttributesReset();
     }
+
+}
+
+USB_UART_COMMAND(setBacklightBrightnessCommand, "Set Backlight Brightness:",
+        "\b\b <percent>: Sets the LCD backlight PWM brightness, 0-100 (percent)") {
+
+    uint32_t read_percent;
+
+    if (sscanf(input_str, "Set Backlight Brightness: %u", &read_percent) != 1
+            || read_percent > 100) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Please enter a brightness percentage between 0 and 100\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    BacklightPWM_SetBrightness((uint8_t) read_percent);
+
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("LCD Backlight brightness set to %lu%%\r\n", (unsigned long) read_percent);
+    terminalTextAttributesReset();
 
 }
 

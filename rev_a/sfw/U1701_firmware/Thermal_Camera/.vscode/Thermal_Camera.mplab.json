@@ -125,7 +125,9 @@
                 "glcd/glcd.h",
                 "glcd/glcd.c",
                 "i2c/device_driver/gt911.h",
-                "i2c/device_driver/gt911.c"
+                "i2c/device_driver/gt911.c",
+                "application/backlight_pwm.h",
+                "application/backlight_pwm.c"
             ]
         }
     ]

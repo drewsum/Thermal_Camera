@@ -82,8 +82,17 @@ bool heartbeatTimerInitialize(void) {
     // Set OC4 to 16 bit mode
     OC4CONbits.OC32 = 0;
     
-    // Set default output compare clocks to timers 2 and 3
-    CFGCONbits.OCACLK = 0;
+    // NOTE: an earlier version of this function wrote CFGCONbits.OCACLK = 0
+    // here ("default output compare clocks"). That write NEVER TOOK EFFECT:
+    // OCACLK is a lock-protected CFGCON bit (DS60001565 Register 41-9
+    // Note 1) and this function runs outside any deviceUnlock() window, so
+    // the hardware silently discarded it. The live value is OCACLK = 1, set
+    // deliberately (under unlock) by clockInitialize() -- meaning the
+    // ALTERNATE timer map is in effect: OC4 below pairs with Timer2/Timer3
+    // (same as the default map, which is why this PWM always worked), but
+    // OC1-OC3 pair with Timer4/Timer5 (see application/backlight_pwm.c,
+    // whose first version was misled by the dead write that used to live
+    // here). Do not reintroduce an OCACLK write outside an unlock window.
     
     // Set OC4 to PWM mode, Fault pins disabled
     OC4CONbits.OCM = 0b110;

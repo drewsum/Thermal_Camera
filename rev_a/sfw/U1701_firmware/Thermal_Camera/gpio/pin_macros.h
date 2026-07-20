@@ -41,7 +41,10 @@
 
 // Port B
 #define nFLASH_SPI_CS_PIN           LATBbits.LATB4
-#define BACKLIGHT_ENABLE_PIN        LATBbits.LATB5
+// RB5 (BACKLIGHT_PWM net) has no plain digital pin macro: it's permanently
+// owned by the OC3 peripheral (PPS-mapped in pic32mzda_gpio_setup.c) once
+// application/backlight_pwm.c enables OC3 -- writing LATB5 directly has no
+// effect afterward. Use BacklightPWM_SetBrightness() instead.
 #define POS2P8_PGOOD_PIN            PORTBbits.RB8
 #define FLIR_CLK_EN_PIN             LATBbits.LATB11
 #define nFLASH_SPI_WP_PIN           LATBbits.LATB12

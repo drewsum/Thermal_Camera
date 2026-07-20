@@ -66,8 +66,8 @@ typedef enum
     X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
     X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
-    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301") \
-    X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
+    X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301")
+    //X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
 
 #define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
 typedef enum
