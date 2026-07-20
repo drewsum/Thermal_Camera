@@ -776,7 +776,7 @@ USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V 
 
 }
 
-USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
+USB_UART_COMMAND(spiFlashFormatCommand, "Flash Format",
         "DESTRUCTIVELY erases the entire SPI Flash chip, then re-formats and remounts its FAT volume (FAT/superfloppy, labeled THERMAL SPI)") {
 
     terminalTextAttributesReset();
