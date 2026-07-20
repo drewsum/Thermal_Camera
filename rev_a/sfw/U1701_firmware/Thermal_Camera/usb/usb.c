@@ -26,14 +26,25 @@
       would re-write a latched write-0-to-clear flag (SENTSTALL,
       UNDERRUN) back to 1 and keep it set.
 
-    - FIFO access is asymmetric (matches Microchip's Harmony USBHS
-      driver, usbhs_EndpointFIFO_Default): WRITES are repeated byte
-      writes to the low byte lane of USBFIFOn, but READS must never hit
-      the same byte lane twice in a row -- the bridge serves a latched
-      32-bit word per lane, so unloads either read full 32-bit words
-      (SETUP packets) or rotate the byte lane with (i & 3) (bulk OUT).
+    - FIFO access is asymmetric at BYTE width (matches Microchip's
+      Harmony USBHS driver, usbhs_EndpointFIFO_Default): byte WRITES all
+      go to the low byte lane of USBFIFOn, but byte READS must never hit
+      the same lane twice in a row -- the bridge serves a latched 32-bit
+      word per lane, so byte unloads must rotate the lane with (i & 3).
       Fixed-lane byte reads return garbage (found the hard way: every
       SETUP parsed as junk and was stalled).
+
+      USBFIFOn is however a 32-bit port, and WORD accesses sidestep that
+      asymmetry entirely -- one access moves a whole word in either
+      direction, so no lane bookkeeping applies. The bulk paths
+      (USB_BulkInWrite/USB_BulkOutRead) therefore use 32-bit accesses
+      whenever the buffer is 4-byte aligned and the length is a whole
+      number of words, falling back to the byte loops otherwise. A single
+      packet never mixes the two widths, which is what keeps the
+      word path clear of the lane rules. EP0 is deliberately left on the
+      byte path: control transfers are small and infrequent, and
+      enumeration is not worth destabilizing for throughput that does not
+      matter.
 *******************************************************************************/
 
 #include <xc.h>
@@ -843,9 +854,35 @@ bool USB_BulkInBusy(void)
 
 void USB_BulkInWrite(const uint8_t *data, uint16_t length)
 {
-    for (uint16_t i = 0; i < length; i++)
+    // Word-wide fast path: one 32-bit store per 4 bytes instead of four
+    // separate byte stores, each of which stalls on the peripheral bus.
+    // USBFIFO1 is a 32-bit port (one register per endpoint), so a word
+    // store is its natural access width.
+    //
+    // Taken only when the source is 4-byte aligned AND the length is a
+    // whole number of words, so a single packet NEVER mixes access
+    // widths -- that keeps this away from the byte-lane packing rules in
+    // the file header entirely. The bulk data path always qualifies
+    // (512-byte chunks out of usb_msd.c's aligned block_buf); short
+    // odd-sized transfers (the 13-byte CSW, 36-byte INQUIRY) quietly take
+    // the byte loop, the same fall-back-silently idiom spi3.c uses when a
+    // buffer doesn't qualify for DMA.
+    if ((((uintptr_t)data & 3u) == 0u) && ((length & 3u) == 0u))
     {
-        USB_FIFO1_BYTE = data[i];
+        const uint32_t *words = (const uint32_t *)(const void *)data;
+        uint16_t wordCount = length / 4u;
+
+        for (uint16_t i = 0; i < wordCount; i++)
+        {
+            USBFIFO1 = words[i];
+        }
+    }
+    else
+    {
+        for (uint16_t i = 0; i < length; i++)
+        {
+            USB_FIFO1_BYTE = data[i];
+        }
     }
 
     USBE1CSR0 = USB_TX_CSR_BASE() | USB_TX_TXPKTRDY;
@@ -866,18 +903,42 @@ uint16_t USB_BulkOutRead(uint8_t *data, uint16_t maxLength)
     uint16_t count = (uint16_t)USBE1CSR2bits.RXCNT;
     uint16_t stored = (count < maxLength) ? count : maxLength;
 
-    // Rotate the byte lane on every read (file header: FIFO reads must
-    // not repeat a byte lane)
-    for (uint16_t i = 0; i < stored; i++)
+    // Word-wide fast path, mirroring USB_BulkInWrite. 32-bit reads are
+    // already the proven access mode on this bridge -- usbHandleSetupPacket()
+    // unloads SETUP packets exactly this way -- and they satisfy the
+    // never-repeat-a-byte-lane rule trivially by consuming all four lanes
+    // in one access. Requires the whole packet to fit the caller's buffer
+    // (so there is nothing to drain afterwards, keeping the two access
+    // widths from mixing within one packet), a 4-byte-aligned
+    // destination, and a whole number of words. A 512-byte bulk OUT into
+    // block_buf qualifies; the 31-byte CBW does not and takes the lane
+    // loop below.
+    if ((stored == count) && (((uintptr_t)data & 3u) == 0u)
+            && ((count & 3u) == 0u))
     {
-        data[i] = USB_FIFO1_LANES[i & 3u];
-    }
+        uint32_t *words = (uint32_t *)(void *)data;
+        uint16_t wordCount = count / 4u;
 
-    // Drain anything the caller's buffer couldn't hold so the FIFO is
-    // clean before release (caller sees the oversize via return > max)
-    for (uint16_t i = stored; i < count; i++)
+        for (uint16_t i = 0; i < wordCount; i++)
+        {
+            words[i] = USBFIFO1;
+        }
+    }
+    else
     {
-        (void)USB_FIFO1_LANES[i & 3u];
+        // Rotate the byte lane on every read (file header: FIFO reads must
+        // not repeat a byte lane)
+        for (uint16_t i = 0; i < stored; i++)
+        {
+            data[i] = USB_FIFO1_LANES[i & 3u];
+        }
+
+        // Drain anything the caller's buffer couldn't hold so the FIFO is
+        // clean before release (caller sees the oversize via return > max)
+        for (uint16_t i = stored; i < count; i++)
+        {
+            (void)USB_FIFO1_LANES[i & 3u];
+        }
     }
 
     USBE1CSR1 = USB_RX_CSR_BASE();  // RXPKTRDY <- 0: release the FIFO
