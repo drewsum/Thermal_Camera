@@ -11,8 +11,6 @@
 
 #include <xc.h>
 #include <stdio.h>
-#include <stddef.h>
-#include <sys/kmem.h>
 
 #include "sdhc/sdhc.h"
 #include "core/device_control.h"
@@ -48,6 +46,10 @@
 #define SDHC_DEFAULT_SPEED_CLOCK_HZ    25000000UL
 
 static uint32_t sdhc_base_clock_hz = 0;
+
+// Reported by SDHC_PrintStatus() only. This driver transfers block data
+// exclusively via SDHC_TransferBlocksPIO() -- see the ADMA2 note in
+// sdhc.h's file header for why the hardware DMA path was removed.
 static bool     sdhc_adma2_supported = false;
 
 // Interrupt-latched SDHCINTSTAT accumulator: sdhcISR() W1C-clears the
@@ -72,7 +74,6 @@ static volatile uint32_t sdhc_isr_events = 0;
 // SDHC_SendCommand(..., dataPresent=true) call to build the Transfer Mode
 // bits of the combined SDHCMODE write.
 static uint8_t sdhc_pending_dtxdsel = 0; // 0 = write (host->card), 1 = read (card->host)
-static uint8_t sdhc_pending_dmaen   = 0;
 static uint8_t sdhc_pending_bsel    = 0;
 static uint8_t sdhc_pending_bcen    = 0;
 
@@ -119,8 +120,9 @@ bool SDHC_Initialize(void)
     // Revisit if legitimate transfers are seen timing out against DTOEIF.
     SDHCCON2bits.DTOC = 0xEu;
 
-    // Cache capabilities -- SDHC_SetClockDivider() (called below) and
-    // SDHC_IsADMA2Supported() both depend on this being read first
+    // Cache capabilities -- SDHC_SetClockDivider() (called below) depends
+    // on the base clock being read first; ADMA2 support is recorded only
+    // for SDHC_PrintStatus()
     sdhc_base_clock_hz = (uint32_t)SDHCCAPbits.BASECLK * 1000000UL;
     sdhc_adma2_supported = (SDHCCAPbits.ADMA2 != 0);
 
@@ -225,23 +227,17 @@ bool SDHC_SetBusWidth(bool wide4bit)
     return true;
 }
 
-void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool isWrite, bool useADMA2)
+void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool isWrite)
 {
     SDHCBLKCONbits.BSIZE = blockSize;
     SDHCBLKCONbits.BCOUNT = blockCount;
 
     sdhc_pending_dtxdsel = isWrite ? 0u : 1u;
-    sdhc_pending_dmaen = (useADMA2 && sdhc_adma2_supported) ? 1u : 0u;
     sdhc_pending_bsel = (blockCount > 1u) ? 1u : 0u;
     sdhc_pending_bcen = (blockCount > 1u) ? 1u : 0u;
 
-    // DMASEL must select ADMA2 (0b10) whenever DMAEN will be set for this
-    // transfer -- its power-on default (0b00) selects SDMA, whose system-
-    // address register (SDHCSSA0) this driver never programs. Leaving
-    // DMASEL at 0b00 with DMAEN=1 was the first ADMA2 bring-up bug: the
-    // controller silently waited on an SDMA transfer that could never
-    // start.
-    SDHCCON1bits.DMASEL = sdhc_pending_dmaen ? 0x2u : 0x0u;
+    // No hardware DMA: SDHCMODE.DMAEN is always composed as 0 (see
+    // SDHC_SendCommand()), so DMASEL is irrelevant and left alone.
 }
 
 // Recovers the CMD/DATA line inhibit state machine after a command
@@ -349,8 +345,8 @@ bool SDHC_SendCommand(uint8_t cmdIndex, uint32_t argument, sdhc_response_type_t 
     // nonzero config -- died with CTOEIF because the card never received
     // a well-formed CMD8 to respond to.
     uint32_t mode =
-          ((uint32_t)(dataPresent ? sdhc_pending_dmaen : 0u) << _SDHCMODE_DMAEN_POSITION)
-        | ((uint32_t)(dataPresent ? sdhc_pending_bcen : 0u) << _SDHCMODE_BCEN_POSITION)
+        // DMAEN deliberately omitted (always 0) -- PIO only, see sdhc.h
+          ((uint32_t)(dataPresent ? sdhc_pending_bcen : 0u) << _SDHCMODE_BCEN_POSITION)
         // ACEN = 0 (Auto CMD12 not used), CTYPE = 0 (normal command)
         | ((uint32_t)(dataPresent ? sdhc_pending_dtxdsel : 0u) << _SDHCMODE_DTXDSEL_POSITION)
         | ((uint32_t)(dataPresent ? sdhc_pending_bsel : 0u) << _SDHCMODE_BSEL_POSITION)
@@ -463,137 +459,6 @@ bool SDHC_TransferBlocksPIO(uint8_t *buffer, uint16_t blockSize, uint16_t blockC
     return !timedOut && !errorFlag;
 }
 
-// Standard SD Host Controller Simplified Spec 3.00 32-bit ADMA2
-// descriptor: a 16-bit attribute/length-adjacent field followed by a
-// 32-bit data address. This is the near-universal SDHCI descriptor
-// layout, but has NOT been confirmed against the PIC32MZ-DA Family
-// Reference Manual's SDHC chapter for this specific silicon (see the
-// implementation plan's Verification section) -- validate before relying
-// on this path; SDHC_TransferBlocksPIO() is the confirmed fallback.
-typedef struct __attribute__((packed))
-{
-    uint16_t attributes; // Valid(bit0), End(bit1), Int(bit2), Act(bits4:5)
-    uint16_t length;     // transfer length in bytes (0 encodes 65536)
-    uint32_t address;    // physical address of the data buffer
-} sdhc_adma2_descriptor_t;
-
-#define SDHC_ADMA2_ATTR_VALID  (1u << 0)
-#define SDHC_ADMA2_ATTR_END    (1u << 1)
-#define SDHC_ADMA2_ACT_TRAN    (2u << 4) // "Transfer Data" descriptor type
-
-// Single-entry descriptor table -- sd_card.c's block r/w wrappers always
-// pass one contiguous buffer, so one descriptor covers the whole
-// transfer. __attribute__((coherent)) keeps THIS TABLE ITSELF KSEG1-
-// uncached from the ADMA2 engine's perspective with no manual cache
-// maintenance, matching usb_uart.c's DMA buffer convention -- but it says
-// nothing about the caller's `buffer` (FatFs's sector buffer), which is
-// ordinary cached KSEG0 memory this driver doesn't control the allocation
-// of. That buffer needs its own explicit D-cache maintenance; see
-// SDHC_DCacheWritebackInvalidate()/SDHC_DCacheInvalidate() below.
-static __attribute__((coherent)) sdhc_adma2_descriptor_t sdhc_adma2_table[1];
-
-// D-cache line size on this core (microAptiv, PIC32MZ-DA family) is 16
-// bytes. Used only as the maintenance stride below; a stride smaller than
-// the true line size is always safe (it just re-touches a line more than
-// once), so this doesn't need to be read back from CP0 Config1 at runtime.
-#define SDHC_DCACHE_LINE_SIZE   16u
-
-// CACHE instruction op-field encodings (MIPS32 CACHE, Primary D-cache):
-// Hit Invalidate = 0x11, Hit Writeback Invalidate = 0x15. These are the
-// standard MIPS32 values (same ones Microchip's own Harmony sys_devcon
-// cache routines use for this core family), not project-specific.
-#define SDHC_CACHE_OP_HIT_INVALIDATE_D            0x11u
-#define SDHC_CACHE_OP_HIT_WRITEBACK_INVALIDATE_D  0x15u
-
-// Flushes `length` bytes starting at `addr` out of the D-cache to
-// physical RAM (write back any dirty lines) and invalidates them, so a
-// DMA engine reading physical memory afterward sees what the CPU last
-// stored rather than a stale copy still sitting in cache. Call BEFORE
-// arming a DMA read-from-buffer (i.e. an SD card write).
-static void SDHC_DCacheWritebackInvalidate(const void *addr, size_t length)
-{
-    uint32_t line = (uint32_t)addr & ~(SDHC_DCACHE_LINE_SIZE - 1u);
-    uint32_t end = (uint32_t)addr + length;
-
-    for (; line < end; line += SDHC_DCACHE_LINE_SIZE)
-    {
-        __asm__ __volatile__ ("cache %0, 0(%1)"
-            : : "i" (SDHC_CACHE_OP_HIT_WRITEBACK_INVALIDATE_D), "r" (line) : "memory");
-    }
-    __asm__ __volatile__ ("sync" ::: "memory");
-}
-
-// Invalidates `length` bytes of D-cache starting at `addr` WITHOUT
-// writing back first, discarding whatever the cache holds there. Call
-// AFTER a DMA write-into-buffer (i.e. an SD card read) completes, before
-// the CPU is allowed to load from that range -- otherwise a load could
-// return pre-DMA stale data still sitting in cache instead of what the
-// DMA engine just wrote to physical RAM.
-static void SDHC_DCacheInvalidate(const void *addr, size_t length)
-{
-    uint32_t line = (uint32_t)addr & ~(SDHC_DCACHE_LINE_SIZE - 1u);
-    uint32_t end = (uint32_t)addr + length;
-
-    for (; line < end; line += SDHC_DCACHE_LINE_SIZE)
-    {
-        __asm__ __volatile__ ("cache %0, 0(%1)"
-            : : "i" (SDHC_CACHE_OP_HIT_INVALIDATE_D), "r" (line) : "memory");
-    }
-    __asm__ __volatile__ ("sync" ::: "memory");
-}
-
-bool SDHC_PrepareADMA2Transfer(const uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite)
-{
-    uint32_t totalBytes = (uint32_t)blockSize * (uint32_t)blockCount;
-
-    if ((totalBytes == 0) || (totalBytes > 0x10000u))
-    {
-        // A single descriptor's 16-bit length field tops out at 65536
-        // bytes (0 encodes 65536); larger transfers would need a multi-
-        // descriptor chain, not implemented in this first pass.
-        return false;
-    }
-
-    if (isWrite)
-    {
-        SDHC_DCacheWritebackInvalidate(buffer, totalBytes);
-    }
-
-    sdhc_adma2_table[0].attributes = SDHC_ADMA2_ATTR_VALID | SDHC_ADMA2_ATTR_END | SDHC_ADMA2_ACT_TRAN;
-    sdhc_adma2_table[0].length = (totalBytes == 0x10000u) ? 0u : (uint16_t)totalBytes;
-    sdhc_adma2_table[0].address = (uint32_t)KVA_TO_PA(buffer);
-
-    // Must land before the caller's next SDHC_SendCommand() -- see the
-    // header comment on why loading this after the command (as the first
-    // draft of this driver did) races the ADMA2 engine.
-    SDHCAADDR = (uint32_t)KVA_TO_PA((void *)&sdhc_adma2_table[0]);
-
-    return true;
-}
-
-bool SDHC_WaitADMA2Transfer(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite)
-{
-    uint32_t totalBytes = (uint32_t)blockSize * (uint32_t)blockCount;
-    bool timedOut;
-
-    SDHC_WAIT_OR_TIMEOUT(((sdhc_isr_events & SDHC_EVT_DATA_DONE) != 0), SDHC_DATA_TIMEOUT_TICKS, timedOut);
-
-    bool errorFlag = (sdhc_isr_events & _SDHCINTSTAT_EIF_MASK) != 0;
-    bool admaErr = (sdhc_isr_events & _SDHCINTSTAT_ADEIF_MASK) != 0;
-    bool success = !timedOut && !errorFlag && !admaErr;
-
-    if (success && !isWrite)
-    {
-        SDHC_DCacheInvalidate(buffer, totalBytes);
-    }
-
-    return success;
-}
-
-bool SDHC_IsADMA2Supported(void)
-{
-    return sdhc_adma2_supported;
-}
 
 bool SDHC_IsDataLineBusy(void)
 {

@@ -101,10 +101,10 @@ bool SD_Card_IsPresent(void);
 const sd_card_info_t *SD_Card_GetInfo(void);
 
 // CMD17/CMD18 (single/multi block read) via SDHC_TransferBlocksPIO().
-// PIO-only -- ADMA2 (SDHC_PrepareADMA2Transfer()/SDHC_WaitADMA2Transfer())
-// hung the DATA line on real hardware when briefly enabled (2026-07-20)
-// and is disabled here pending further hardware-in-loop debugging; see
-// the useDMA comment in sd_card.c. Handles SDSC (byte address =
+// PIO-only -- the ADMA2 hardware-DMA path was implemented and then
+// removed on 2026-07-20 after it could not be made to work on this
+// silicon; see the ADMA2 note in sdhc.h's file header before considering
+// another attempt. Handles SDSC (byte address =
 // startBlock*512) vs SDHC/SDXC (block address = startBlock) addressing
 // transparently, and issues CMD12 (STOP_TRANSMISSION) after any
 // multi-block transfer since Auto CMD12 is not configured in sdhc.c.
