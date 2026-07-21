@@ -39,10 +39,22 @@
 #include "gpio/pin_macros.h"
 #include "usb_uart/terminal_control.h"
 
-// GLCDLxMODE.COLORMODE encoding (PIC32 Family Reference Manual Register
-// 54-9) for 24-bit packed RGB888 -- matches this driver's frame buffer
-// layout and the panel's native 24-bit interface.
-#define GLCD_COLORMODE_RGB888   0xBu
+// GLCDLxMODE.COLORMODE encodings (PIC32 Family Reference Manual Register
+// 54-9; numeric values from Microchip's Harmony plib_glcd.h
+// GLCD_LAYER_COLOR_MODE enum, since the datasheet/device header expose only
+// the field position, not the mode values -- same "verify against the
+// vendor source, not the XC32 header" caution the DDR2 driver documents).
+//   RGB888  (0xB): 24-bit packed, Layer 0 -- matches the panel's native
+//                  24-bit interface and image_loader.c's decoded output.
+//   ARGB8888(0x6): 32-bit with per-pixel alpha, Layer 1 GUI overlay. 0x6 is
+//                  the ARGB (0xAARRGGBB) channel order, chosen to match
+//                  LVGL's LV_COLOR_FORMAT_ARGB8888; RGBA8888 is 0x2 instead.
+//                  (If red/blue appear swapped on the panel, that 0x6-vs-0x2
+//                  choice is the knob -- the 32-bit channel order isn't
+//                  tabulated in the datasheet and the 24-bit order was itself
+//                  found empirically, see image_loader.c.)
+#define GLCD_COLORMODE_RGB888     0xBu
+#define GLCD_COLORMODE_ARGB8888   0x6u
 
 // Layer blend functions (GLCDLxMODE SRCBLEND<11:8>/DESTBLEND<15:12>):
 // standard source-over compositing, matching Microchip's Harmony reference
@@ -97,8 +109,9 @@ bool GLCD_Initialize(void)
     GLCDBLANKING = GLCD_XY(GLT035320240IS1_BLANKINGX, GLT035320240IS1_BLANKINGY);
     GLCDBPORCH   = GLCD_XY(GLT035320240IS1_BPORCHX,   GLT035320240IS1_BPORCHY);
 
-    // Layer 0: the single, full-screen, opaque RGB888 layer backing the
-    // frame buffer. See glcd.h for why only one layer is used.
+    // Layer 0: the full-screen, opaque RGB888 background layer backing the
+    // image frame buffer (Layer 1 below is the GUI overlay composited on
+    // top). See glcd.h for the layer roles.
     GLCDL0START  = GLCD_XY(0, 0);
     GLCDL0SIZE   = GLCD_XY(GLCD_FRAMEBUFFER_WIDTH_PX, GLCD_FRAMEBUFFER_HEIGHT_PX);
     GLCDL0RES    = GLCD_XY(GLCD_FRAMEBUFFER_WIDTH_PX, GLCD_FRAMEBUFFER_HEIGHT_PX);
@@ -119,6 +132,35 @@ bool GLCD_Initialize(void)
     // Controller's DMA with no cache maintenance needed (core/ddr2.h cache
     // note). Filling it with real image data is a separate, later step.
     memset((void *)GLCD_FRAMEBUFFER_BASE_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
+
+    // Layer 1: the full-screen ARGB8888 GUI overlay (application/gui/LVGL),
+    // composited over Layer 0. Same register sequence as Layer 0, with two
+    // differences that make it a per-pixel-alpha overlay rather than an
+    // opaque background:
+    //   - COLORMODE is ARGB8888 (4 bytes/pixel, real alpha channel) not
+    //     RGB888, so each pixel carries its own alpha.
+    //   - The SRCBLEND/DESTBLEND functions are identical to Layer 0
+    //     (ALPHA_SRCGBL over INV_SRCGBL = standard source-over) -- with a
+    //     real alpha channel present these now blend per pixel instead of
+    //     rendering opaque, and global ALPHA stays 0xFF so it doesn't scale
+    //     the per-pixel alpha down. MULALPHA is left 0 (LVGL renders
+    //     straight, non-premultiplied ARGB8888).
+    GLCDL1START  = GLCD_XY(0, 0);
+    GLCDL1SIZE   = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
+    GLCDL1RES    = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
+    GLCDL1STRIDE = GLCD_OVERLAY_STRIDE_BYTES;
+    GLCDL1BADDR  = KVA_TO_PA(GLCD_OVERLAY_BASE_ADDRESS);
+    GLCDL1MODE = _GLCDL1MODE_LAYEREN_MASK
+               | (0xFFu << _GLCDL1MODE_ALPHA_POSITION)
+               | (GLCD_DESTBLEND_INV_SRCGBL << _GLCDL1MODE_DESTBLEND_POSITION)
+               | (GLCD_SRCBLEND_ALPHA_SRCGBL << _GLCDL1MODE_SRCBLEND_POSITION)
+               | (GLCD_COLORMODE_ARGB8888 << _GLCDL1MODE_COLORMODE_POSITION);
+
+    // Clear the overlay to fully transparent (0x00000000: alpha 0), NOT
+    // opaque black -- with the source-over blend above, alpha 0 means Layer 0
+    // shows through completely, so the overlay is invisible until the GUI
+    // draws into it. Uncached KSEG1 alias, same coherency note as Layer 0.
+    memset((void *)GLCD_OVERLAY_BASE_ADDRESS, 0, GLCD_OVERLAY_SIZE_BYTES);
 
     // Panel reset sequence before the controller starts driving timing
     // signals at it
@@ -166,6 +208,10 @@ void GLCD_PrintStatus(void)
     uint32_t glcdl0size   = GLCDL0SIZE;
     uint32_t glcdl0stride = GLCDL0STRIDE;
     uint32_t glcdl0baddr  = GLCDL0BADDR;
+    uint32_t glcdl1mode   = GLCDL1MODE;
+    uint32_t glcdl1size   = GLCDL1SIZE;
+    uint32_t glcdl1stride = GLCDL1STRIDE;
+    uint32_t glcdl1baddr  = GLCDL1BADDR;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- GLCD Controller ---\n\r");
@@ -206,6 +252,16 @@ void GLCD_PrintStatus(void)
     printf("    Layer 0 Base Address (physical): 0x%08lX\n\r", (unsigned long)glcdl0baddr);
     printf("    Frame Buffer (CPU, KSEG1 uncached): 0x%08lX, %lu bytes\n\r",
             (unsigned long)GLCD_FRAMEBUFFER_BASE_ADDRESS, (unsigned long)GLCD_FRAMEBUFFER_SIZE_BYTES);
+
+    printf("    Layer 1 (GUI overlay): Enabled=%u ColorMode=0x%lX Alpha=0x%02lX Size=%lux%lu Stride=%luB\n\r",
+            (unsigned int)((glcdl1mode & _GLCDL1MODE_LAYEREN_MASK) != 0),
+            (unsigned long)(glcdl1mode & _GLCDL1MODE_COLORMODE_MASK),
+            (unsigned long)((glcdl1mode & _GLCDL1MODE_ALPHA_MASK) >> _GLCDL1MODE_ALPHA_POSITION),
+            (unsigned long)(glcdl1size >> 16) & 0x7FFu, (unsigned long)(glcdl1size & 0x7FFu),
+            (unsigned long)(glcdl1stride & 0xFFFFu));
+    printf("    Layer 1 Base Address (physical): 0x%08lX\n\r", (unsigned long)glcdl1baddr);
+    printf("    Overlay Buffer (CPU, KSEG1 uncached): 0x%08lX, %lu bytes\n\r",
+            (unsigned long)GLCD_OVERLAY_BASE_ADDRESS, (unsigned long)GLCD_OVERLAY_SIZE_BYTES);
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    LCD_ENABLE_PIN (panel RESET, RJ11): %s\n\r", LCD_ENABLE_PIN ? "high (released)" : "low (in reset)");

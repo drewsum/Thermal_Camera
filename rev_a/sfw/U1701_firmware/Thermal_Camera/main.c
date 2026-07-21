@@ -41,6 +41,9 @@
 // GLCD
 #include "glcd/glcd.h"
 
+// GUI (LVGL over GLCD Layer 1 overlay)
+#include "application/gui/gui.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -328,6 +331,14 @@ void main(void) {
             &error_handler.flags.glcd_init_error);
     while(usbUartCheckIfBusy());
 
+    // Bring up the LVGL GUI on GLCD Layer 1 (the transparent ARGB8888 overlay
+    // composited over Layer 0's image). Must come after GLCD_Initialize()
+    // (which programs/clears Layer 1) and after ddr2Initialize() above (LVGL's
+    // heap and the overlay framebuffer both live in DDR2). Non-critical: a
+    // failure just leaves the overlay blank, so no latched error flag.
+    reportInit("GUI (LVGL)", GUI_Initialize(), NULL);
+    while(usbUartCheckIfBusy());
+
     // Backlight brightness is PWM-driven (OC3/Timer4, application/backlight_pwm.c)
     // rather than a plain digital enable pin -- must be initialized after
     // clockInitialize() above (which sets CFGCON.OCACLK=1 under unlock,
@@ -479,6 +490,11 @@ void main(void) {
         // large PNG from stalling this loop for its whole read (cheap
         // state test when no load is running)
         ImageLoader_Tasks();
+
+        // service LVGL: run its timers and redraw any dirty area of the GUI
+        // overlay (Layer 1). Cheap when nothing changed; a no-op until
+        // GUI_Initialize() has succeeded (application/gui/gui.c)
+        GUI_Tasks();
 
         // flush the SPI flash staging buffer after a write-idle period
         // (cheap compare when nothing is dirty)
