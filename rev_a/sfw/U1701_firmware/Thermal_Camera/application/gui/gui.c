@@ -30,13 +30,25 @@
 #include <xc.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "lvgl/lvgl.h"
 #include "application/gui/gui.h"
 #include "application/gui/lv_port_disp.h"
 #include "core/device_control.h"   // SYSCLK_INT
+#include "core/rtcc.h"             // rtcc_shadow (ISR-maintained date/time)
+#include "application/telemetry.h" // telemetry.ambient_temperature (cached)
 
 static bool s_initialized = false;
+
+// Live-data widgets updated from GUI_Tasks(): the center ambient-temperature
+// readout and the top-right date/time. Set in GUI_BuildDemoScreen().
+static lv_obj_t *s_temp_label   = NULL;
+static lv_obj_t *s_clock_label  = NULL;
+
+// How often GUI_Tasks() refreshes the live readouts, in milliseconds. 500ms
+// keeps the clock's seconds visibly current without redrawing every loop.
+#define GUI_LIVE_UPDATE_MS  500u
 
 // CP0-Count-derived monotonic millisecond source for LVGL. CP0 Count runs at
 // SYSCLK/2, so SYSCLK_INT/2000 counts per millisecond. Accumulating the
@@ -82,21 +94,32 @@ static void GUI_BuildDemoScreen(void)
     lv_obj_remove_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
 
     // --- Top title bar: translucent black strip across the top ---
+    // Tall enough for a two-line clock (date over time) on the right.
     lv_obj_t *topbar = lv_obj_create(scr);
-    lv_obj_set_size(topbar, LV_PCT(100), 36);
+    lv_obj_set_size(topbar, LV_PCT(100), 44);
     lv_obj_align(topbar, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_remove_flag(topbar, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_radius(topbar, 0, 0);
     lv_obj_set_style_border_width(topbar, 0, 0);
     lv_obj_set_style_bg_color(topbar, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(topbar, LV_OPA_50, 0);
-    lv_obj_set_style_pad_all(topbar, 6, 0);
+    lv_obj_set_style_pad_all(topbar, 5, 0);
 
     lv_obj_t *title = lv_label_create(topbar);
     lv_label_set_text(title, "THERMAL CAM");
     lv_obj_set_style_text_color(title, lv_color_white(), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_20, 0);
     lv_obj_align(title, LV_ALIGN_LEFT_MID, 0, 0);
+
+    // Top-right: live date (top line) over time (bottom line), from the RTCC
+    // via rtcc_shadow, refreshed by GUI_UpdateLiveData(). Right-aligned;
+    // placeholder text until the first update.
+    s_clock_label = lv_label_create(topbar);
+    lv_label_set_text(s_clock_label, "----------\n--:--:--");
+    lv_obj_set_style_text_color(s_clock_label, lv_color_white(), 0);
+    lv_obj_set_style_text_font(s_clock_label, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_align(s_clock_label, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_obj_align(s_clock_label, LV_ALIGN_RIGHT_MID, 0, 0);
 
     // --- Center readings card: translucent rounded panel ---
     lv_obj_t *card = lv_obj_create(scr);
@@ -111,13 +134,14 @@ static void GUI_BuildDemoScreen(void)
     lv_obj_set_style_bg_opa(card, LV_OPA_60, 0);
     lv_obj_set_style_pad_all(card, 8, 0);
 
-    // Big center temperature (Montserrat 28, amber). ASCII only -- the
-    // trimmed Montserrat set has no degree glyph.
-    lv_obj_t *big = lv_label_create(card);
-    lv_label_set_text(big, "23.4 C");
-    lv_obj_set_style_text_font(big, &lv_font_montserrat_28, 0);
-    lv_obj_set_style_text_color(big, lv_color_hex(0xFFC020), 0);
-    lv_obj_align(big, LV_ALIGN_TOP_MID, 0, 0);
+    // Big center readout: live ambient temperature (Montserrat 28, amber),
+    // updated by GUI_UpdateLiveData() from telemetry.ambient_temperature.
+    // ASCII only -- the trimmed Montserrat set has no degree glyph.
+    s_temp_label = lv_label_create(card);
+    lv_label_set_text(s_temp_label, "--.- C");
+    lv_obj_set_style_text_font(s_temp_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(s_temp_label, lv_color_hex(0xFFC020), 0);
+    lv_obj_align(s_temp_label, LV_ALIGN_TOP_MID, 0, 0);
 
     // Min / max readout row (Montserrat 14, white).
     lv_obj_t *mm = lv_label_create(card);
@@ -144,6 +168,33 @@ static void GUI_BuildDemoScreen(void)
     lv_obj_center(foot);
 }
 
+// Refreshes the live readouts from data the main loop already maintains:
+// the cached ambient temperature (telemetry.ambient_temperature, folded in by
+// telemetryTasks()) and the RTCC date/time shadow (rtcc_shadow, updated by the
+// RTCC ISR every second). Both are plain memory reads -- no blocking I2C or
+// register polling happens here. lv_label_set_text() only invalidates/redraws
+// when the string actually changes, so calling this on a fixed cadence is cheap.
+static void GUI_UpdateLiveData(void)
+{
+    char buf[24];
+
+    if (s_temp_label != NULL)
+    {
+        snprintf(buf, sizeof buf, "%.1f C", (double)telemetry.ambient_temperature);
+        lv_label_set_text(s_temp_label, buf);
+    }
+
+    if (s_clock_label != NULL)
+    {
+        // A one-off torn read across a second boundary is harmless for a clock.
+        snprintf(buf, sizeof buf, "%04u-%02u-%02u\n%02u:%02u:%02u",
+                 (unsigned)rtcc_shadow.year,    (unsigned)rtcc_shadow.month,
+                 (unsigned)rtcc_shadow.day,     (unsigned)rtcc_shadow.hours,
+                 (unsigned)rtcc_shadow.minutes, (unsigned)rtcc_shadow.seconds);
+        lv_label_set_text(s_clock_label, buf);
+    }
+}
+
 bool GUI_Initialize(void)
 {
     lv_init();
@@ -156,6 +207,7 @@ bool GUI_Initialize(void)
     }
 
     GUI_BuildDemoScreen();
+    GUI_UpdateLiveData();   // show real values immediately, not the placeholders
 
     s_initialized = true;
     return true;
@@ -167,5 +219,16 @@ void GUI_Tasks(void)
     {
         return;
     }
+
+    // Refresh the live readouts on a fixed cadence (not every loop). lv_tick_get()
+    // is our CP0-derived millisecond clock; the subtraction is wrap-safe.
+    static uint32_t last_update_ms = 0;
+    uint32_t now_ms = lv_tick_get();
+    if ((uint32_t)(now_ms - last_update_ms) >= GUI_LIVE_UPDATE_MS)
+    {
+        last_update_ms = now_ms;
+        GUI_UpdateLiveData();
+    }
+
     lv_timer_handler();
 }
