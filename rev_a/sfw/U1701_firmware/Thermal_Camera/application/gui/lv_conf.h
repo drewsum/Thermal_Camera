@@ -49,13 +49,15 @@
 #define LV_USE_STDLIB_STRING   LV_STDLIB_BUILTIN
 #define LV_USE_STDLIB_SPRINTF  LV_STDLIB_BUILTIN
 
-// 2MB pool at DDR2 physical offset +5.5MB, through the CACHED (KSEG0) alias
-// (0x88000000 + 0x00580000). Sits above the Layer 1 overlay framebuffer
-// (glcd.h: KSEG1 +5MB, ~300KB) with a gap, and above the image_loader arena
-// (+1..+5MB). Keep this consistent with the DDR2 partition map documented in
-// glcd/glcd.h and application/image_loader.h -- there is no central allocator.
+// 2MB pool at DDR2 physical offset +7MB, through the CACHED (KSEG0) alias
+// (0x88000000 + 0x00700000). Sits above the two Layer 1 overlay buffers
+// (glcd.h: KSEG1 buffer A at +5MB, buffer B at +6MB, ~300KB each) and the
+// image_loader arena (+1..+5MB). Keep this consistent with the DDR2 partition
+// map documented in glcd/glcd.h and application/image_loader.h -- there is no
+// central allocator. LV_MEM_SIZE is mirrored as GUI_LVGL_HEAP_SIZE_BYTES in
+// application/gui/gui.h (for the "Storage Usage?" report) -- keep them equal.
 #define LV_MEM_SIZE  (2 * 1024U * 1024U)
-#define LV_MEM_ADR   0x88580000UL
+#define LV_MEM_ADR   0x88700000UL
 
 /*====================
    HAL / OS

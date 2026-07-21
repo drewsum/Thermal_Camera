@@ -10,10 +10,12 @@
     by GUI_Initialize() (application/gui/gui.c) after lv_init().
 
   Description:
-    The overlay framebuffer is memory-mapped in DDR2 through the uncached
-    (KSEG1) alias, so LVGL renders straight into the buffer the GLCD scans
-    out -- there is no panel bus/SPI transfer and no cache maintenance, and
-    the flush callback is effectively a no-op. See lv_port_disp.c.
+    Double-buffered: LVGL renders into whichever of the two overlay buffers
+    (glcd.h GLCD_OVERLAY_BASE_ADDRESS / ..._B) is off-screen, then the flush
+    callback flips Layer 1's base address to it during vertical blanking, for
+    tear- and flicker-free updates. The buffers are memory-mapped in DDR2
+    through the uncached (KSEG1) alias, so there is no panel bus/SPI transfer
+    and no cache maintenance. See lv_port_disp.c for the full mechanism.
 *******************************************************************************/
 
 #ifndef LV_PORT_DISP_H

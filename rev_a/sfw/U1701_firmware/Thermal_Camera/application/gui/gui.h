@@ -35,10 +35,19 @@
 #define GUI_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// LVGL's widget/style heap reservation in DDR2 (the pool LVGL's built-in
+// allocator manages). MUST match lv_conf.h's LV_MEM_SIZE / LV_MEM_ADR -- it is
+// mirrored here (rather than shared) because lv_conf.h is consumed by LVGL
+// before any project header is available. Exposed so the "Storage Usage?"
+// USB-UART command can report this DDR2 reservation. See glcd/glcd.h for the
+// rest of the GUI's DDR2 footprint (the two Layer 1 overlay buffers).
+#define GUI_LVGL_HEAP_SIZE_BYTES   (2u * 1024u * 1024u)
 
 // Brings up LVGL and builds the demo screen on the GLCD Layer 1 overlay.
 // Assumes DDR2 and the GLCD Controller are already initialized (see the

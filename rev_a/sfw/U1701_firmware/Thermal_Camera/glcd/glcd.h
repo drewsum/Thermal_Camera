@@ -83,27 +83,38 @@ extern "C" {
 // for the GLCD Controller's own DMA (a separate DDR2 bus master) to see it.
 #define GLCD_FRAMEBUFFER_BASE_ADDRESS      DDR2_KSEG1_BASE_ADDRESS
 
-// GUI overlay -- Layer 1. A second, transparent, ARGB8888 layer that the GUI
+// GUI overlay -- Layer 1. A transparent ARGB8888 layer that the GUI
 // (application/gui, LVGL) renders into; the GLCD Controller composites it
 // over Layer 0 (the image/thermal feed above) during scanout using the
 // overlay's own per-pixel alpha, so a menu can be drawn semi-transparently
 // on top of a loaded image with no CPU/GPU compositing. GLCD_Initialize()
-// brings this layer up (enabled but cleared to fully transparent, so it is
-// invisible until something draws into it) alongside Layer 0.
+// brings this layer up (enabled, both buffers cleared to fully transparent,
+// so it is invisible until something draws into it) alongside Layer 0.
 //
-// Placement: DDR2 physical offset +5MB, immediately above the image_loader
-// decode arena (application/image_loader.h reserves +1MB..+5MB). Same
-// partition-by-convention scheme as the Layer 0 buffer and that arena --
-// core/ddr2.h still has no central allocator. Accessed through the uncached
-// (KSEG1) alias for the same GLCD-DMA coherency reason as Layer 0 (see the
-// performance note in application/gui/gui.c about a cached alternative).
+// DOUBLE BUFFERED (tear/flicker-free): there are TWO full-screen overlay
+// buffers, A and B. LVGL always renders into whichever one is NOT currently
+// being scanned out, then the display port (lv_port_disp.c) flips Layer 1's
+// base address (GLCDL1BADDR, via GLCD_SetOverlayBaseAddress()) to the freshly
+// rendered buffer during vertical blanking (GLCD_WaitOverlayVSync()). The
+// scanned-out buffer therefore only ever changes between frames, fully
+// composited -- so a partial redraw is never visible. GLCD_Initialize()
+// programs Layer 1 to start on buffer B, so LVGL's first render (into A) lands
+// off-screen.
+//
+// Placement (DDR2 physical offsets, same partition-by-convention scheme as the
+// Layer 0 buffer and the image_loader arena at +1..+5MB -- core/ddr2.h still
+// has no central allocator): buffer A at +5MB, buffer B at +6MB. Both use the
+// uncached (KSEG1) alias for the same GLCD-DMA coherency reason as Layer 0.
+// (The LVGL widget/style heap is separate, at +7MB -- see lv_conf.h LV_MEM_ADR.)
 #define GLCD_OVERLAY_WIDTH_PX              320
 #define GLCD_OVERLAY_HEIGHT_PX             240
 #define GLCD_OVERLAY_BYTES_PER_PIXEL       4u   // ARGB8888 (0xAARRGGBB)
 #define GLCD_OVERLAY_STRIDE_BYTES          (GLCD_OVERLAY_WIDTH_PX * GLCD_OVERLAY_BYTES_PER_PIXEL)
 #define GLCD_OVERLAY_SIZE_BYTES            ((uint32_t)GLCD_OVERLAY_STRIDE_BYTES * GLCD_OVERLAY_HEIGHT_PX)
-#define GLCD_OVERLAY_DDR2_OFFSET           0x00500000u
+#define GLCD_OVERLAY_DDR2_OFFSET           0x00500000u   // buffer A: +5MB
+#define GLCD_OVERLAY_DDR2_OFFSET_B         0x00600000u   // buffer B: +6MB
 #define GLCD_OVERLAY_BASE_ADDRESS          (DDR2_KSEG1_BASE_ADDRESS + GLCD_OVERLAY_DDR2_OFFSET)
+#define GLCD_OVERLAY_BASE_ADDRESS_B        (DDR2_KSEG1_BASE_ADDRESS + GLCD_OVERLAY_DDR2_OFFSET_B)
 
 // Brings up the GLCD Controller: assumes PMD6bits.GLCDMD == 0 already
 // (application/power_saving.c) and REFCLK5 already configured (by
@@ -116,6 +127,21 @@ extern "C" {
 // false if PMD6bits.GLCDMD is still set (GLCD_Initialize() called before/
 // without PMDInitialize() clearing it).
 bool GLCD_Initialize(void);
+
+// Sets Layer 1's (the GUI overlay's) scanout base address to `cpuAddress` -- a
+// CPU-side KSEG0/KSEG1 pointer, converted to the physical address the GLCD DMA
+// needs. Used by the double-buffered display port (lv_port_disp.c) to flip
+// between the two overlay buffers (GLCD_OVERLAY_BASE_ADDRESS / ..._B). Pair
+// with GLCD_WaitOverlayVSync() to make the flip tear-free.
+void GLCD_SetOverlayBaseAddress(uint32_t cpuAddress);
+
+// Blocks until the start of the GLCD's next vertical-blanking interval
+// (GLCDSTAT.VSYNC), i.e. the gap between frames when no pixels are being
+// scanned out. Call immediately before GLCD_SetOverlayBaseAddress() so the
+// layer's base address changes while the panel is blanked -- the next frame
+// then scans out entirely from the new buffer, with no visible tear. Bounded
+// by one frame period; main-loop/flush context only, never an ISR.
+void GLCD_WaitOverlayVSync(void);
 
 // Prints GLCD Controller settings (PMD gating state, LCDEN, resolution,
 // timing registers, clock divider + derived GCLK frequency, Layer 0 color

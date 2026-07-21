@@ -149,18 +149,22 @@ bool GLCD_Initialize(void)
     GLCDL1SIZE   = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
     GLCDL1RES    = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
     GLCDL1STRIDE = GLCD_OVERLAY_STRIDE_BYTES;
-    GLCDL1BADDR  = KVA_TO_PA(GLCD_OVERLAY_BASE_ADDRESS);
+    // Start scanning out buffer B: the overlay is double-buffered (glcd.h), and
+    // LVGL renders into buffer A first, so beginning on B keeps that first
+    // render off-screen. The display port flips this base per frame.
+    GLCDL1BADDR  = KVA_TO_PA(GLCD_OVERLAY_BASE_ADDRESS_B);
     GLCDL1MODE = _GLCDL1MODE_LAYEREN_MASK
                | (0xFFu << _GLCDL1MODE_ALPHA_POSITION)
                | (GLCD_DESTBLEND_INV_SRCGBL << _GLCDL1MODE_DESTBLEND_POSITION)
                | (GLCD_SRCBLEND_ALPHA_SRCGBL << _GLCDL1MODE_SRCBLEND_POSITION)
                | (GLCD_COLORMODE_ARGB8888 << _GLCDL1MODE_COLORMODE_POSITION);
 
-    // Clear the overlay to fully transparent (0x00000000: alpha 0), NOT
-    // opaque black -- with the source-over blend above, alpha 0 means Layer 0
-    // shows through completely, so the overlay is invisible until the GUI
-    // draws into it. Uncached KSEG1 alias, same coherency note as Layer 0.
-    memset((void *)GLCD_OVERLAY_BASE_ADDRESS, 0, GLCD_OVERLAY_SIZE_BYTES);
+    // Clear BOTH overlay buffers to fully transparent (0x00000000: alpha 0),
+    // NOT opaque black -- with the source-over blend above, alpha 0 means
+    // Layer 0 shows through completely, so the overlay is invisible until the
+    // GUI draws into it. Uncached KSEG1 alias, same coherency note as Layer 0.
+    memset((void *)GLCD_OVERLAY_BASE_ADDRESS,   0, GLCD_OVERLAY_SIZE_BYTES);
+    memset((void *)GLCD_OVERLAY_BASE_ADDRESS_B, 0, GLCD_OVERLAY_SIZE_BYTES);
 
     // Panel reset sequence before the controller starts driving timing
     // signals at it
@@ -177,6 +181,39 @@ bool GLCD_Initialize(void)
     GLCDMODE = glcdmode_config | _GLCDMODE_LCDEN_MASK;
 
     return true;
+}
+
+void GLCD_SetOverlayBaseAddress(uint32_t cpuAddress)
+{
+    // Full-word write only (GLCD SFR sub-word-access hazard, see file header).
+    // GLCDLxBADDR wants the physical address -- the GLCD DMA is a separate bus
+    // master, not a CPU KSEG access -- so convert the CPU pointer first.
+    GLCDL1BADDR = KVA_TO_PA(cpuAddress);
+}
+
+void GLCD_WaitOverlayVSync(void)
+{
+    // GLCDSTAT.VSYNC is asserted during the vertical sync/blanking period. To
+    // land the caller's base-address change squarely inside blanking (not on a
+    // vsync that is already ending), wait out any in-progress vsync, then wait
+    // for the next one to begin. Full-word reads only (sub-word hazard).
+    //
+    // Bounded by a CP0-Count timeout (CP0 runs at SYSCLK/2) so a misbehaving or
+    // unexpectedly-polarised status bit can never hang the main loop: on
+    // timeout we just return and let the caller flip anyway (worst case a
+    // one-frame tear, never a lockup). ~50ms comfortably exceeds one frame at
+    // any sane panel refresh rate.
+    const uint32_t timeout_ticks = (uint32_t)(SYSCLK_INT / 2u) / 20u;  // ~50ms
+    uint32_t start = _CP0_GET_COUNT();
+
+    while (GLCDSTAT & _GLCDSTAT_VSYNC_MASK)
+    {
+        if ((uint32_t)(_CP0_GET_COUNT() - start) > timeout_ticks) return;
+    }
+    while (!(GLCDSTAT & _GLCDSTAT_VSYNC_MASK))
+    {
+        if ((uint32_t)(_CP0_GET_COUNT() - start) > timeout_ticks) return;
+    }
 }
 
 // Derives the actual output GCLK frequency from REFCLKO5 (per
@@ -259,9 +296,10 @@ void GLCD_PrintStatus(void)
             (unsigned long)((glcdl1mode & _GLCDL1MODE_ALPHA_MASK) >> _GLCDL1MODE_ALPHA_POSITION),
             (unsigned long)(glcdl1size >> 16) & 0x7FFu, (unsigned long)(glcdl1size & 0x7FFu),
             (unsigned long)(glcdl1stride & 0xFFFFu));
-    printf("    Layer 1 Base Address (physical): 0x%08lX\n\r", (unsigned long)glcdl1baddr);
-    printf("    Overlay Buffer (CPU, KSEG1 uncached): 0x%08lX, %lu bytes\n\r",
-            (unsigned long)GLCD_OVERLAY_BASE_ADDRESS, (unsigned long)GLCD_OVERLAY_SIZE_BYTES);
+    printf("    Layer 1 Base Address (physical, live): 0x%08lX\n\r", (unsigned long)glcdl1baddr);
+    printf("    Overlay Buffers (CPU, KSEG1 uncached, double-buffered): A=0x%08lX B=0x%08lX, %lu bytes each\n\r",
+            (unsigned long)GLCD_OVERLAY_BASE_ADDRESS, (unsigned long)GLCD_OVERLAY_BASE_ADDRESS_B,
+            (unsigned long)GLCD_OVERLAY_SIZE_BYTES);
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    LCD_ENABLE_PIN (panel RESET, RJ11): %s\n\r", LCD_ENABLE_PIN ? "high (released)" : "low (in reset)");

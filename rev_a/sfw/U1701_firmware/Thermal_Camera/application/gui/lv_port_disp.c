@@ -1,26 +1,31 @@
 /*******************************************************************************
-  LVGL Display Port -- GLCD Layer 1 overlay
+  LVGL Display Port -- GLCD Layer 1 overlay (double-buffered, vsync page flip)
 
   File Name:
     lv_port_disp.c
 
   Summary:
-    Zero-copy LVGL display bound to the GLCD Layer 1 overlay framebuffer.
+    LVGL display bound to the GLCD Layer 1 overlay, rendered TEAR- AND
+    FLICKER-FREE via double buffering with a vsync-synchronised page flip.
     See lv_port_disp.h for the summary and glcd/glcd.h for the overlay layer
-    (GLCD_OVERLAY_*) and DDR2 placement.
+    (GLCD_OVERLAY_*) and its two-buffer DDR2 placement.
 
-  Why the flush is a no-op:
-    LVGL is given the overlay framebuffer itself as its single, full-screen
-    render buffer, in LV_DISPLAY_RENDER_MODE_DIRECT. So LVGL draws directly
-    into the memory the GLCD Controller's DMA scans out. That framebuffer is
-    the DDR2 uncached (KSEG1) alias (glcd.h), so the controller already sees
-    every pixel LVGL wrote with no cache writeback -- there is nothing for the
-    flush callback to transfer.
+  How it works:
+    LVGL is given BOTH full-screen overlay buffers (A and B, glcd.h) in
+    LV_DISPLAY_RENDER_MODE_DIRECT. Each refresh it renders the changed areas
+    into whichever buffer is currently OFF-screen -- so the clear-then-redraw
+    of a widget never touches the buffer being scanned out. On the last flush
+    of the refresh (lv_display_flush_is_last), the freshly-rendered buffer is
+    complete; disp_flush_cb() then waits for the panel's vertical blanking
+    (GLCD_WaitOverlayVSync) and repoints Layer 1 at that buffer
+    (GLCD_SetOverlayBaseAddress). Because the base address changes only during
+    blanking, the next frame scans out entirely from the new, fully-composited
+    buffer -- no partial redraw is ever visible.
 
-  Known limitation (future refinement):
-    Single-buffer direct rendering into the live scanout buffer can tear on
-    fast-changing content. It is fine for the current static/slow overlay; a
-    second buffer plus a vertical-blank swap would remove tearing later.
+    The buffers are the DDR2 uncached (KSEG1) alias (glcd.h), so LVGL's writes
+    are already coherent with the GLCD's scanout DMA -- no cache maintenance.
+    GLCD_Initialize() starts Layer 1 on buffer B and LVGL renders into buffer A
+    first, so that first render lands off-screen.
 *******************************************************************************/
 
 #include "lvgl/lvgl.h"
@@ -30,11 +35,18 @@
 static void disp_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 {
     LV_UNUSED(area);
-    LV_UNUSED(px_map);
 
-    // The render buffer IS the GLCD Layer 1 scanout buffer (uncached KSEG1
-    // DDR2), so the controller's DMA already sees the rendered pixels. No
-    // transfer, no cache maintenance -- just release the buffer back to LVGL.
+    // In DIRECT mode LVGL renders all of a refresh's dirty areas into the same
+    // (off-screen) buffer and the frame is complete only at the last flush.
+    // px_map points to that just-rendered buffer's start. Flip to it during
+    // vertical blanking so the swap is tear-free; earlier (non-last) flushes
+    // have nothing to do but acknowledge.
+    if (lv_display_flush_is_last(disp))
+    {
+        GLCD_WaitOverlayVSync();
+        GLCD_SetOverlayBaseAddress((uint32_t)px_map);
+    }
+
     lv_display_flush_ready(disp);
 }
 
@@ -51,13 +63,13 @@ lv_display_t *lv_port_disp_init(void)
     // glcd.c (0xAARRGGBB byte order).
     lv_display_set_color_format(disp, LV_COLOR_FORMAT_ARGB8888);
 
-    // Direct render mode, single full-screen buffer = the overlay framebuffer
-    // itself (glcd.h GLCD_OVERLAY_BASE_ADDRESS, KSEG1 uncached). Size is the
-    // whole layer in bytes; buf2 = NULL (single buffer -- see the tearing note
-    // in the file header).
+    // Double-buffered direct mode: both full-screen overlay buffers, so LVGL
+    // always renders into the off-screen one and disp_flush_cb() page-flips
+    // between them. buffer A is buf1 (LVGL renders it first) and GLCD_Initialize
+    // starts scanout on B, keeping that first render off-screen.
     lv_display_set_buffers(disp,
-                           (void *)GLCD_OVERLAY_BASE_ADDRESS,
-                           NULL,
+                           (void *)GLCD_OVERLAY_BASE_ADDRESS,    // buffer A (buf1)
+                           (void *)GLCD_OVERLAY_BASE_ADDRESS_B,  // buffer B (buf2)
                            GLCD_OVERLAY_SIZE_BYTES,
                            LV_DISPLAY_RENDER_MODE_DIRECT);
 

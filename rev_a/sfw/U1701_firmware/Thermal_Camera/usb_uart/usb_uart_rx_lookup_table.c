@@ -42,6 +42,7 @@
 #include "glcd/glcd.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
+#include "application/gui/gui.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -1132,13 +1133,19 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("DDR2 SDRAM (known firmware reservations, not a live allocator):\r\n");
     {
-        uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES + IMAGE_LOADER_ARENA_SIZE;
+        // The GUI overlay is double-buffered (two full-screen Layer 1 buffers,
+        // glcd.h), plus LVGL's widget/style heap (gui.h, mirrors lv_conf.h).
+        uint32_t overlayBytes = 2u * GLCD_OVERLAY_SIZE_BYTES;
+        uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES + IMAGE_LOADER_ARENA_SIZE
+                               + overlayBytes + GUI_LVGL_HEAP_SIZE_BYTES;
 
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Total: %10lu bytes (%lu KB)\r\n",
                 (unsigned long) DDR2_SIZE_BYTES, (unsigned long) (DDR2_SIZE_BYTES / 1024u));
-        printStorageReservationLine("GLCD Frame Buffer:", GLCD_FRAMEBUFFER_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("GLCD Frame Buffer (Layer 0):", GLCD_FRAMEBUFFER_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("PNG Decode Arena:", IMAGE_LOADER_ARENA_SIZE, DDR2_SIZE_BYTES);
+        printStorageReservationLine("GUI Overlay Buffers (Layer 1, x2):", overlayBytes, DDR2_SIZE_BYTES);
+        printStorageReservationLine("LVGL Heap:", GUI_LVGL_HEAP_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("Unreserved:", DDR2_SIZE_BYTES - reservedBytes, DDR2_SIZE_BYTES);
     }
 
