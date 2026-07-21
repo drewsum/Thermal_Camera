@@ -394,11 +394,10 @@ USB_UART_COMMAND(displayImageCommand, "Display Image:",
         return;
     }
 
-    // Starts the load and returns immediately -- ImageLoader_Tasks() (main
-    // loop) carries it through the chunked read and the decode, and the
-    // image loader prints its own success/failure diagnostics from
-    // whichever step detects them
-    ImageLoader_StartPNG(media, filename_str);
+    // Synchronous, blocking load: reads the file, decodes the PNG, and
+    // blits it before returning. The image loader prints its own colored
+    // success/failure diagnostics from whichever step detects them.
+    ImageLoader_DisplayPNG(media, filename_str);
 
 }
 
