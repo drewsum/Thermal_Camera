@@ -511,15 +511,27 @@ bool SD_Card_ReadBlocks(uint32_t startBlock, uint8_t *buffer, uint16_t blockCoun
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_READ_MULTIPLE_BLOCK : SD_CMD_READ_SINGLE_BLOCK;
 
-    // PIO only -- see the ADMA2 note in sdhc.h's file header
-    SDHC_ConfigureBlockTransfer(512u, blockCount, false);
+    // PIO only for now. The ADMA2 path is not yet usable (found 2026-07-17
+    // when the first mount-time sector read timed out): (a) SDHCCON1.DMASEL
+    // is never set to 0b10/ADMA2, so DMAEN=1 selects SDMA whose system-
+    // address register this driver never programs; (b) SDHCAADDR is loaded
+    // in SDHC_TransferBlocksADMA2(), i.e. AFTER the data command has
+    // already been issued; (c) there's no D-cache clean/invalidate on the
+    // data buffer, so cached KSEG0 callers (FatFs) would see stale data
+    // even if (a)/(b) were fixed. Re-enable via SDHC_IsADMA2Supported()
+    // only once all three are addressed.
+    bool useDMA = false;
+
+    SDHC_ConfigureBlockTransfer(512u, blockCount, false, useDMA);
 
     if (!SDHC_SendCommand(cmdIndex, argument, SDHC_RESP_R1, true))
     {
         return false;
     }
 
-    bool ok = SDHC_TransferBlocksPIO(buffer, 512u, blockCount, false);
+    bool ok = useDMA
+            ? SDHC_TransferBlocksADMA2(buffer, 512u, blockCount, false)
+            : SDHC_TransferBlocksPIO(buffer, 512u, blockCount, false);
 
     if (blockCount > 1u)
     {
@@ -540,16 +552,18 @@ bool SD_Card_WriteBlocks(uint32_t startBlock, const uint8_t *buffer, uint16_t bl
 
     uint32_t argument = (sd_card_info.type == SD_CARD_TYPE_SDSC) ? (startBlock * 512u) : startBlock;
     uint8_t cmdIndex = (blockCount > 1u) ? SD_CMD_WRITE_MULTIPLE_BLOCK : SD_CMD_WRITE_BLOCK;
+    bool useDMA = false; // PIO only -- see SD_Card_ReadBlocks() for the three ADMA2 gaps
 
-    // PIO only -- see the ADMA2 note in sdhc.h's file header
-    SDHC_ConfigureBlockTransfer(512u, blockCount, true);
+    SDHC_ConfigureBlockTransfer(512u, blockCount, true, useDMA);
 
     if (!SDHC_SendCommand(cmdIndex, argument, SDHC_RESP_R1, true))
     {
         return false;
     }
 
-    bool ok = SDHC_TransferBlocksPIO((uint8_t *)(void *)buffer, 512u, blockCount, true);
+    bool ok = useDMA
+            ? SDHC_TransferBlocksADMA2((uint8_t *)(void *)buffer, 512u, blockCount, true)
+            : SDHC_TransferBlocksPIO((uint8_t *)(void *)buffer, 512u, blockCount, true);
 
     if (blockCount > 1u)
     {

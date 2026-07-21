@@ -24,7 +24,6 @@
 // *****************************************************************************
 
 #define SST25VF080B_CMD_READ               0x03u
-#define SST25VF080B_CMD_FAST_READ          0x0Bu
 #define SST25VF080B_CMD_SECTOR_ERASE_4K    0x20u
 #define SST25VF080B_CMD_CHIP_ERASE         0x60u
 #define SST25VF080B_CMD_BYTE_PROGRAM       0x02u
@@ -65,37 +64,6 @@ static void SST25VF080B_Deselect(void)
     nFLASH_SPI_CS_PIN = HIGH;
 }
 
-// --- Async read state / bus ownership ---------------------------------
-//
-// While an async read is in flight this part holds CS asserted and the
-// DMA channels own SPI3, so ANY other flash instruction issued in that
-// window would toggle CS mid-Fast-Read and push bytes into SPI3BUF
-// underneath the DMA -- corrupting both. That is a live hazard rather
-// than a theoretical one: USB_MSD_TimedTasks() runs on every main-loop
-// pass and can call Flash_Disk_Sync() -> SST25VF080B_EraseSector()/
-// _Write() at any moment.
-//
-// Every blocking entry point below therefore opens with
-// sst25WaitForAsyncIdle(), which simply lets an in-flight async read
-// finish first. Serializing (rather than failing the call) keeps every
-// existing caller working unchanged and never silently returns an
-// unfilled buffer; the wait is bounded because the underlying DMA
-// transfer is itself timeout-bounded (spi3.c).
-static bool sst25_read_async_active = false;
-static bool sst25_read_async_result = false;
-
-static void sst25WaitForAsyncIdle(void)
-{
-    // SST25VF080B_ReadIsBusy() is what observes completion, releases CS
-    // and latches the result -- so pumping it here also leaves the async
-    // consumer's own later poll correct (it sees not-busy + a valid
-    // result, and still fires its completion callback normally).
-    while (SST25VF080B_ReadIsBusy())
-    {
-        // spin -- bounded by the DMA transfer timeout
-    }
-}
-
 // Writes a 24-bit address MSB first, per every addressed instruction in
 // Table 4-4 ("Address bits [A23-A0]").
 static void SST25VF080B_SendAddress(uint32_t address)
@@ -107,8 +75,6 @@ static void SST25VF080B_SendAddress(uint32_t address)
 
 bool SST25VF080B_ReadStatus(uint8_t *status)
 {
-    sst25WaitForAsyncIdle();
-
     SST25VF080B_Select();
     SPI3_TransferByte(SST25VF080B_CMD_RDSR);
     *status = SPI3_TransferByte(0x00u);
@@ -168,8 +134,6 @@ bool SST25VF080B_WriteProtectSet(bool enable)
 {
     uint8_t status;
 
-    sst25WaitForAsyncIdle();
-
     // WRSR must happen while the status register is still writable, so
     // WP# goes (or stays) high first in both directions
     nFLASH_SPI_WP_PIN = HIGH;
@@ -216,8 +180,6 @@ bool SST25VF080B_Verify(void)
 {
     uint8_t manufacturerId, memoryType, capacity;
 
-    sst25WaitForAsyncIdle();
-
     SST25VF080B_Select();
     SPI3_TransferByte(SST25VF080B_CMD_JEDEC_ID);
     manufacturerId = SPI3_TransferByte(0x00u);
@@ -251,8 +213,6 @@ bool SST25VF080B_Initialize(void)
 
 void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length)
 {
-    sst25WaitForAsyncIdle();
-
     if (address >= SST25VF080B_SIZE_BYTES)
     {
         return;
@@ -264,82 +224,15 @@ void SST25VF080B_Read(uint32_t address, uint8_t *data, size_t length)
     }
 
     SST25VF080B_Select();
-    SPI3_TransferByte(SST25VF080B_CMD_FAST_READ);
+    SPI3_TransferByte(SST25VF080B_CMD_READ);
     SST25VF080B_SendAddress(address);
-    SPI3_TransferByte(0x00u);  // Fast Read dummy byte (datasheet Table 4-4)
     SPI3_TransferBlock(NULL, data, length);
     SST25VF080B_Deselect();
-}
-
-// CS must stay asserted for the whole asynchronous window (the part would
-// abort the Fast Read the moment CE# rises), so SST25VF080B_ReadIsBusy()
-// -- not ReadAsync() -- is what deselects. State declared up with
-// sst25WaitForAsyncIdle().
-bool SST25VF080B_ReadAsync(uint32_t address, uint8_t *data, size_t length)
-{
-    if (sst25_read_async_active || (address >= SST25VF080B_SIZE_BYTES))
-    {
-        return false;
-    }
-
-    if (length > (SST25VF080B_SIZE_BYTES - address))
-    {
-        length = SST25VF080B_SIZE_BYTES - address;
-    }
-
-    // Command/address/dummy are 5 bytes of blocking PIO -- microseconds at
-    // this clock, and they must precede the DMA capture anyway. Only the
-    // bulk data phase is asynchronous.
-    SST25VF080B_Select();
-    SPI3_TransferByte(SST25VF080B_CMD_FAST_READ);
-    SST25VF080B_SendAddress(address);
-    SPI3_TransferByte(0x00u);
-
-    if (!SPI3_TransferBlockAsync(data, length))
-    {
-        // Ineligible for DMA (alignment/size -- see spi3.h) or the bus is
-        // busy. Release CS rather than stranding the part mid-instruction;
-        // caller falls back to the blocking SST25VF080B_Read().
-        SST25VF080B_Deselect();
-        return false;
-    }
-
-    sst25_read_async_active = true;
-    return true;
-}
-
-bool SST25VF080B_ReadIsBusy(void)
-{
-    if (!sst25_read_async_active)
-    {
-        return false;
-    }
-
-    if (SPI3_TransferIsBusy())
-    {
-        return true;
-    }
-
-    // Completion observed: SPI3_TransferIsBusy() has already torn the DMA
-    // channels down and invalidated the caller's buffer, so the data is
-    // coherent and the part can be released.
-    sst25_read_async_result = SPI3_TransferGetResult();
-    SST25VF080B_Deselect();
-    sst25_read_async_active = false;
-
-    return false;
-}
-
-bool SST25VF080B_ReadGetResult(void)
-{
-    return sst25_read_async_active ? false : sst25_read_async_result;
 }
 
 bool SST25VF080B_Write(uint32_t address, const uint8_t *data, size_t length)
 {
     size_t i;
-
-    sst25WaitForAsyncIdle();
 
     // With BP bits set the part silently ignores Byte Program (BUSY never
     // asserts, so the poll below would "pass" without writing anything) --
@@ -382,8 +275,6 @@ bool SST25VF080B_EraseSector(uint32_t address)
 {
     uint32_t sectorAddress = address & ~(SST25VF080B_SECTOR_SIZE - 1u);
 
-    sst25WaitForAsyncIdle();
-
     if (wp_enabled)
     {
         return false;   // see SST25VF080B_Write()
@@ -401,8 +292,6 @@ bool SST25VF080B_EraseSector(uint32_t address)
 
 bool SST25VF080B_EraseChip(void)
 {
-    sst25WaitForAsyncIdle();
-
     if (wp_enabled)
     {
         return false;   // see SST25VF080B_Write()
@@ -424,12 +313,8 @@ bool SST25VF080B_EraseChip(void)
 
 bool SST25VF080B_SelfTest(void)
 {
-    // 16-byte aligned so SST25VF080B_Read()'s DMA path (spi3.c) can safely
-    // target readBuffer -- see spi3.c's SPI3_TransferBlock() comment on
-    // why an unaligned buffer there is a real corruption risk, not just a
-    // performance one.
-    static __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT))) uint8_t writeBuffer[SST25VF080B_SECTOR_SIZE];
-    static __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT))) uint8_t readBuffer[SST25VF080B_SECTOR_SIZE];
+    static uint8_t writeBuffer[SST25VF080B_SECTOR_SIZE];
+    static uint8_t readBuffer[SST25VF080B_SECTOR_SIZE];
     bool overallPass = true;
     uint32_t i;
 

@@ -13,34 +13,10 @@
     This is the lowest layer of the SD card stack (sdhc.c -> sd_card.c ->
     fatfs/diskio.c -> FatFs). It knows nothing about SD command semantics
     (no CMD0/ACMD41 literals) -- it exposes generic command-index/argument/
-    response-type/data-present primitives, a PIO block-transfer primitive,
-    clock/interrupt bring-up, and a peripheral-level status printout.
-    sd_card.c (device_driver/sd_card.h) is what actually knows what a CMD8
-    is.
-
-    Block data is PIO ONLY. An ADMA2 (hardware DMA) path was implemented
-    and removed on 2026-07-20 after it could not be made to work on this
-    silicon. Do not re-attempt it from code review alone -- the failure was
-    fully instrumented and the following were all PROVEN CORRECT: descriptor
-    table alignment, descriptor contents (Valid|End|Tran, length, physical
-    data address), SDHCCON1.DMASEL = 0b10, block size/count, and
-    programming SDHCAADDR before issuing the command. The engine fetched
-    the descriptor (SDHCAADDR advanced by exactly one 8-byte line) and
-    reported NO error at all (SDHCAESTAT = 0, ADEIF/ALMERR/EIF all clear),
-    yet TXCIF never fired and the transfer hung with CINHDAT stuck,
-    DLACTIVE = 0 and RDACTIVE = 1 -- i.e. the data phase ended on the SD
-    bus but the block was never counted complete, consistent with the
-    received block sitting in the SDHC FIFO and the DMA engine never
-    draining it.
-
-    The unresolved suspect is CFGCON2.SDRDFTHR / SDWRFTHR (CFGCON2<13:4>
-    and <25:16>), the PIC32-specific SDHC read/write FIFO thresholds, which
-    read 0 at POR and which this driver never programs. PIO is immune
-    because the CPU drains SDHCDATA itself. Revisiting ADMA2 requires the
-    PIC32MZ-DA Family Reference Manual's SDHC chapter (or a Harmony
-    plib_sdhc reference) to establish the correct threshold values -- it is
-    not solvable by guessing, and PIO is not currently a throughput
-    bottleneck.
+    response-type/data-present primitives, block-transfer primitives (PIO
+    and ADMA2), clock/interrupt bring-up, and a peripheral-level status
+    printout. sd_card.c (device_driver/sd_card.h) is what actually knows
+    what a CMD8 is.
 
     Clock: the SDHC base clock is REFCLK4 -- REFCLK4Initialize()
     (core/device_control.c) runs it at SYSCLK/1 = 200MHz, matching the
@@ -136,11 +112,10 @@ bool SDHC_SetBusWidth(bool wide4bit);
 
 // Must be called before SDHC_SendCommand() for any command that moves
 // data (CMD17/18/24/25 in sd_card.c's usage): programs SDHCBLKCON
-// (BSIZE/BCOUNT) and records the transfer direction for
-// SDHC_SendCommand() to fold into the Transfer Mode bits of the same
-// SDHCMODE write that issues the command. Has no effect on commands
-// issued with dataPresent=false.
-void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool isWrite);
+// (BSIZE/BCOUNT) and records direction/DMA-use for SDHC_SendCommand() to
+// fold into the Transfer Mode bits of the same SDHCMODE write that issues
+// the command. Has no effect on commands issued with dataPresent=false.
+void SDHC_ConfigureBlockTransfer(uint16_t blockSize, uint16_t blockCount, bool isWrite, bool useADMA2);
 
 // Waits CINHCMD (and CINHDAT, if dataPresent) clear, loads SDHCARG, then
 // performs a single write to SDHCMODE that both configures the command
@@ -163,9 +138,26 @@ void SDHC_GetResponse(uint32_t response[4]);
 // `blockCount` blocks of `blockSize` bytes each (must match what was
 // passed to the preceding SDHC_ConfigureBlockTransfer()/SDHC_SendCommand()
 // pair). Then waits TXCIF (transfer complete) with a bounded timeout.
-// This is the ONLY block-data path in this driver -- see the ADMA2 note
-// in the file header above.
+// This is the always-available fallback path -- first bring-up target,
+// used automatically by sd_card.c whenever SDHC_IsADMA2Supported() is
+// false or ADMA2 hasn't been validated yet.
 bool SDHC_TransferBlocksPIO(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite);
+
+// Builds a 32-bit ADMA2 descriptor table (single-descriptor, since
+// `buffer` is assumed caller-contiguous) in a statically-allocated,
+// uncached (KSEG1) region, points SDHCAADDR at its physical address, and
+// waits TXCIF with a bounded timeout, checking SDHCAESTAT on failure.
+// Caller must have already issued the command via SDHC_SendCommand(...,
+// dataPresent=true) with SDHC_ConfigureBlockTransfer(..., useADMA2=true)
+// beforehand (which sets SDHCMODE.DMAEN and SDHCCON1.DMASEL for this
+// path). Gated by SDHC_IsADMA2Supported() -- sd_card.c falls back to
+// SDHC_TransferBlocksPIO() transparently if this silicon instance doesn't
+// support it.
+bool SDHC_TransferBlocksADMA2(uint8_t *buffer, uint16_t blockSize, uint16_t blockCount, bool isWrite);
+
+// Returns whether this silicon instance's SDHCCAP.ADMA2 bit is set.
+// Cached at SDHC_Initialize() time.
+bool SDHC_IsADMA2Supported(void);
 
 // Returns true if the SDHC peripheral reports an active data-line
 // transfer in progress (SDHCSTAT1 DLACTIVE/WRACTIVE/RDACTIVE). Used by

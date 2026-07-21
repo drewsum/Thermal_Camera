@@ -92,9 +92,6 @@ typedef struct
     uint32_t vbus_errors;
     uint32_t setup_packets;
     uint32_t ep0_stalls;
-    uint32_t dma_in_transfers;      // completed bulk IN DMA transfers
-    uint32_t dma_out_transfers;     // completed bulk OUT DMA transfers
-    uint32_t dma_errors;            // USBDMAnC.DMAERR (bus error) at completion
 } usb_counters_t;
 
 // ISR -> USB_Tasks() event accumulators (see file header: the CSR
@@ -169,50 +166,6 @@ bool USB_BulkOutStalled(void);
 // Flushes both bulk FIFOs and clears stalls/toggles -- the transport
 // reset primitive backing the MSC Bulk-Only Mass Storage Reset request.
 void USB_BulkReset(void);
-
-// ---- MUSB internal-DMA bulk transfers ----
-//
-// The USB core has its own DMA engine (8 channels; this driver uses 1 for
-// bulk IN and 2 for bulk OUT) that moves data between system RAM and an
-// endpoint FIFO with no CPU involvement. One transfer carries MANY packets
-// -- the core packetizes, arms TXPKTRDY (AutoSet) / releases RXPKTRDY
-// (AutoClear) per packet, and raises a single completion interrupt at the
-// end -- so a 4KB data phase costs one interrupt instead of eight FIFO
-// copy loops.
-//
-// These are strictly OPTIONAL accelerators: both return false when the
-// transfer does not qualify, and the caller must fall back to the PIO
-// USB_BulkInWrite()/USB_BulkOutRead() path. A transfer qualifies only
-// when `length` is a nonzero exact multiple of USB_GetBulkMaxPacket() and
-// `data` is cache-line aligned. The max-packet-multiple rule is what
-// keeps this clear of MUSB DMA Mode 1's trailing-short-packet handling
-// (in Mode 1 the core does NOT arm a final partial packet; firmware would
-// have to do it by hand) -- every DMA transfer here is whole packets
-// only, and any remainder goes out over PIO.
-//
-// ASYNCHRONOUS: on a true return the transfer is in flight. The buffer
-// must not be read, written, or freed until USB_BulkDmaBusy() goes false.
-// Completion sets usb_event_pending, so the next USB_Tasks() pass re-runs
-// the MSD pump exactly as an endpoint interrupt would.
-bool USB_BulkInWriteDma(const uint8_t *data, uint16_t length);
-bool USB_BulkOutReadDma(uint8_t *data, uint16_t length);
-
-// True while either direction has a DMA transfer in flight.
-bool USB_BulkDmaBusy(void);
-
-// Reads and clears the sticky "last DMA transfer hit a bus error" latch.
-// A true return means the transfer did NOT deliver its data.
-bool USB_BulkDmaTakeError(void);
-
-// Cancels any in-flight DMA and disarms the endpoint DMA request bits.
-// Called on stall, bus reset, BOT reset and detach -- anywhere the
-// transport is being torn down under a transfer.
-void USB_BulkDmaAbort(void);
-
-// USB DMA-event interrupt service routine (separate vector from the
-// general USB event). Retires finished channels and applies the receive
-// buffer's D-cache invalidate.
-void __ISR(_USB_DMA_VECTOR, IPL2SRS) usbDmaISR(void);
 
 // Prints module/bus/endpoint register state and the event counters to
 // the terminal (Peripheral Status? USB).

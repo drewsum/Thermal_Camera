@@ -21,7 +21,6 @@
 #include "spi/device_driver/sst25vf080b_disk.h"
 #include "spi/device_driver/sst25vf080b.h"
 #include "spi/flash_fileio.h"
-#include "spi/spi3.h"           // SPI3_DMA_BUFFER_ALIGNMENT for block_buf
 #include "usb_uart/terminal_control.h"
 
 // ---- Bulk-Only Transport wire formats (MSC BOT spec 5.1/5.2) ----
@@ -92,21 +91,6 @@ typedef struct
                                 // the flash LUN must claim removable even
                                 // though it is soldered down
     const char *inquiry_product;    // exactly 16 chars
-    bool usb_in_dma_safe;           // may this LUN's read data be shipped to
-                                    // the host via USB internal DMA? False for
-                                    // the flash LUN: its readSectors() fills
-                                    // the buffer with the SST25VF080B driver's
-                                    // OWN SPI3 system DMA, and empirically the
-                                    // USB DMA engine then reads that buffer
-                                    // corrupt -- a cross-DMA-master hazard that
-                                    // survives even bouncing the data through a
-                                    // CPU memcpy (diagnostics on 2026-07-20), so
-                                    // the buffer contents are not the cause. SD
-                                    // fills via SDHC PIO (CPU) and is unaffected.
-                                    // Flash reads therefore stay on the PIO
-                                    // FIFO path; its throughput is bounded by
-                                    // the 10MHz SPI read anyway, so USB DMA
-                                    // bought it almost nothing.
     bool (*isPresent)(void);
     bool (*isWriteProtected)(void); // NULL = never write-protected
     uint32_t (*sectorCount)(void);
@@ -173,7 +157,6 @@ static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
         .removable = true,
         .inquiry_removable = true,
         .inquiry_product = "Thermal Cam SD  ",
-        .usb_in_dma_safe = true,        // SDHC PIO fill (CPU) -- USB DMA OK
         .isPresent = msdSdIsPresent,
         .sectorCount = msdSdSectorCount,
         .readSectors = msdSdReadSectors,
@@ -184,7 +167,6 @@ static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
         .removable = false,
         .inquiry_removable = true,
         .inquiry_product = "Thermal Cam SPI ",
-        .usb_in_dma_safe = false,       // SPI3-DMA fill -- USB DMA corrupts it
         .isPresent = msdFlashIsPresent,
         .isWriteProtected = msdFlashIsWriteProtected,
         .sectorCount = Flash_Disk_GetSectorCount,
@@ -224,22 +206,7 @@ static uint8_t response_buf[64];
 static uint16_t response_len;
 static uint16_t response_off;
 
-// Media staging buffer, sized to the whole per-pass block budget so a
-// READ/WRITE data phase issues ONE multi-block backend call per pass
-// instead of one single-block call per 512 bytes. That matters most on
-// LUN 0: SD_Card_ReadBlocks/WriteBlocks already emit CMD18/CMD25 with the
-// trailing CMD12 when blockCount > 1, so eight blocks now cost one
-// command round trip instead of eight (and on writes, one program-busy
-// wait instead of eight).
-//
-// Aligned for SPI3 DMA: LUN 1 reads land here via SST25VF080B_Read(),
-// which silently falls back to a byte loop for buffers that aren't
-// cache-line aligned (spi3.h). The size is a multiple of the alignment
-// and every 512-byte sub-chunk within it stays aligned.
-#define MSD_STAGING_SIZE    ((uint16_t)USB_MSD_BLOCKS_PER_PASS * MSD_BLOCK_SIZE)
-
-static __attribute__((aligned(SPI3_DMA_BUFFER_ALIGNMENT)))
-        uint8_t block_buf[MSD_STAGING_SIZE];
+static uint8_t block_buf[MSD_BLOCK_SIZE];
 static uint16_t block_buf_len;      // valid bytes staged for IN / target for OUT
 static uint16_t block_buf_off;
 
@@ -248,16 +215,6 @@ static uint32_t xfer_lba;
 static uint32_t xfer_blocks_remaining;
 static uint32_t data_bytes_remaining;   // bytes still to move on the bus
 static bool stall_in_after_data;        // device data < host expectation
-
-// Bytes handed to an in-flight MUSB DMA transfer (0 = none). While
-// nonzero the pump has returned and is waiting on the DMA-completion
-// interrupt to re-pump it; the byte accounting (block_buf_off,
-// data_bytes_remaining, data_residue) is deferred until the transfer
-// retires, because the buffer is being moved without CPU involvement and
-// the counters would otherwise run ahead of the hardware. Cleared on
-// every command boundary and teardown so a torn-down transfer can't be
-// mis-accounted against the next command.
-static uint32_t dma_inflight_bytes;
 
 // One-byte EP0 response for Get Max LUN
 static uint8_t max_lun_response;
@@ -360,8 +317,7 @@ int16_t USB_MSD_HandleClassRequest(const usb_setup_packet_t *setup,
             && (setup->wLength == 0u))
     {
         usb_msd_counters.bot_resets++;
-        USB_BulkReset();            // also aborts any in-flight bulk DMA
-        dma_inflight_bytes = 0;     // drop its deferred accounting
+        USB_BulkReset();
         Flash_Disk_Sync();
         bot_state = MSD_STATE_WAIT_CBW;
         return 0;
@@ -459,7 +415,6 @@ static void msdReceiveCbw(void)
     xfer_blocks_remaining = 0;
     data_bytes_remaining = 0;
     stall_in_after_data = false;
-    dma_inflight_bytes = 0;
 
     msdDispatchScsi();
 }
@@ -835,37 +790,6 @@ static bool msdWaitBulkInReady(void)
 static void msdPumpDataIn(void)
 {
     uint16_t maxPacket = USB_GetBulkMaxPacket();
-
-    // Retire a DMA transfer that was in flight from a previous pass before
-    // touching any of the byte counters it deferred
-    if (dma_inflight_bytes > 0u)
-    {
-        if (USB_BulkDmaBusy())
-        {
-            return;     // still running; the completion ISR re-pumps us
-        }
-
-        uint32_t moved = dma_inflight_bytes;
-        dma_inflight_bytes = 0;
-
-        if (USB_BulkDmaTakeError())
-        {
-            // The transfer did not deliver -- fail the command and stall
-            // IN so the host stops waiting on data that isn't coming
-            msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR,
-                    ASC_UNRECOVERED_READ_ERROR, 0);
-            csw_status = MSD_CSW_STATUS_FAIL;
-            stall_in_after_data = true;
-            data_bytes_remaining = 0;
-        }
-        else
-        {
-            block_buf_off += (uint16_t)moved;
-            data_bytes_remaining -= moved;
-            data_residue -= moved;
-        }
-    }
-
     uint32_t budgetBytes = (uint32_t)USB_MSD_BLOCKS_PER_PASS * MSD_BLOCK_SIZE;
 
     while (data_bytes_remaining > 0u)
@@ -875,20 +799,19 @@ static void msdPumpDataIn(void)
             return;     // superloop breather; EP1TX event resumes us
         }
 
-        // Refill the staging buffer from the medium when it runs dry --
-        // as many blocks as the buffer holds, in one backend call
+        if (!msdWaitBulkInReady())
+        {
+            return;
+        }
+
+        // Refill the staging buffer from the medium when it runs dry
         if (xfer_from_media && (block_buf_off >= block_buf_len))
         {
             if (xfer_blocks_remaining == 0u)
             {
                 break;
             }
-
-            uint16_t toRead = (xfer_blocks_remaining < USB_MSD_BLOCKS_PER_PASS)
-                    ? (uint16_t)xfer_blocks_remaining
-                    : (uint16_t)USB_MSD_BLOCKS_PER_PASS;
-
-            if (!msd_luns[cbw_lun].readSectors(xfer_lba, block_buf, toRead))
+            if (!msd_luns[cbw_lun].readSectors(xfer_lba, block_buf, 1))
             {
                 msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR,
                         ASC_UNRECOVERED_READ_ERROR, 0);
@@ -896,10 +819,10 @@ static void msdPumpDataIn(void)
                 stall_in_after_data = true;
                 break;
             }
-            usb_msd_counters.blocks_read += toRead;
-            xfer_lba += toRead;
-            xfer_blocks_remaining -= toRead;
-            block_buf_len = toRead * MSD_BLOCK_SIZE;
+            usb_msd_counters.blocks_read++;
+            xfer_lba++;
+            xfer_blocks_remaining--;
+            block_buf_len = MSD_BLOCK_SIZE;
             block_buf_off = 0;
         }
 
@@ -916,35 +839,11 @@ static void msdPumpDataIn(void)
             available = (uint32_t)(response_len - response_off);
         }
 
-        uint32_t run = (available < data_bytes_remaining) ? available
-                                                          : data_bytes_remaining;
-
-        // Fast path: hand a whole-packet run of the aligned media buffer
-        // to the DMA engine and wait for its completion interrupt. Only
-        // the media path qualifies (block_buf is cache-line aligned and
-        // media transfers are always a whole number of max-size packets);
-        // the response_buf path and any sub-packet remainder fall through
-        // to the PIO loop below. Gated per-LUN by usb_in_dma_safe -- the
-        // flash LUN stays on PIO (see that field's note).
-        if (xfer_from_media && msd_luns[cbw_lun].usb_in_dma_safe
-                && (run >= maxPacket))
+        uint16_t chunk = (uint16_t)((available < maxPacket) ? available : maxPacket);
+        if ((uint32_t)chunk > data_bytes_remaining)
         {
-            uint16_t dmaLen = (uint16_t)(run - (run % maxPacket));
-            if (USB_BulkInWriteDma(src, dmaLen))
-            {
-                dma_inflight_bytes = dmaLen;
-                return;     // accounting deferred until the transfer retires
-            }
-            // Not eligible (e.g. a PIO packet still draining) -- fall
-            // through and make forward progress one packet at a time
+            chunk = (uint16_t)data_bytes_remaining;
         }
-
-        if (!msdWaitBulkInReady())
-        {
-            return;
-        }
-
-        uint16_t chunk = (uint16_t)((run < maxPacket) ? run : maxPacket);
 
         USB_BulkInWrite(src, chunk);
 
@@ -971,110 +870,21 @@ static void msdPumpDataIn(void)
     msdTrySendCsw();
 }
 
-// Writes every COMPLETE block staged in block_buf to the medium in one
-// backend call, then resets the staging offset. A trailing partial block
-// -- only reachable when the host's byte budget truncated the command
-// mid-block (case 7/13) -- is discarded rather than written, matching the
-// single-block behavior this replaced. xfer_lba advances over the staged
-// blocks whether or not they were written, so a failed command that keeps
-// draining stays positionally correct.
-static void msdFlushStagedWrite(void)
-{
-    uint16_t blocks = block_buf_off / MSD_BLOCK_SIZE;
-
-    if ((blocks > 0u) && (csw_status == MSD_CSW_STATUS_PASS))
-    {
-        if (!msd_luns[cbw_lun].writeSectors(xfer_lba, block_buf, blocks))
-        {
-            // Keep draining the host's remaining data (it won't stop
-            // mid-burst), but the command has failed
-            msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR, ASC_WRITE_ERROR, 0);
-            csw_status = MSD_CSW_STATUS_FAIL;
-        }
-        else
-        {
-            usb_msd_counters.blocks_written += blocks;
-        }
-    }
-
-    xfer_lba += blocks;
-    block_buf_off = 0;
-}
-
 static void msdPumpDataOut(void)
 {
-    uint16_t maxPacket = USB_GetBulkMaxPacket();
-
-    // Retire an in-flight RX DMA before touching the counters it deferred.
-    // The completion ISR has already invalidated block_buf's cache lines,
-    // so the bytes the engine wrote are visible to the flush below.
-    if (dma_inflight_bytes > 0u)
-    {
-        if (USB_BulkDmaBusy())
-        {
-            return;     // still running; the completion ISR re-pumps us
-        }
-
-        uint32_t moved = dma_inflight_bytes;
-        dma_inflight_bytes = 0;
-
-        if (USB_BulkDmaTakeError())
-        {
-            // Reception faulted -- abandon the command. The host will not
-            // stop mid-burst, but there is no correct data to keep.
-            msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR, ASC_WRITE_ERROR, 0);
-            csw_status = MSD_CSW_STATUS_FAIL;
-            USB_BulkStall(false);
-            data_bytes_remaining = 0;
-            block_buf_off = 0;
-            bot_state = MSD_STATE_SEND_CSW;
-            msdTrySendCsw();
-            return;
-        }
-
-        block_buf_off += (uint16_t)moved;
-        data_bytes_remaining -= moved;
-        data_residue -= moved;
-
-        if (block_buf_off >= MSD_STAGING_SIZE)
-        {
-            msdFlushStagedWrite();
-        }
-    }
-
     uint32_t budgetBytes = (uint32_t)USB_MSD_BLOCKS_PER_PASS * MSD_BLOCK_SIZE;
 
     while ((data_bytes_remaining > 0u) && (budgetBytes > 0u))
     {
-        uint32_t space = (uint32_t)(MSD_STAGING_SIZE - block_buf_off);
-        uint32_t run = (space < data_bytes_remaining) ? space : data_bytes_remaining;
-
-        // Fast path: receive a whole-packet run straight into the aligned
-        // staging buffer via DMA. Never armed for more than the host is
-        // known to send (run <= data_bytes_remaining), so no mid-transfer
-        // short packet can end it early. Sub-packet remainders and a
-        // FIFO-resident packet from before the engine took over fall
-        // through to PIO.
-        if (run >= maxPacket)
-        {
-            uint16_t dmaLen = (uint16_t)(run - (run % maxPacket));
-            if (USB_BulkOutReadDma(&block_buf[block_buf_off], dmaLen))
-            {
-                dma_inflight_bytes = dmaLen;
-                return;     // accounting deferred until the transfer retires
-            }
-        }
-
         if (!USB_BulkOutAvailable())
         {
-            return;     // next EP1RX event resumes us (staged bytes keep
-                        // their place in block_buf across passes)
+            return;     // next EP1RX event resumes us
         }
 
-        uint16_t space16 = (uint16_t)space;
-        uint16_t received = USB_BulkOutRead(&block_buf[block_buf_off], space16);
+        uint16_t space = (uint16_t)(MSD_BLOCK_SIZE - block_buf_off);
+        uint16_t received = USB_BulkOutRead(&block_buf[block_buf_off], space);
 
-        if (received > space16)
+        if (received > space)
         {
             // Host packet overflows the block framing -- phase error
             csw_status = MSD_CSW_STATUS_PHASE_ERROR;
@@ -1097,9 +907,25 @@ static void msdPumpDataOut(void)
         data_residue -= received;
         budgetBytes = (budgetBytes > received) ? (budgetBytes - received) : 0u;
 
-        if (block_buf_off >= MSD_STAGING_SIZE)
+        if (block_buf_off >= MSD_BLOCK_SIZE)
         {
-            msdFlushStagedWrite();
+            if (csw_status == MSD_CSW_STATUS_PASS)
+            {
+                if (!msd_luns[cbw_lun].writeSectors(xfer_lba, block_buf, 1))
+                {
+                    // Keep draining the host's remaining data (it won't
+                    // stop mid-burst), but the command has failed
+                    msdSetSense(cbw_lun, SENSE_KEY_MEDIUM_ERROR,
+                            ASC_WRITE_ERROR, 0);
+                    csw_status = MSD_CSW_STATUS_FAIL;
+                }
+                else
+                {
+                    usb_msd_counters.blocks_written++;
+                }
+            }
+            xfer_lba++;
+            block_buf_off = 0;
         }
     }
 
@@ -1107,11 +933,6 @@ static void msdPumpDataOut(void)
     {
         return;
     }
-
-    // Data phase complete -- commit whatever whole blocks are still staged
-    // (the common case for any transfer that isn't an exact multiple of
-    // the staging buffer)
-    msdFlushStagedWrite();
 
     // All expected data received. If the host budgeted more bytes than
     // the command consumes (case 11/13), refuse the excess.
@@ -1132,12 +953,10 @@ static void msdPumpDataOut(void)
 
 static void msdTrySendCsw(void)
 {
-    // The CSW rides the bulk IN pipe: wait out an in-flight packet or a
-    // DMA transfer still owning the endpoint, and if we stalled IN, wait
-    // for the host's CLEAR_FEATURE (USB_MSD_EndpointHaltCleared re-pumps
-    // us). The DMA check is belt-and-suspenders: the data phase always
-    // retires its transfer before advancing to SEND_CSW.
-    if (USB_BulkInStalled() || USB_BulkInBusy() || USB_BulkDmaBusy())
+    // The CSW rides the bulk IN pipe: wait out an in-flight packet, and
+    // if we stalled IN, wait for the host's CLEAR_FEATURE
+    // (USB_MSD_EndpointHaltCleared re-pumps us)
+    if (USB_BulkInStalled() || USB_BulkInBusy())
     {
         return;
     }
@@ -1239,19 +1058,8 @@ static void msdHandMediaBack(void)
     terminalTextAttributesReset();
 }
 
-// Stop any in-flight bulk DMA and drop the deferred byte accounting. Must
-// run before the transport is torn down under a transfer -- above all
-// before msdHandMediaBack(), which flushes/unmounts block_buf while the
-// engine could still be writing it.
-static void msdAbortActiveTransfer(void)
-{
-    USB_BulkDmaAbort();
-    dma_inflight_bytes = 0;
-}
-
 void USB_MSD_ConfiguredHook(bool configured)
 {
-    msdAbortActiveTransfer();
     bot_state = MSD_STATE_WAIT_CBW;
 
     if (configured)
@@ -1268,14 +1076,12 @@ void USB_MSD_BusResetHook(void)
 {
     // A bus reset deconfigures the device (host is about to re-enumerate
     // or gave up) -- transport dead until re-configured, media comes home
-    msdAbortActiveTransfer();
     bot_state = MSD_STATE_WAIT_CBW;
     msdHandMediaBack();
 }
 
 void USB_MSD_DetachHook(void)
 {
-    msdAbortActiveTransfer();
     bot_state = MSD_STATE_WAIT_CBW;
     msdHandMediaBack();
 }
