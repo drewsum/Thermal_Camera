@@ -31,6 +31,13 @@ void heartbeatServices(void) {
         // print new telemetry to terminal every second
         if (heartbeat_systick % 100 == 0) live_telemetry_print_request = 1;
 
+        // A refresh only rewrites the rows whose text changed, so anything
+        // else that prints to the terminal (an error message, a command
+        // response) leaves the page corrupted with no way to notice. Repaint
+        // it in full every 30s so it heals itself, at 1/30th the link traffic
+        // of the old repaint-every-second behaviour.
+        if (heartbeat_systick % 3000 == 0) live_telemetry_full_repaint = 1;
+
     }
 
     // Ask GUI_Tasks() to re-read the values shown on the GUI overlay (clock,

@@ -177,6 +177,10 @@ void main(void) {
     // live_telemetry_print_request is not persistent, so always clear it at boot
     live_telemetry_print_request = 0;
 
+    // live_telemetry_enable survives a soft reset, so the first refresh after
+    // one has to paint the whole page rather than diff against a stale shadow
+    live_telemetry_full_repaint = 1;
+
     printf("\r\nCause of most recent device reset: %s\r\n\r\n", getResetCauseString(reset_cause));
     terminalTextAttributesReset();
     
@@ -516,23 +520,27 @@ void main(void) {
         GUI_Tasks();
 
         if (live_telemetry_print_request && live_telemetry_enable) {
-            
-            // Clear the terminal
-            terminalClearScreen();
-            terminalSetCursorHome();
-            
-            terminalTextAttributesReset();
-            terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-            printf("Live system telemetry:\033[K\n\r\033[K");
-            
+
+            // Redraw the page in place rather than erasing the terminal and
+            // re-sending it: terminalLiveScreenBegin()/End() only push out the
+            // rows whose text actually changed, so a steady-state refresh
+            // costs tens of bytes instead of a couple of kB the port then
+            // spends a tenth of a second clocking out
+            terminalLiveScreenBegin(live_telemetry_full_repaint != 0);
+            live_telemetry_full_repaint = 0;
+
+            terminalRow(TERMINAL_SGR(CYAN_COLOR, BOLD_FONT), "Live system telemetry:");
+            terminalBlankRow();
+
             printCurrentTelemetry();
-            
-            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-            printf("Call 'Live Telemetry' command to disable\033[K\n\r");
-            terminalTextAttributesReset();
-            
+
+            terminalRow(TERMINAL_SGR(YELLOW_COLOR, NORMAL_FONT),
+                        "Call 'Live Telemetry' command to disable");
+
+            terminalLiveScreenEnd();
+
             live_telemetry_print_request = 0;
-            
+
         }
         
         // check to see if a clock fail has occurred and latch it

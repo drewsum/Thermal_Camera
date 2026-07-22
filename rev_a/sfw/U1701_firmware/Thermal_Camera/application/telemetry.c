@@ -11,134 +11,91 @@
 #include "i2c/i2c_master.h"
 #include "i2c/i2c_devices.h"
 
+// Colours this page is drawn in. Rendering goes through terminalRow() rather
+// than printf() so the same code serves both the one-shot dump and the live
+// telemetry screen, where only the rows that changed get sent -- see the live
+// screen section of terminal_control.h.
+#define TELEM_HEADER_SGR    TERMINAL_SGR(CYAN_COLOR, BOLD_FONT)
+#define TELEM_BODY_SGR      TERMINAL_SGR(CYAN_COLOR, NORMAL_FONT)
+#define TELEM_WARN_SGR      TERMINAL_SGR(YELLOW_COLOR, NORMAL_FONT)
+
+// Rails this page shows, in display order. Superset of telemPwrDest[] below:
+// POS2P8 has no INA231A populated, so its voltage/current/power stay at zero,
+// but its MCP9804 temperature is real and worth showing.
+#define TELEM_PRINT_RAIL_COUNT  6u
+
+static const struct {
+    const char * name;
+    volatile telemetry_parameters_ps_t * rail;
+} telemPrintRail[TELEM_PRINT_RAIL_COUNT] = {
+    { "+12V Power Input",       &telemetry.pos12     },
+    { "+3.0V Power Supply",     &telemetry.pos3p0    },
+    { "+1.8V Power Supply",     &telemetry.pos1p8    },
+    { "+2.8V Power Supply",     &telemetry.pos2p8    },
+    { "+1.2V Power Supply",     &telemetry.pos1p2    },
+    { "Backlight Power Supply", &telemetry.backlight },
+};
+
 // This prints all telemetry data in an easily digested format
 void printCurrentTelemetry(void) {
- 
-     // Print stuff off for POS12
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\t+12V Power Input:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.pos12.voltage,
-            telemetry.pos12.current,
-            telemetry.pos12.power,
-            telemetry.pos12.temperature);
 
-    // Print stuff off for POS3P0
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\t+3.0V Power Supply:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.pos3p0.voltage,
-            telemetry.pos3p0.current,
-            telemetry.pos3p0.power,
-            telemetry.pos3p0.temperature);
+    uint8_t i;
 
-    // Print stuff off for POS1P8
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\t+1.8V Power Supply:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.pos1p8.voltage,
-            telemetry.pos1p8.current,
-            telemetry.pos1p8.power,
-            telemetry.pos1p8.temperature);
+    for (i = 0; i < TELEM_PRINT_RAIL_COUNT; i++) {
 
-    // Print stuff off for POS2P8
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\t+2.8V Power Supply:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.pos2p8.voltage,
-            telemetry.pos2p8.current,
-            telemetry.pos2p8.power,
-            telemetry.pos2p8.temperature);
+        volatile telemetry_parameters_ps_t * rail = telemPrintRail[i].rail;
 
-    // Print stuff off for POS1P2
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\t+1.2V Power Supply:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.pos1p2.voltage,
-            telemetry.pos1p2.current,
-            telemetry.pos1p2.power,
-            telemetry.pos1p2.temperature);
+        terminalRow(TELEM_HEADER_SGR, "\t%s:", telemPrintRail[i].name);
+        terminalRow(TELEM_BODY_SGR, "\t\tVout: %.3fV\tIout: %.3fA\tPout: %.3fW",
+                    rail->voltage, rail->current, rail->power);
+        terminalRow(TELEM_BODY_SGR, "\t\tTemp: %.3fC", rail->temperature);
+        terminalBlankRow();
 
-    // Print stuff off for Backlight
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\tBacklight Power Supply:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tVout: %.3fV"
-           "\tIout: %.3fA"
-           "\tPout: %.3fW\033[K\r\n"
-           "\t\tTemp: %.3fC\033[K\r\n\033[K\r\n",
-            telemetry.backlight.voltage,
-            telemetry.backlight.current,
-            telemetry.backlight.power,
-            telemetry.backlight.temperature);
+    }
 
     // print off other random data points
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\tMiscellaneous Telemetry:\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("\t\tMCU Die Temperature: %.3fC\033[K\r\n", telemetry.mcu_die_temp);
-    printf("\t\tMCU ADC Reference Voltage: %.3fV\033[K\r\n", telemetry.adc_vref_voltage);
-    printf("\t\tMCU Battery Voltage: %.3fV\033[K\r\n", telemetry.mcu_battery_voltage);
-    printf("\t\tAmbient Temperature: %.3fC\033[K\r\n", telemetry.ambient_temperature);
+    terminalRow(TELEM_HEADER_SGR, "\tMiscellaneous Telemetry:");
+    terminalRow(TELEM_BODY_SGR, "\t\tMCU Die Temperature: %.3fC", telemetry.mcu_die_temp);
+    terminalRow(TELEM_BODY_SGR, "\t\tMCU ADC Reference Voltage: %.3fV", telemetry.adc_vref_voltage);
+    terminalRow(TELEM_BODY_SGR, "\t\tMCU Battery Voltage: %.3fV", telemetry.mcu_battery_voltage);
+    terminalRow(TELEM_BODY_SGR, "\t\tAmbient Temperature: %.3fC", telemetry.ambient_temperature);
 
     // print off battery fuel gauge telemetry
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, BOLD_FONT);
-    printf("\tBattery (BQ27441 Fuel Gauge):\033[K\r\n");
-    terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    terminalRow(TELEM_HEADER_SGR, "\tBattery (BQ27441 Fuel Gauge):");
     if (telemetry.battery.present) {
-        printf("\t\tVoltage: %.3fV"
-               "\tCurrent: %.3fA"
-               "\tTemp: %.3fC\033[K\r\n"
-               "\t\tSOC: %.1f%%"
-               "\tSOH: %.1f%%"
-               "\tRemaining: %.1f / %.1f mAh\033[K\r\n"
-               "\t\tStatus: %s%s%s%s%s\033[K\r\n\033[K\r\n",
-               telemetry.battery.voltage,
-               telemetry.battery.current,
-               telemetry.battery.temperature,
-               telemetry.battery.state_of_charge,
-               telemetry.battery.state_of_health,
-               telemetry.battery.remaining_capacity,
-               telemetry.battery.full_charge_capacity,
-               telemetry.battery.charging       ? "CHARGING "      : "",
-               telemetry.battery.discharging    ? "DISCHARGING "   : "",
-               telemetry.battery.fully_charged  ? "FULLY-CHARGED " : "",
-               telemetry.battery.over_temperature  ? "OVER-TEMP "  : "",
-               telemetry.battery.under_temperature ? "UNDER-TEMP " : "");
-        if (telemetry.battery.low_battery) {
-            terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-            printf("\t\tLOW BATTERY\033[K\r\n");
-            terminalTextAttributes(CYAN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        }
+
+        terminalRow(TELEM_BODY_SGR, "\t\tVoltage: %.3fV\tCurrent: %.3fA\tTemp: %.3fC",
+                    telemetry.battery.voltage,
+                    telemetry.battery.current,
+                    telemetry.battery.temperature);
+        terminalRow(TELEM_BODY_SGR, "\t\tSOC: %.1f%%\tSOH: %.1f%%\tRemaining: %.1f / %.1f mAh",
+                    telemetry.battery.state_of_charge,
+                    telemetry.battery.state_of_health,
+                    telemetry.battery.remaining_capacity,
+                    telemetry.battery.full_charge_capacity);
+        terminalRow(TELEM_BODY_SGR, "\t\tStatus: %s%s%s%s%s",
+                    telemetry.battery.charging          ? "CHARGING "      : "",
+                    telemetry.battery.discharging       ? "DISCHARGING "   : "",
+                    telemetry.battery.fully_charged     ? "FULLY-CHARGED " : "",
+                    telemetry.battery.over_temperature  ? "OVER-TEMP "     : "",
+                    telemetry.battery.under_temperature ? "UNDER-TEMP "    : "");
+
+        // Held as its own row (blank when the gauge isn't flagging SOCF) so
+        // that going in and out of low battery doesn't shift every row below
+        // it and force the whole rest of the page to be resent
+        terminalRow(TELEM_WARN_SGR, "%s", telemetry.battery.low_battery ? "\t\tLOW BATTERY" : "");
+
     } else {
-        printf("\t\tNo battery detected at boot\033[K\r\n");
+
+        terminalRow(TELEM_BODY_SGR, "\t\tNo battery detected at boot");
+
     }
-    printf("\033[K\r\n");
+    terminalBlankRow();
 
     // print out state of PGOOD pins
     printPGOODStatus();
 
-    printf("\r\n");
+    terminalBlankRow();
 
     terminalTextAttributesReset();
 

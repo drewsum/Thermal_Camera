@@ -14,29 +14,25 @@
 // this function prints the shared battery control/status GPIO signals
 void printBatteryControlPins(void) {
 
-    if (nBATT_FLT_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager is %s\n\r", nBATT_FLT_PIN ? "not faulted" : "faulted");
+    // The MAX8903's status outputs are all active low, so "ok" is the pin
+    // reading low for everything down to BATT_IUSB_PIN
+    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_FLT_PIN), "    Battery Manager is %s",
+                nBATT_FLT_PIN ? "not faulted" : "faulted");
 
-    if (nBATT_DOK_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager DC Input is %s\n\r", nBATT_DOK_PIN ? "not stable" : "stable");
+    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_DOK_PIN), "    Battery Manager DC Input is %s",
+                nBATT_DOK_PIN ? "not stable" : "stable");
 
-    if (nBATT_UOK_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager USB Input is %s\n\r", nBATT_UOK_PIN ? "not stable" : "stable");
+    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_UOK_PIN), "    Battery Manager USB Input is %s",
+                nBATT_UOK_PIN ? "not stable" : "stable");
 
-    if (nBATT_CHG_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager is %s battery\n\r", nBATT_CHG_PIN ? "not charging" : "charging");
+    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_CHG_PIN), "    Battery Manager is %s battery",
+                nBATT_CHG_PIN ? "not charging" : "charging");
 
-    if (nBATT_CEN_PIN) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager charging is %s\n\r", nBATT_CEN_PIN ? "not enabled" : "enabled");
+    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_CEN_PIN), "    Battery Manager charging is %s",
+                nBATT_CEN_PIN ? "not enabled" : "enabled");
 
-    if (BATT_IUSB_PIN) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Battery Manager USB Current is %s\n\r", BATT_IUSB_PIN ? "500mA" : "100mA");
+    terminalRow(TERMINAL_SGR_OK_BAD(BATT_IUSB_PIN), "    Battery Manager USB Current is %s",
+                BATT_IUSB_PIN ? "500mA" : "100mA");
 
     // BATT_LOWBATT_PIN is NOT a MAX8903 signal despite living in this same
     // pin block -- tracing the schematic shows it's driven by the BQ27441
@@ -48,10 +44,9 @@ void printBatteryControlPins(void) {
     // flag in printBatteryStatus() -- one is a hardware GPIO mirror of the
     // SOC1 threshold, the other is polled over I2C against the SOCF
     // threshold; they can disagree.
-    if (BATT_LOWBATT_PIN) terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    else terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Fuel Gauge Low-Battery Indicator (GPOUT) reports %s\n\r",
-           BATT_LOWBATT_PIN ? "battery not low" : "battery LOW");
+    terminalRow(TERMINAL_SGR_OK_BAD(BATT_LOWBATT_PIN),
+                "    Fuel Gauge Low-Battery Indicator (GPOUT) reports %s",
+                BATT_LOWBATT_PIN ? "battery not low" : "battery LOW");
 }
 
 // this function prints the "Battery" Platform Status? section

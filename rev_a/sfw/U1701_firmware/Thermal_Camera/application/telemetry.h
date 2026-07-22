@@ -82,6 +82,13 @@ volatile __attribute__((coherent)) struct telemetry_s {
 volatile __attribute__((coherent)) uint8_t live_telemetry_enable;
 volatile __attribute__((coherent)) uint8_t live_telemetry_print_request;
 
+// Live telemetry refreshes redraw in place, sending only the rows whose text
+// changed since the last refresh (see the live screen section of
+// terminal_control.h). Set this to have the next refresh clear the terminal
+// and repaint every row instead -- needed whenever the screen is first drawn,
+// or after anything else has printed over it.
+volatile __attribute__((coherent)) uint8_t live_telemetry_full_repaint;
+
 // This prints all telemetry data in an easily digested format
 void printCurrentTelemetry(void);
 

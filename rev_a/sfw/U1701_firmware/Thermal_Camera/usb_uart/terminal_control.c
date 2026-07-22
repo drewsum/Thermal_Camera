@@ -1,6 +1,8 @@
 
 #include <xc.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 #include "usb_uart/terminal_control.h"
 
@@ -166,7 +168,132 @@ void terminalPrintTestMessage(void) {
 
 }// this function sets the window title of remote terminal
 void terminalSetTitle(char * title_string) {
- 
+
     printf("\033]0;%s\007", title_string);
-    
+
+}
+
+// *****************************************************************************
+// Section: Live screen (differential redraw)
+// *****************************************************************************
+// See the header for what this is for. The shadow holds what the terminal is
+// currently showing on each row, including the row's leading SGR escape, so a
+// row can be skipped entirely whenever its rendered text is byte-identical to
+// last refresh.
+
+// Rows/columns the live screen tracks. Rows past TERMINAL_LIVE_ROWS still get
+// printed, they just aren't diffed; text past TERMINAL_LIVE_COLS is truncated.
+#define TERMINAL_LIVE_ROWS  64
+#define TERMINAL_LIVE_COLS  112
+
+static char terminal_live_shadow[TERMINAL_LIVE_ROWS][TERMINAL_LIVE_COLS];
+
+// 1-based row terminalRow() will compose next; 0 means "not inside a live
+// screen", which puts terminalRow() into plain scrolling-output mode
+static unsigned int terminal_live_row;
+
+// how many rows the previous refresh occupied, so a page that got shorter can
+// have its leftover rows erased
+static unsigned int terminal_live_prev_rows;
+
+static bool terminal_live_full_repaint;
+
+void terminalLiveScreenBegin(bool full_repaint) {
+
+    terminal_live_full_repaint = full_repaint;
+    terminal_live_row = 1;
+
+    if (full_repaint) {
+
+        // Nothing on screen can be trusted, so drop the shadow and start over.
+        // This is also the only path that erases the terminal -- ordinary
+        // refreshes overwrite in place precisely so they don't have to.
+        memset(terminal_live_shadow, 0, sizeof(terminal_live_shadow));
+        terminal_live_prev_rows = 0;
+        terminalClearScreen();
+
+    }
+
+}
+
+void terminalRow(const char * sgr, const char * fmt, ...) {
+
+    char line[TERMINAL_LIVE_COLS];
+    va_list args;
+    int used;
+
+    // The SGR escape is part of the row text rather than a separate print, so
+    // that a row which only changed colour still compares unequal below
+    used = snprintf(line, sizeof(line), "%s", sgr);
+    if (used < 0 || (unsigned int) used >= sizeof(line)) used = sizeof(line) - 1;
+
+    va_start(args, fmt);
+    vsnprintf(line + used, sizeof(line) - used, fmt, args);
+    va_end(args);
+
+    // Called outside a live screen: behave like an ordinary printf() line
+    if (terminal_live_row == 0) {
+
+        printf("%s\r\n", line);
+        return;
+
+    }
+
+    if (terminal_live_row <= TERMINAL_LIVE_ROWS) {
+
+        char * shadow = terminal_live_shadow[terminal_live_row - 1];
+
+        if (terminal_live_full_repaint || strcmp(line, shadow) != 0) {
+
+            strcpy(shadow, line);
+
+            // Address the row absolutely rather than relying on where the
+            // cursor happens to be -- rows that didn't change aren't printed
+            // at all, so the cursor doesn't walk down the page on its own.
+            // The trailing erase-to-end-of-line trims whatever a longer
+            // previous version of this row left behind.
+            printf("\033[%u;1H%s\033[K", terminal_live_row, line);
+
+        }
+
+    } else {
+
+        printf("%s\r\n", line);
+
+    }
+
+    terminal_live_row++;
+
+}
+
+void terminalBlankRow(void) {
+
+    terminalRow("", "%s", "");
+
+}
+
+void terminalLiveScreenEnd(void) {
+
+    unsigned int row;
+
+    // Erase rows this refresh didn't use but the previous one did (a status
+    // line that stopped applying, say), otherwise they'd sit there stale
+    for (row = terminal_live_row;
+         row <= terminal_live_prev_rows && row <= TERMINAL_LIVE_ROWS;
+         row++) {
+
+        printf("\033[%u;1H\033[K", row);
+        terminal_live_shadow[row - 1][0] = '\0';
+
+    }
+
+    terminal_live_prev_rows = terminal_live_row - 1;
+
+    // Park the cursor below the page with default attributes, so anything
+    // printed outside the live screen lands somewhere sane and uncoloured
+    printf("\033[%u;1H\033[0;37;40m", terminal_live_row);
+
+    terminal_live_row = 0;
+    terminal_live_full_repaint = false;
+
 }

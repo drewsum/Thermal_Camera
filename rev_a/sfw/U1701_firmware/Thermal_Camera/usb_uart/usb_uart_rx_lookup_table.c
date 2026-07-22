@@ -555,6 +555,10 @@ USB_UART_COMMAND(liveTelemetryCommand, "Live Telemetry", "Toggles live updates o
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
         printf("Enabling Live Telemetry\n\r");
         live_telemetry_enable = 1;
+
+        // Nothing is on screen yet, so the first refresh can't diff against
+        // whatever the shadow was left holding by the previous session
+        live_telemetry_full_repaint = 1;
     }
     else {
         terminalClearScreen();
