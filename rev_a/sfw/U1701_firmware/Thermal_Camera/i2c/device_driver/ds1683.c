@@ -144,6 +144,7 @@ void DS1683_PrintStatus(uint16_t address)
 {
     uint8_t command;
     uint8_t config;
+    uint8_t rawStatus;
     DS1683_STATUS status;
     uint32_t seconds;
     uint16_t eventCount;
@@ -168,17 +169,25 @@ void DS1683_PrintStatus(uint16_t address)
     if (I2C_ReadRegister(address, DS1683_REG_CONFIG, &config, 1))
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    Configuration register: 0x%02X\n\r", config);
+        printf("    Configuration register: 0x%02X (%s%s%s)\n\r", config,
+               (config & DS1683_CONFIG_ETC_ALRM_EN)   ? "ETC_ALRM_EN "   : "",
+               (config & DS1683_CONFIG_EVENT_ALRM_EN) ? "EVENT_ALRM_EN " : "",
+               (config & DS1683_CONFIG_ALRM_POL)      ? "ALRM_POL_HIGH " : "");
         printf("        ETC alarm:      %s\n\r", (config & DS1683_CONFIG_ETC_ALRM_EN)   ? "enabled" : "disabled");
         printf("        Event alarm:    %s\n\r", (config & DS1683_CONFIG_EVENT_ALRM_EN) ? "enabled" : "disabled");
         printf("        Alarm polarity: active %s\n\r", (config & DS1683_CONFIG_ALRM_POL) ? "high" : "low");
     }
 
-    if (DS1683_ReadStatus(address, &status))
+    if (I2C_ReadRegister(address, DS1683_REG_STATUS, &rawStatus, 1) &&
+        DS1683_ReadStatus(address, &status))
     {
         bool anyAlarm = status.etcAlarm || status.eventAlarm;
 
         terminalTextAttributes(anyAlarm ? YELLOW_COLOR : GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Status register: 0x%02X (%s%s%s)\n\r", rawStatus,
+               (rawStatus & DS1683_STATUS_ETC_AF)   ? "ETC_AF "   : "",
+               (rawStatus & DS1683_STATUS_EVENT_AF) ? "EVENT_AF " : "",
+               (rawStatus & DS1683_STATUS_EVENT)    ? "EVENT_HIGH " : "");
         printf("    ETC alarm: %s, Event alarm: %s, EVENT pin: %s\n\r",
                status.etcAlarm   ? "ACTIVE" : "clear",
                status.eventAlarm ? "ACTIVE" : "clear",

@@ -44,6 +44,7 @@ typedef enum
     I2C_STATE_READ_BYTE,
     I2C_STATE_WAIT_ACK_COMPLETE,
     I2C_STATE_WAIT_STOP_CONDITION_COMPLETE,
+    I2C_STATE_WAIT_BUS_FREE,
     I2C_STATE_IDLE,
 } I2C_STATE;
 
@@ -95,6 +96,30 @@ static volatile uint8_t i2cQueueTail;   // next free slot
 // CP0 count captured when the head transaction started, for I2C_Tasks()'s
 // wedged-transfer watchdog.
 static volatile uint32_t i2cTransferStartTick;
+
+// CP0 count captured when the last stop condition completed, for the
+// per-device bus-free timing below.
+static volatile uint32_t i2cLastStopTick;
+
+// Per-device minimum bus-free time (t_BUF), registered by address via
+// I2C_SetDeviceBusFreeTime(). The I2C spec's own t_BUF (4.7us in Standard
+// mode) is comfortably satisfied just by the instruction overhead between
+// transactions, so this driver never needed to think about it -- but some
+// devices demand far more than spec and silently misframe if they don't get
+// it. The BQ27441-G1 fuel gauge is one: TI specifies t(BUF) >= 66us between
+// all packets addressed to it, and below that it merges consecutive packets
+// into one, taking the next packet's register-address byte as write data
+// (measured on this board: reads of its block-data window came back one
+// byte late until ~50us of gap was inserted).
+//
+// Devices with no registered requirement are unaffected -- they still chain
+// straight through inside the ISR as before.
+#define I2C_BUS_FREE_DEVICE_MAX   4u
+#define I2C_BUS_FREE_TICKS(us)    ((uint32_t)(((uint64_t)(SYSCLK_INT / 2u) * (us)) / 1000000u))
+
+static uint16_t i2cBusFreeAddress[I2C_BUS_FREE_DEVICE_MAX];
+static uint32_t i2cBusFreeTicks[I2C_BUS_FREE_DEVICE_MAX];
+static uint8_t  i2cBusFreeCount;
 
 // Error latched by the most recently completed transaction (diagnostics /
 // I2C_ErrorGet(); per-transaction code should use its callback's error).
@@ -181,6 +206,44 @@ static void I2C_EngineStart(void)
     I2C1CONbits.SEN = 1;
     enableInterrupt(i2c1_host_event);
     enableInterrupt(i2c1_bus_collision_event);
+}
+
+// Returns the bus-free time `address` requires, in CP0 ticks, or 0 if it
+// has no registered requirement.
+static uint32_t I2C_BusFreeTicksFor(uint16_t address)
+{
+    uint8_t i;
+
+    for (i = 0; i < i2cBusFreeCount; i++)
+    {
+        if (i2cBusFreeAddress[i] == address)
+        {
+            return i2cBusFreeTicks[i];
+        }
+    }
+
+    return 0;
+}
+
+// Starts the queue head, or parks the engine in I2C_STATE_WAIT_BUS_FREE if
+// the head's device still owes bus-free time. Parking (rather than busy-
+// waiting here) matters because two of the three callers run in the I2C ISR
+// at IPL7: I2C_Tasks() picks a parked transaction back up from the main
+// loop once the gap has elapsed. The caller must guarantee the engine is not
+// mid-transfer, the queue is non-empty, and the I2C interrupts are masked.
+static void I2C_StartOrDeferHead(void)
+{
+    uint32_t required = I2C_BusFreeTicksFor(i2cQueue[i2cQueueHead % I2C_QUEUE_DEPTH].address);
+
+    if ((required != 0) && ((uint32_t)(_CP0_GET_COUNT() - i2cLastStopTick) < required))
+    {
+        i2cObj.state = I2C_STATE_WAIT_BUS_FREE;
+        disableInterrupt(i2c1_host_event);
+        disableInterrupt(i2c1_bus_collision_event);
+        return;
+    }
+
+    I2C_EngineStart();   /* re-enables the I2C interrupts */
 }
 
 // Retires the head transaction with `error` and fires its callback. Must run
@@ -375,13 +438,19 @@ static void I2C_TransferStateMachine(void)
             break;
 
         case I2C_STATE_WAIT_STOP_CONDITION_COMPLETE:
+            /* Timestamp the stop before retiring, so the bus-free window is
+               measured from the stop condition itself rather than from
+               however long the completion callback happens to run */
+            i2cLastStopTick = _CP0_GET_COUNT();
+
             I2C_RetireHeadTransaction(i2cObj.error);
 
             if (i2cQueueTail != i2cQueueHead)
             {
                 /* Stop condition finished so the bus is idle: chain straight
-                   into the next queued transaction without leaving the ISR */
-                I2C_EngineStart();
+                   into the next queued transaction without leaving the ISR,
+                   unless that transaction's device owes bus-free time */
+                I2C_StartOrDeferHead();
             }
             else
             {
@@ -459,9 +528,14 @@ static bool I2C_Enqueue(uint16_t address, const uint8_t *wdata, size_t wlength,
     {
         if (i2cQueueTail != i2cQueueHead)
         {
-            I2C_EngineStart();   /* re-enables the I2C interrupts */
+            I2C_StartOrDeferHead();   /* re-enables the I2C interrupts, or parks */
         }
         /* else: nothing queued; interrupts stay masked until the next start */
+    }
+    else if (i2cObj.state == I2C_STATE_WAIT_BUS_FREE)
+    {
+        /* Parked waiting out a device's bus-free time -- leave it parked with
+           the interrupts masked; I2C_Tasks() starts it when the gap elapses */
     }
     else
     {
@@ -524,7 +598,21 @@ void I2C_Tasks(void)
     disableInterrupt(i2c1_host_event);
     disableInterrupt(i2c1_bus_collision_event);
 
-    if (i2cObj.state != I2C_STATE_IDLE)
+    if (i2cObj.state == I2C_STATE_WAIT_BUS_FREE)
+    {
+        /* Parked waiting out a device's bus-free time. Nothing is on the bus,
+           so the wedged-transfer watchdog below must not see this state --
+           start the transaction once the gap has elapsed. */
+        if (i2cQueueTail != i2cQueueHead)
+        {
+            I2C_StartOrDeferHead();
+        }
+        else
+        {
+            i2cObj.state = I2C_STATE_IDLE;
+        }
+    }
+    else if (i2cObj.state != I2C_STATE_IDLE)
     {
         if ((uint32_t)(_CP0_GET_COUNT() - i2cTransferStartTick) >= I2C_TIMEOUT_TICKS)
         {
@@ -547,9 +635,34 @@ void I2C_Tasks(void)
     else if (i2cQueueTail != i2cQueueHead)
     {
         /* Engine parked after a collision/timeout with work still queued */
-        I2C_EngineStart();
+        I2C_StartOrDeferHead();
     }
     /* else: idle with an empty queue; interrupts stay masked */
+}
+
+bool I2C_SetDeviceBusFreeTime(uint16_t address, uint32_t microseconds)
+{
+    uint8_t i;
+
+    for (i = 0; i < i2cBusFreeCount; i++)
+    {
+        if (i2cBusFreeAddress[i] == address)
+        {
+            i2cBusFreeTicks[i] = I2C_BUS_FREE_TICKS(microseconds);
+            return true;
+        }
+    }
+
+    if (i2cBusFreeCount >= I2C_BUS_FREE_DEVICE_MAX)
+    {
+        return false;
+    }
+
+    i2cBusFreeAddress[i2cBusFreeCount] = address;
+    i2cBusFreeTicks[i2cBusFreeCount]   = I2C_BUS_FREE_TICKS(microseconds);
+    i2cBusFreeCount++;
+
+    return true;
 }
 
 bool I2C_TransferSetup(I2C_TRANSFER_SETUP *setup, uint32_t srcClkFreq)

@@ -24,6 +24,16 @@
 #define GT911_REG_PRODUCT_ID           0x8140u   // 4 bytes: ASCII "911" + 0x00
 #define GT911_REG_CONFIG_VERSION       0x8047u   // 1 byte
 #define GT911_REG_FIRMWARE_VERSION     0x8144u   // 2 bytes
+#define GT911_REG_COORD_STATUS         0x814Eu   // 1 byte, touch/buffer status
+
+// Coordinate status register (0x814E) bitfield. The controller sets
+// BUFFER_READY when a fresh touch report is available and the host clears
+// the register to acknowledge it; the low nibble is the number of active
+// touch points.
+#define GT911_STATUS_BUFFER_READY      0x80u
+#define GT911_STATUS_LARGE_DETECT      0x40u
+#define GT911_STATUS_HAVE_KEY          0x10u
+#define GT911_STATUS_POINT_COUNT_MASK  0x0Fu
 
 static const uint8_t GT911_EXPECTED_PRODUCT_ID[4] = { '9', '1', '1', 0x00u };
 
@@ -116,6 +126,7 @@ void GT911_PrintStatus(uint16_t address)
     uint8_t productId[4];
     uint8_t configVersion;
     uint8_t firmwareVersion[2];
+    uint8_t coordStatus;
     bool gotProductId, gotConfigVersion, gotFirmwareVersion;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
@@ -148,6 +159,20 @@ void GT911_PrintStatus(uint16_t address)
 
     if (gotFirmwareVersion) printf("    Firmware Version: 0x%02X%02X\n\r", firmwareVersion[0], firmwareVersion[1]);
     else printf("    Firmware Version: read failed\n\r");
+
+    if (GT911_ReadRegister16(address, GT911_REG_COORD_STATUS, &coordStatus, 1))
+    {
+        printf("    Coordinate Status: 0x%02X (%s%s%s%u point%s)\n\r", coordStatus,
+               (coordStatus & GT911_STATUS_BUFFER_READY) ? "BUFFER_READY " : "",
+               (coordStatus & GT911_STATUS_LARGE_DETECT) ? "LARGE_DETECT " : "",
+               (coordStatus & GT911_STATUS_HAVE_KEY)     ? "HAVE_KEY "     : "",
+               (unsigned)(coordStatus & GT911_STATUS_POINT_COUNT_MASK),
+               ((coordStatus & GT911_STATUS_POINT_COUNT_MASK) == 1u) ? "" : "s");
+    }
+    else
+    {
+        printf("    Coordinate Status: read failed\n\r");
+    }
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    LCD_CTP_RESET_PIN (RJ9): %s\n\r", LCD_CTP_RESET_PIN ? "high (released)" : "low (in reset)");

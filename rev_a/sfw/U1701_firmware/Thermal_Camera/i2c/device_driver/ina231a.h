@@ -102,6 +102,14 @@ float INA231A_DecodePowerRaw(const uint8_t raw[2], float currentLSB);
 // to the terminal. Current/Power are shown as raw register codes (not
 // converted to amps/watts) since this call has no per-device Current_LSB
 // (from INA231A_Configure()) to convert them with.
+// Puts the monitor into power-down (MODE = 0) or back into its normal
+// shunt+bus continuous mode. Power-down stops conversions and drops the
+// part to a few uA while leaving the I2C interface and the Calibration
+// register intact, so resuming does not require INA231A_Configure() again.
+// Used by enterLowPowerSleep() (application/power_saving.c) via
+// I2CDevices_EnterLowPower().
+bool INA231A_SetPowerDown(uint16_t address, bool powerDown);
+
 void INA231A_PrintStatus(uint16_t address);
 
 #ifdef __cplusplus

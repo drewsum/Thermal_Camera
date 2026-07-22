@@ -14,6 +14,9 @@
 // This function executes actions every call of the heartbeat timer, and is used as an easy interface to do some action every second
 void heartbeatServices(void) {
 
+    // get new battery fuel gauge data every 200ms
+    if ((heartbeat_systick + 20) % 20 == 0) battery_data_request = 1;
+
     if (live_telemetry_enable) {
 
         // get new temperature telemetry data every 200ms
@@ -21,9 +24,6 @@ void heartbeatServices(void) {
 
         // get new power monitor telemetry data every 200ms
         if ((heartbeat_systick + 10) % 20 == 0) power_monitor_data_request = 1;
-
-        // get new battery fuel gauge telemetry data every 200ms
-        if ((heartbeat_systick + 0) % 20 == 0) battery_data_request = 1;
 
         /* Trigger an ADC conversion scan */
         if ((heartbeat_systick + 15) % 20 == 0) ADCCON3bits.GSWTRG = 1;

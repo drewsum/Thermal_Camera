@@ -35,7 +35,21 @@
 // CONFIG register (0x01) bit fields used by this driver; the rest (alert
 // pin behavior, hysteresis, register locks) are left at their power-on
 // defaults since nothing here needs to touch them.
+// Configuration register (0x01) bitfield. Only SHDN is acted on by this
+// driver; the rest are decoded by MCP9804_PrintStatus() so the register can
+// be read at a glance rather than as a bare hex word.
+#define MCP9804_CONFIG_ALERT_MODE   0x0001u  // 0 = comparator, 1 = interrupt
+#define MCP9804_CONFIG_ALERT_POL    0x0002u  // 0 = active low, 1 = active high
+#define MCP9804_CONFIG_ALERT_SEL    0x0004u  // 1 = alert on T_CRIT only
+#define MCP9804_CONFIG_ALERT_EN     0x0008u  // alert output enable
+#define MCP9804_CONFIG_ALERT_STAT   0x0010u  // alert output currently asserted
+#define MCP9804_CONFIG_WIN_LOCK     0x0040u  // T_UPPER/T_LOWER locked
+#define MCP9804_CONFIG_CRIT_LOCK    0x0080u  // T_CRIT locked
 #define MCP9804_CONFIG_SHDN       0x0100u
+#define MCP9804_CONFIG_THYST_MASK   0x0600u  // hysteresis, see MCP9804_HysteresisName()
+
+// Resolution register (0x08), low 2 bits
+#define MCP9804_RESOLUTION_MASK     0x0003u
 
 // *****************************************************************************
 // Section: Register Encode/Decode Helpers
@@ -224,11 +238,36 @@ bool MCP9804_SetShutdown(uint16_t address, bool shutdown)
     return MCP9804_WriteReg16(address, MCP9804_REG_CONFIG, config);
 }
 
+// Names for the two multi-bit fields the status print decodes, kept next to
+// the print rather than exported -- nothing else in the driver needs them.
+static const char* MCP9804_HysteresisName(uint16_t config)
+{
+    switch (config & MCP9804_CONFIG_THYST_MASK)
+    {
+        case 0x0000u: return "0 C (disabled)";
+        case 0x0200u: return "1.5 C";
+        case 0x0400u: return "3.0 C";
+        default:      return "6.0 C";
+    }
+}
+
+static const char* MCP9804_ResolutionName(uint16_t resolution)
+{
+    switch (resolution & MCP9804_RESOLUTION_MASK)
+    {
+        case 0x0000u: return "0.5 C, 30 ms";
+        case 0x0001u: return "0.25 C, 65 ms";
+        case 0x0002u: return "0.125 C, 130 ms";
+        default:      return "0.0625 C, 250 ms (power-on default)";
+    }
+}
+
 void MCP9804_PrintStatus(uint16_t address)
 {
     uint16_t manufacturerId;
     uint16_t deviceId;
     uint16_t config;
+    uint16_t resolution;
     float celsius;
     float limit;
     MCP9804_ALERT_STATUS status;
@@ -256,7 +295,24 @@ void MCP9804_PrintStatus(uint16_t address)
     if (MCP9804_ReadReg16(address, MCP9804_REG_CONFIG, &config))
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    Shutdown mode: %s\n\r", (config & MCP9804_CONFIG_SHDN) ? "enabled" : "disabled");
+        printf("    Configuration register: 0x%04X (%s%s%s%s%s%s%s%s)\n\r", config,
+               (config & MCP9804_CONFIG_SHDN)       ? "SHDN "             : "",
+               (config & MCP9804_CONFIG_CRIT_LOCK)  ? "CRIT_LOCK "        : "",
+               (config & MCP9804_CONFIG_WIN_LOCK)   ? "WIN_LOCK "         : "",
+               (config & MCP9804_CONFIG_ALERT_STAT) ? "ALERT_ASSERTED "   : "",
+               (config & MCP9804_CONFIG_ALERT_EN)   ? "ALERT_EN "         : "",
+               (config & MCP9804_CONFIG_ALERT_SEL)  ? "ALERT_CRIT_ONLY "  : "",
+               (config & MCP9804_CONFIG_ALERT_POL)  ? "ALERT_ACTIVE_HIGH ": "",
+               (config & MCP9804_CONFIG_ALERT_MODE) ? "ALERT_INTERRUPT "  : "");
+        printf("        Shutdown mode: %s, Hysteresis: %s\n\r",
+               (config & MCP9804_CONFIG_SHDN) ? "enabled" : "disabled",
+               MCP9804_HysteresisName(config));
+    }
+
+    if (MCP9804_ReadReg16(address, MCP9804_REG_RESOLUTION, &resolution))
+    {
+        printf("    Resolution register: 0x%04X (%s)\n\r", resolution,
+               MCP9804_ResolutionName(resolution));
     }
 
     if (MCP9804_ReadTempReg(address, MCP9804_REG_T_UPPER, &limit))

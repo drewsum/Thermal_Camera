@@ -16,8 +16,8 @@ void printBatteryControlPins(void) {
 
     // The MAX8903's status outputs are all active low, so "ok" is the pin
     // reading low for everything down to BATT_IUSB_PIN
-    terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_FLT_PIN), "    Battery Manager is %s",
-                nBATT_FLT_PIN ? "not faulted" : "faulted");
+    terminalRow(TERMINAL_SGR_OK_BAD(nBATT_FLT_PIN), "    Battery Manager is %s",
+                !nBATT_FLT_PIN ? "faulted" : "not faulted");
 
     terminalRow(TERMINAL_SGR_OK_BAD(!nBATT_DOK_PIN), "    Battery Manager DC Input is %s",
                 nBATT_DOK_PIN ? "not stable" : "stable");

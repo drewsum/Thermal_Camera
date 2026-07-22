@@ -77,9 +77,17 @@ USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all suppo
 }
 
 USB_UART_COMMAND(resetCommand, "Reset", "Executes an MCU software reset") {
- 
+
     deviceReset();
-    
+
+}
+
+USB_UART_COMMAND(sleepCommand, "Sleep", "Enters low-power sleep so the fuel gauge can take an open-circuit reading (press RESET to exit)") {
+
+    // Everything about this lives in application/power_saving.c -- see
+    // enterLowPowerSleep() for what gets shut down and why. Does not return.
+    enterLowPowerSleep();
+
 }
 
 USB_UART_COMMAND(clearCommand, "Clear Screen", "Clears the serial port terminal") {

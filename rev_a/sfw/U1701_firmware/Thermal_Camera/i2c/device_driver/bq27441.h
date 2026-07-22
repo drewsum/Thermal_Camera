@@ -62,11 +62,42 @@ typedef struct
     bool configUpdateMode;     // Flags().CFGUPMODE -- diagnostic only, should read false in normal operation
 } BQ27441_FLAG_STATUS;
 
+// Minimum bus-free time (t_BUF) this part requires between consecutive I2C
+// packets addressed to it. The datasheet specifies >= 66us; below that the
+// gauge merges packets and takes the next one's register-address byte as
+// write data, which shows up as reads returning one byte late (and, on the
+// block-data window, as that address byte overwriting the first byte of the
+// block). A few us of margin on top. Register it with
+// I2C_SetDeviceBusFreeTime() before the first transfer -- i2c_devices.c
+// does this in I2CDevices_Initialize().
+#define BQ27441_BUS_FREE_TIME_US   70u
+
 // Confirms a device at `address` responds and identifies as a BQ27441
 // (Control() DEVICE_TYPE subcommand returns 0x0421). Mirrors
 // MCP9804_Verify()'s manufacturer/device-ID check, but via a Control()
 // subcommand round-trip instead of a plain register read.
 bool BQ27441_Verify(uint16_t address);
+
+// Describes the cell fitted to the board, written into the gauge's data
+// memory (subclass 82 "State") by BQ27441_Configure(). Impedance Track
+// gauges every prediction against these, so leaving them at the factory
+// defaults -- which describe a 1200mAh cell -- makes State of Charge a
+// percentage of the wrong pack no matter what is actually installed.
+//
+//   designCapacity_mAh  the cell's rated capacity
+//   designEnergy_mWh    designCapacity_mAh * 3.7 (nominal cell voltage)
+//   terminateVoltage_mV the voltage the system can no longer run at, i.e.
+//                       where SOC should read 0%
+//   taperRate           designCapacity_mAh / (0.1 * charger taper current),
+//                       where taper current is the charger's termination
+//                       threshold in mA
+typedef struct
+{
+    uint16_t designCapacity_mAh;
+    uint16_t designEnergy_mWh;
+    uint16_t terminateVoltage_mV;
+    uint16_t taperRate;
+} BQ27441_BATTERY_PROFILE;
 
 // One-time (idempotent) configuration performed after BQ27441_Verify()
 // succeeds: selects the external NTC thermistor on BIN as the temperature
@@ -80,8 +111,17 @@ bool BQ27441_Verify(uint16_t address);
 // unconditionally every boot. Always attempts to exit CFGUPDATE mode
 // before returning, even on failure, so the gauge isn't left stuck in
 // config-update mode. Returns false on any I2C error or checksum/verify
-// mismatch.
-bool BQ27441_ConfigureOpConfig(uint16_t address);
+// mismatch; that failure lands on this device's _config_error flag, NOT
+// its _i2c_error flag (see i2c_devices.h), since the gauge stays fully
+// readable either way.
+//
+// `profile` additionally programs the pack description (subclass 82) in the
+// same CFGUPDATE session, since entering/exiting config-update is the
+// expensive part and each exit triggers an Impedance Track resimulation.
+// Note that after the pack description changes, Full Charge Capacity and
+// State of Health only converge on the truth after a full charge/discharge
+// cycle -- the gauge has to relearn the pack, it cannot be told.
+bool BQ27441_Configure(uint16_t address, const BQ27441_BATTERY_PROFILE *profile);
 
 // Blocking reads of the standard commands this board's telemetry/status
 // code needs. Each returns false (leaving the output unmodified) on I2C

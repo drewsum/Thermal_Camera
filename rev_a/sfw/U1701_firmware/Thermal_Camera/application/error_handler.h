@@ -94,23 +94,40 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 // flags in the base list above (which only ever fire once, during that
 // subsystem's one-time boot init), a device's flag here covers its entire
 // operating lifetime: I2CDevices_ReportI2CError() (i2c_devices.c) sets it
-// both when the device fails to verify/configure during
-// I2CDevices_Initialize() AND when it later fails to ACK or return valid
-// data on any runtime read (NACK, bus timeout, etc). Like every other
-// error_handler flag it only latches on failure -- a later successful read
-// does not clear it, and it stays set until clearErrorHandler() runs.
+// when the device fails to verify during I2CDevices_Initialize() AND when
+// it later fails to ACK or return valid data on any runtime read (NACK,
+// bus timeout, etc). Like every other error_handler flag it only latches
+// on failure -- a later successful read does not clear it, and it stays
+// set until clearErrorHandler() runs.
 #define I2C_DEVICE_ERROR_FLAG_FIELD(name, kind, address, label, refdes)  uint8_t name##_i2c_error;
 #define I2C_DEVICE_ERROR_FLAG_NAME(name, kind, address, label, refdes)   label " (" refdes ") I2C",
 #define I2C_DEVICE_ERROR_FLAG_COUNT(name, kind, address, label, refdes)  +1
 
-#define ERROR_HANDLER_NUM_BASE_FLAGS (0 ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_COUNT))
-#define ERROR_HANDLER_NUM_FLAGS (ERROR_HANDLER_NUM_BASE_FLAGS I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_COUNT))
+// A second per-device flag, generated the same way, for the kind-specific
+// setup step I2CDevices_ConfigureOne() runs after a device verifies (e.g.
+// INA231A_Configure(), BQ27441_ConfigureOpConfig()). This is deliberately
+// separate from the _i2c_error flag above: a device that ACKs, identifies,
+// and reads back fine but whose configuration sequence fails is a very
+// different fault from one that isn't talking on the bus at all, and
+// folding both into one flag makes a working device look unreachable.
+// Field names are the device enum name + _config_error.
+#define I2C_DEVICE_CONFIG_FLAG_FIELD(name, kind, address, label, refdes)  uint8_t name##_config_error;
+#define I2C_DEVICE_CONFIG_FLAG_NAME(name, kind, address, label, refdes)   label " (" refdes ") Configuration",
+#define I2C_DEVICE_CONFIG_FLAG_COUNT(name, kind, address, label, refdes)  +1
 
-// Accesses the I2C-error flag for I2C device `id` (an I2C_DEVICE_ID) by
-// index: the per-device flags sit directly after the base flags in
-// flag_array, in I2C_DEVICE_LIST order. Prefer calling
-// I2CDevices_ReportI2CError() (i2c_devices.h) over writing this directly.
+#define ERROR_HANDLER_NUM_BASE_FLAGS (0 ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_COUNT))
+#define ERROR_HANDLER_NUM_FLAGS (ERROR_HANDLER_NUM_BASE_FLAGS \
+                                 I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_COUNT) \
+                                 I2C_DEVICE_LIST(I2C_DEVICE_CONFIG_FLAG_COUNT))
+
+// Accesses the I2C-error and configuration-error flags for I2C device `id`
+// (an I2C_DEVICE_ID) by index: the per-device flags sit directly after the
+// base flags in flag_array, all I2C_DEVICE_COUNT error flags first and then
+// all I2C_DEVICE_COUNT configuration flags, each in I2C_DEVICE_LIST order.
+// Prefer calling I2CDevices_ReportI2CError()/I2CDevices_ReportConfigError()
+// (i2c_devices.h) over writing these directly.
 #define ERROR_HANDLER_I2C_DEVICE_FLAG(id) (error_handler.flag_array[ERROR_HANDLER_NUM_BASE_FLAGS + (id)])
+#define ERROR_HANDLER_I2C_CONFIG_FLAG(id) (error_handler.flag_array[ERROR_HANDLER_NUM_BASE_FLAGS + I2C_DEVICE_COUNT + (id)])
 
 // Error handler structure
 // Follow the convention in XC32 user's guide section 8.6.2
@@ -123,6 +140,7 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
 
         ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_FIELD)
         I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_FIELD)
+        I2C_DEVICE_LIST(I2C_DEVICE_CONFIG_FLAG_FIELD)
 
     } flags;
 
@@ -136,6 +154,7 @@ const char * error_handler_flag_names[] = {
 
     ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_NAME)
     I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_NAME)
+    I2C_DEVICE_LIST(I2C_DEVICE_CONFIG_FLAG_NAME)
 
 };
 

@@ -167,6 +167,12 @@ void __attribute__((nomips16)) _bootstrap_exception_handler(void) {
     else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT); \
     printf("    %s Error %s\n\r", label " (" refdes ") I2C", error_handler.flags.name##_i2c_error ? "has occurred" : "has not occurred");
 
+// Same again, for the per-I2C-device configuration-error flags
+#define I2C_DEVICE_CONFIG_FLAG_PRINT(name, kind, address, label, refdes) \
+    if (error_handler.flags.name##_config_error) terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT); \
+    else terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT); \
+    printf("    %s Error %s\n\r", label " (" refdes ") Configuration", error_handler.flags.name##_config_error ? "has occurred" : "has not occurred");
+
 // This function prints the status of the error handler flags
 void printErrorHandlerStatus(void) {
 
@@ -177,6 +183,7 @@ void printErrorHandlerStatus(void) {
 
     ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_PRINT)
     I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_PRINT)
+    I2C_DEVICE_LIST(I2C_DEVICE_CONFIG_FLAG_PRINT)
 
     terminalTextAttributesReset();
 
@@ -205,6 +212,10 @@ void clearErrorHandler(void) {
 #define I2C_DEVICE_ERROR_FLAG_CHECK_LED(name, kind, address, label, refdes) \
     if (error_handler.flags.name##_i2c_error) ERROR_LED_PIN = HIGH;
 
+// Same again, for the per-I2C-device configuration-error flags
+#define I2C_DEVICE_CONFIG_FLAG_CHECK_LED(name, kind, address, label, refdes) \
+    if (error_handler.flags.name##_config_error) ERROR_LED_PIN = HIGH;
+
 // This function updates the error LEDs based on the error handler state
 void updateErrorLEDs(void) {
 
@@ -213,6 +224,7 @@ void updateErrorLEDs(void) {
 
     ERROR_HANDLER_FLAG_LIST(ERROR_HANDLER_FLAG_CHECK_LED)
     I2C_DEVICE_LIST(I2C_DEVICE_ERROR_FLAG_CHECK_LED)
+    I2C_DEVICE_LIST(I2C_DEVICE_CONFIG_FLAG_CHECK_LED)
 
     update_error_leds_flag = 0;
 

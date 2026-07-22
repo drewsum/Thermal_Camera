@@ -109,14 +109,39 @@ uint16_t I2CDevices_GetAddress(I2C_DEVICE_ID id);
 const char* I2CDevices_GetRefdes(I2C_DEVICE_ID id);
 
 // Latches `id`'s error_handler.flags.<I2C_DEV_...>_i2c_error flag (see
-// error_handler.h). Called internally by I2CDevices_Initialize() and every
-// blocking Read* function below on failure. Callers driving the queued
-// Read/Decode API further down must call this themselves when a queued read
-// comes back failed, since i2c_devices.c never observes that completion --
-// see updateTemperatureTelemetry()/telemetryTasks() in telemetry.c for the
-// pattern. Safe to call from I2C interrupt context (integer-only). No-op if
-// `id` is out of range.
+// error_handler.h) -- i.e. "this device did not respond correctly on the
+// bus". Called internally by I2CDevices_Initialize() when a device fails to
+// verify, and by every blocking Read* function below on failure. Callers
+// driving the queued Read/Decode API further down must call this themselves
+// when a queued read comes back failed, since i2c_devices.c never observes
+// that completion -- see updateTemperatureTelemetry()/telemetryTasks() in
+// telemetry.c for the pattern. Safe to call from I2C interrupt context
+// (integer-only). No-op if `id` is out of range.
 void I2CDevices_ReportI2CError(I2C_DEVICE_ID id);
+
+// Latches `id`'s error_handler.flags.<I2C_DEV_...>_config_error flag --
+// i.e. "this device is reachable and identified itself, but its
+// kind-specific setup sequence failed". Called internally by
+// I2CDevices_Initialize() when I2CDevices_ConfigureOne() fails. Keep this
+// distinct from I2CDevices_ReportI2CError(): a device whose configuration
+// failed still reads back fine, so folding the two together makes a healthy
+// bus look broken. No-op if `id` is out of range.
+void I2CDevices_ReportConfigError(I2C_DEVICE_ID id);
+
+// Puts every present device that has a register-level low-power mode into
+// it, dispatched by kind, and returns how many were successfully shut down.
+// Called by enterLowPowerSleep() (application/power_saving.c).
+//
+// Deliberately skips two kinds. The DS1683 elapsed-time recorder must keep
+// counting -- stopping it would corrupt the measurement it exists to make --
+// and the BQ27441 fuel gauge must keep coulomb counting and taking OCV
+// readings while the board sleeps, which is the reason the sleep mode
+// exists at all. Both draw around a microamp, so neither is worth chasing.
+//
+// There is no matching wake function yet: the current sleep path resets the
+// device on wake, which re-runs I2CDevices_Initialize() and reconfigures
+// everything from scratch. Add one here when a real resume path lands.
+uint8_t I2CDevices_EnterLowPower(void);
 
 // Prints every device's full register status to the terminal, dispatched
 // by kind (e.g. MCP9804_PrintStatus() for temperature sensors).

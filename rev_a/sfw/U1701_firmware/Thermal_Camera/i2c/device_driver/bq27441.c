@@ -57,8 +57,41 @@
 // documents this as simply ignored (no matching subcommand), so it's
 // safe to send unconditionally before every OpConfig session rather than
 // tracking sealed/unsealed state.
-#define BQ27441_UNSEAL_KEY_1           0x0414u
-#define BQ27441_UNSEAL_KEY_2           0x3672u
+//
+// The bq27441-G1's sealed-to-unsealed key is two IDENTICAL words of
+// 0x8000 (SLUUAC9: "the Sealed to Unsealed key has two identical words
+// stored in ROM with a value of 0x8000 8000"). This was previously
+// 0x0414/0x3672 -- the default key for the bq27500/bq27520/bq34z100
+// family, NOT this part. A wrong key fails silently: both writes are
+// still legal I2C writes and ACK, the gauge just stays SEALED, and the
+// SET_CFGUPDATE that follows is then ignored, so
+// BQ27441_EnterConfigUpdate() below spins out its poll limit and
+// BQ27441_ConfigureOpConfig() returns false while every standard-command
+// read (which works fine while sealed) keeps succeeding.
+#define BQ27441_UNSEAL_KEY_1           0x8000u
+#define BQ27441_UNSEAL_KEY_2           0x8000u
+
+// CONTROL_STATUS bitfield -- the value returned by the Control()
+// CONTROL_STATUS (0x0000) subcommand. Diagnostic only (printed by
+// BQ27441_PrintStatus()); nothing in the driver branches on these.
+// SS is the one that matters for BQ27441_ConfigureOpConfig(): the gauge
+// ships SEALED and re-seals on every reset, and a sealed gauge silently
+// ignores SET_CFGUPDATE, so SS reading 1 after boot means the unseal
+// didn't take and no data-memory access is possible.
+#define BQ27441_CTRLSTAT_SHUTDOWNEN    0x8000u
+#define BQ27441_CTRLSTAT_WDRESET       0x4000u
+#define BQ27441_CTRLSTAT_SS            0x2000u  // 1 = SEALED
+#define BQ27441_CTRLSTAT_CALMODE       0x1000u
+#define BQ27441_CTRLSTAT_CCA           0x0800u
+#define BQ27441_CTRLSTAT_BCA           0x0400u
+#define BQ27441_CTRLSTAT_QMAX_UP       0x0200u
+#define BQ27441_CTRLSTAT_RES_UP        0x0100u
+#define BQ27441_CTRLSTAT_INITCOMP      0x0080u  // 1 = initialization complete
+#define BQ27441_CTRLSTAT_HIBERNATE     0x0040u
+#define BQ27441_CTRLSTAT_SLEEP         0x0010u
+#define BQ27441_CTRLSTAT_LDMD          0x0008u
+#define BQ27441_CTRLSTAT_RUP_DIS       0x0004u
+#define BQ27441_CTRLSTAT_VOK           0x0002u  // 1 = cell voltage OK for Qmax update
 
 // Flags() bitfield.
 #define BQ27441_FLAG_OT         0x8000u  // over temperature
@@ -86,25 +119,34 @@
 #define BQ27441_BLOCKDATA_SIZE         32u
 #define BQ27441_REG_BLOCKDATACHECKSUM  0x60u
 
-// *** VERIFY BEFORE RELYING ON IN THE FIELD (do not guess-and-ship): ***
-// - BQ27441_OPCONFIG_CLASS_ID: the "Registers" data-memory subclass ID
-//   that contains OpConfig -- confirmed against SLUUAC9's data-memory
-//   table to be subclass 64 for this family; double-check against the
-//   TRM copy in hand before shipping.
-// - BQ27441_OPCONFIG_BYTE_OFFSET: which byte(s) within that subclass's
-//   first 32-byte block hold the 2-byte OpConfig register -- assumed to
-//   be the first 2 bytes (offset 0), matching the common TI data-memory
-//   layout, but not independently confirmed here.
-// - Byte order of OpConfig WITHIN the block-data window: assumed
-//   big-endian (MSB first), matching TI's documented data-flash
-//   convention (opposite of the little-endian standard commands above).
-// - OPCONFIG_TEMPS bit polarity: confirm which value (0 or 1) selects
-//   external-thermistor-via-BIN vs internal die sensor before shipping.
-#define BQ27441_OPCONFIG_CLASS_ID          64u     // TRM "Registers" subclass -- VERIFY
-#define BQ27441_OPCONFIG_BYTE_OFFSET       0u      // VERIFY exact offset within the block
-#define BQ27441_OPCONFIG_TEMPS_EXTERNAL    0x0001u // VERIFY polarity against TRM before shipping
+// Confirmed against SLUUAC9's data-memory table and verified on hardware
+// (the block read back OpConfig 0x25F8 / OpConfigB 0x0F, both exactly the
+// documented defaults, and the gauge's own BlockDataChecksum agreed):
+// subclass 64 "Registers" holds OpConfig at offset 0 as a big-endian 16-bit
+// field, with OpConfigB at offset 2.
+//
+// Getting that read to line up needed a fix elsewhere: this part requires
+// t(BUF) >= 66us between consecutive I2C packets addressed to it, and below
+// that it merges packets and consumes the next one's register-address byte
+// as write data -- which made every block read come back one byte late.
+// i2c_master.c now enforces that per-device gap; see
+// BQ27441_BUS_FREE_TIME_US in bq27441.h.
+#define BQ27441_OPCONFIG_CLASS_ID          64u     // SLUUAC9 "Registers" subclass
+#define BQ27441_OPCONFIG_BYTE_OFFSET       0u      // OpConfig sits at offset 0, big-endian
+#define BQ27441_OPCONFIG_TEMPS_EXTERNAL    0x0001u // 1 = external thermistor on BIN
 #define BQ27441_OPCONFIG_BATLOWEN          0x0004u // 1 = GPOUT mirrors SOC1 instead of SOC_INT
 #define BQ27441_OPCONFIG_GPIOPOL           0x0800u // 0 = GPOUT active-low when SOC1 asserted, 1 = active-high
+
+// Subclass 82 "State" holds the pack description Impedance Track gauges
+// against. Out of the box these describe a 1200mAh cell, so an unconfigured
+// gauge reports SOC as a fraction of 1200mAh no matter what is fitted --
+// which is exactly what a Full Charge Capacity readback near 1213mAh means.
+// All four fields are big-endian 16-bit, same as OpConfig.
+#define BQ27441_STATE_CLASS_ID             82u
+#define BQ27441_STATE_DESIGN_CAPACITY      10u   // mAh
+#define BQ27441_STATE_DESIGN_ENERGY        12u   // mWh
+#define BQ27441_STATE_TERMINATE_VOLTAGE    16u   // mV
+#define BQ27441_STATE_TAPER_RATE           21u   // DesignCapacity / (0.1 * taper current)
 
 // Bounded retry cap for CFGUPDATE enter/exit polling -- this codebase has
 // no delay/sleep primitive, so these are busy-poll loops capped at a
@@ -238,6 +280,8 @@ static bool BQ27441_ReadExtendedBlock(uint16_t address, uint8_t classId, uint8_t
     return I2C_ReadRegister(address, BQ27441_REG_BLOCKDATA, block, BQ27441_BLOCKDATA_SIZE);
 }
 
+// The gauge stores (255 - (sum of the block's 32 bytes)) at
+// BlockDataChecksum; writing it is what commits a modified block.
 static uint8_t BQ27441_ComputeBlockChecksum(const uint8_t block[BQ27441_BLOCKDATA_SIZE])
 {
     uint16_t sum = 0;
@@ -332,12 +376,100 @@ bool BQ27441_Verify(uint16_t address)
     return (deviceType == BQ27441_DEVICE_TYPE_EXPECTED);
 }
 
-bool BQ27441_ConfigureOpConfig(uint16_t address)
+// Data-flash fields are big-endian (MSB first) -- opposite of the
+// little-endian standard commands.
+static uint16_t BQ27441_GetBlockWord(const uint8_t block[BQ27441_BLOCKDATA_SIZE], uint8_t offset)
+{
+    return ((uint16_t)block[offset] << 8) | block[offset + 1];
+}
+
+static void BQ27441_SetBlockWord(uint8_t block[BQ27441_BLOCKDATA_SIZE], uint8_t offset, uint16_t value)
+{
+    block[offset]     = (uint8_t)(value >> 8);
+    block[offset + 1] = (uint8_t)(value & 0xFFu);
+}
+
+// Applies the OpConfig bits this board needs. Assumes the caller has already
+// unsealed the gauge and entered CFGUPDATE mode.
+static bool BQ27441_ApplyOpConfig(uint16_t address)
 {
     uint8_t block[BQ27441_BLOCKDATA_SIZE];
     uint16_t opConfig;
-    uint16_t desiredOpConfig;
-    bool ok = true;
+    uint16_t desired;
+
+    if (!BQ27441_ReadExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block))
+    {
+        return false;
+    }
+
+    opConfig = BQ27441_GetBlockWord(block, BQ27441_OPCONFIG_BYTE_OFFSET);
+
+    desired  = opConfig;
+    desired |= BQ27441_OPCONFIG_TEMPS_EXTERNAL;   // external thermistor via BIN (TH1401)
+    desired |= BQ27441_OPCONFIG_BATLOWEN;         // GPOUT mirrors SOC1 (-> BATT_LOWBATT_PIN)
+    desired &= (uint16_t)~BQ27441_OPCONFIG_GPIOPOL; // GPIOPOL=0: GPOUT active-low when SOC1 asserted
+
+    if (desired == opConfig)
+    {
+        return true;   // already configured -- don't spend a data-flash write
+    }
+
+    BQ27441_SetBlockWord(block, BQ27441_OPCONFIG_BYTE_OFFSET, desired);
+
+    return BQ27441_WriteExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block);
+}
+
+// Applies the pack description in `profile`. Assumes the caller has already
+// unsealed the gauge and entered CFGUPDATE mode.
+static bool BQ27441_ApplyBatteryProfile(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+{
+    uint8_t block[BQ27441_BLOCKDATA_SIZE];
+    bool changed = false;
+
+    if (!BQ27441_ReadExtendedBlock(address, BQ27441_STATE_CLASS_ID, 0, block))
+    {
+        return false;
+    }
+
+    // Design Capacity and Design Energy must agree with each other or the
+    // gauge's power/energy predictions drift apart from its charge ones, so
+    // they are always written as a pair when either differs.
+    if ((BQ27441_GetBlockWord(block, BQ27441_STATE_DESIGN_CAPACITY) != profile->designCapacity_mAh) ||
+        (BQ27441_GetBlockWord(block, BQ27441_STATE_DESIGN_ENERGY)   != profile->designEnergy_mWh))
+    {
+        BQ27441_SetBlockWord(block, BQ27441_STATE_DESIGN_CAPACITY, profile->designCapacity_mAh);
+        BQ27441_SetBlockWord(block, BQ27441_STATE_DESIGN_ENERGY,   profile->designEnergy_mWh);
+        changed = true;
+    }
+
+    if (BQ27441_GetBlockWord(block, BQ27441_STATE_TERMINATE_VOLTAGE) != profile->terminateVoltage_mV)
+    {
+        BQ27441_SetBlockWord(block, BQ27441_STATE_TERMINATE_VOLTAGE, profile->terminateVoltage_mV);
+        changed = true;
+    }
+
+    if (BQ27441_GetBlockWord(block, BQ27441_STATE_TAPER_RATE) != profile->taperRate)
+    {
+        BQ27441_SetBlockWord(block, BQ27441_STATE_TAPER_RATE, profile->taperRate);
+        changed = true;
+    }
+
+    if (!changed)
+    {
+        return true;   // already programmed -- data flash has finite endurance
+    }
+
+    return BQ27441_WriteExtendedBlock(address, BQ27441_STATE_CLASS_ID, 0, block);
+}
+
+bool BQ27441_Configure(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+{
+    bool ok;
+
+    if (profile == NULL)
+    {
+        return false;
+    }
 
     // Harmless if already unsealed -- see the key defines' comment above.
     if (!BQ27441_ControlWrite(address, BQ27441_UNSEAL_KEY_1) ||
@@ -351,29 +483,14 @@ bool BQ27441_ConfigureOpConfig(uint16_t address)
         return false;
     }
 
-    if (!BQ27441_ReadExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block))
+    // Both subclasses are updated inside one CFGUPDATE session: entering and
+    // exiting is the expensive part (each exit triggers a resimulation), and
+    // a half-applied configuration is worse than none.
+    ok = BQ27441_ApplyOpConfig(address);
+
+    if (!BQ27441_ApplyBatteryProfile(address, profile))
     {
-        BQ27441_ExitConfigUpdate(address);
-        return false;
-    }
-
-    // Data-flash fields are big-endian (MSB first) -- opposite of the
-    // little-endian standard commands. See the VERIFY comment on
-    // BQ27441_OPCONFIG_BYTE_OFFSET above.
-    opConfig = ((uint16_t)block[BQ27441_OPCONFIG_BYTE_OFFSET] << 8) |
-               block[BQ27441_OPCONFIG_BYTE_OFFSET + 1];
-
-    desiredOpConfig = opConfig;
-    desiredOpConfig |= BQ27441_OPCONFIG_TEMPS_EXTERNAL;   // external thermistor via BIN (TH1401)
-    desiredOpConfig |= BQ27441_OPCONFIG_BATLOWEN;         // GPOUT mirrors SOC1 (-> BATT_LOWBATT_PIN)
-    desiredOpConfig &= (uint16_t)~BQ27441_OPCONFIG_GPIOPOL; // GPIOPOL=0: GPOUT active-low when SOC1 asserted
-
-    if (desiredOpConfig != opConfig)
-    {
-        block[BQ27441_OPCONFIG_BYTE_OFFSET]     = (uint8_t)(desiredOpConfig >> 8);
-        block[BQ27441_OPCONFIG_BYTE_OFFSET + 1] = (uint8_t)(desiredOpConfig & 0xFFu);
-
-        ok = BQ27441_WriteExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block);
+        ok = false;
     }
 
     if (!BQ27441_ExitConfigUpdate(address))
@@ -579,6 +696,7 @@ void BQ27441_DecodeFlagsRaw(const uint8_t raw[2], BQ27441_FLAG_STATUS *status)
 void BQ27441_PrintStatus(uint16_t address)
 {
     uint16_t deviceType;
+    uint16_t controlStatus;
     uint16_t rawFlags;
     uint16_t rawSoc;
     uint16_t rawSoh;
@@ -604,6 +722,26 @@ void BQ27441_PrintStatus(uint16_t address)
     identified = (deviceType == BQ27441_DEVICE_TYPE_EXPECTED);
     terminalTextAttributes(identified ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Device Type: 0x%04X (%s)\n\r", deviceType, identified ? "recognized" : "unrecognized");
+
+    // CONTROL_STATUS, mainly for its SS (sealed) bit: the gauge ships
+    // sealed and re-seals on every reset, and while sealed it silently
+    // ignores the SET_CFGUPDATE that BQ27441_ConfigureOpConfig() needs. So
+    // SS here is the direct readout of whether that boot-time unseal took.
+    if (BQ27441_ControlRead(address, BQ27441_CTRL_CONTROL_STATUS, &controlStatus))
+    {
+        bool sealed = (controlStatus & BQ27441_CTRLSTAT_SS) != 0;
+
+        terminalTextAttributes(sealed ? YELLOW_COLOR : GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Control Status: 0x%04X (%s%s%s%s%s%s%s%s)\n\r", controlStatus,
+               sealed ? "SEALED " : "UNSEALED ",
+               (controlStatus & BQ27441_CTRLSTAT_INITCOMP)   ? "INITCOMP " : "",
+               (controlStatus & BQ27441_CTRLSTAT_VOK)        ? "VOK " : "",
+               (controlStatus & BQ27441_CTRLSTAT_SLEEP)      ? "SLEEP " : "",
+               (controlStatus & BQ27441_CTRLSTAT_HIBERNATE)  ? "HIBERNATE " : "",
+               (controlStatus & BQ27441_CTRLSTAT_CALMODE)    ? "CALMODE " : "",
+               (controlStatus & BQ27441_CTRLSTAT_WDRESET)    ? "WDRESET " : "",
+               (controlStatus & BQ27441_CTRLSTAT_SHUTDOWNEN) ? "SHUTDOWNEN " : "");
+    }
 
     if (BQ27441_ReadReg16LE(address, BQ27441_REG_FLAGS, &rawFlags))
     {

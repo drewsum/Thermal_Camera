@@ -80,6 +80,24 @@ void I2C_Tasks(void);
 // Number of transactions currently queued (including the executing one).
 size_t I2C_QueuePendingCount(void);
 
+// Registers a minimum bus-free time (t_BUF) the driver must leave between a
+// stop condition and the next start condition addressed to `address`. Call
+// once per device, before any transfer to it.
+//
+// Only needed for devices that demand more than the I2C spec's own t_BUF,
+// which the instruction overhead between transactions already covers. The
+// BQ27441-G1 fuel gauge is the one such device on this board: TI specifies
+// t(BUF) >= 66us between all packets addressed to it, and below that it
+// merges consecutive packets, swallowing the next one's register-address
+// byte as write data. Devices with no registered requirement are unaffected
+// and still chain back-to-back inside the I2C ISR.
+//
+// A transaction waiting out this gap parks the engine rather than busy-
+// waiting; I2C_Tasks() starts it from the main loop once the time elapses,
+// so callers must keep calling I2C_Tasks() (the blocking helpers already
+// do). Returns false only if the internal table is full.
+bool I2C_SetDeviceBusFreeTime(uint16_t address, uint32_t microseconds);
+
 // --- Queued (non-blocking) transfers -------------------------------------
 // Each call appends a transaction to the queue and returns immediately;
 // false means the queue was full or a parameter was invalid (nothing was

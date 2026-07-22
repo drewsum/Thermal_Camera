@@ -30,7 +30,32 @@
 // Documented power-on-reset value of the Configuration register (16 x
 // averaging disabled, 1.1ms bus/shunt conversion time, continuous
 // shunt+bus mode). Used by INA231A_Verify() -- see its caveat below.
+#define INA231A_REG_MASK_ENABLE     0x06u
+#define INA231A_REG_ALERT_LIMIT     0x07u
+
 #define INA231A_CONFIG_POR_DEFAULT  0x4127u
+
+// Configuration register (0x00) fields, decoded by INA231A_PrintStatus().
+#define INA231A_CONFIG_RST          0x8000u
+#define INA231A_CONFIG_AVG_MASK     0x0E00u   // averaging count
+#define INA231A_CONFIG_VBUSCT_MASK  0x01C0u   // bus voltage conversion time
+#define INA231A_CONFIG_VSHCT_MASK   0x0038u   // shunt voltage conversion time
+#define INA231A_CONFIG_MODE_MASK    0x0007u
+
+// Mask/Enable register (0x06): alert sources in the high bits, live status
+// flags in the low bits. OVF and CVRF are the two worth watching -- OVF
+// means the power/current math overflowed and those registers are invalid.
+#define INA231A_MASK_SOL            0x8000u   // shunt over-voltage alert
+#define INA231A_MASK_SUL            0x4000u   // shunt under-voltage alert
+#define INA231A_MASK_BOL            0x2000u   // bus over-voltage alert
+#define INA231A_MASK_BUL            0x1000u   // bus under-voltage alert
+#define INA231A_MASK_POL            0x0800u   // power over-limit alert
+#define INA231A_MASK_CNVR           0x0400u   // conversion ready alert
+#define INA231A_MASK_AFF            0x0010u   // alert function flag
+#define INA231A_MASK_CVRF           0x0008u   // conversion ready flag
+#define INA231A_MASK_OVF            0x0004u   // math overflow flag
+#define INA231A_MASK_APOL           0x0002u   // alert polarity (1 = active high)
+#define INA231A_MASK_LEN            0x0001u   // alert latch enable
 
 // Fixed scaling constants shared by the whole INA226/INA230/INA231 family.
 #define INA231A_BUS_VOLTAGE_LSB     0.00125f     // 1.25 mV/LSB
@@ -242,9 +267,65 @@ bool INA231A_ReadAll(uint16_t address, float currentLSB, INA231A_READING *readin
     return true;
 }
 
+bool INA231A_SetPowerDown(uint16_t address, bool powerDown)
+{
+    uint16_t config;
+
+    if (!INA231A_ReadReg16(address, INA231A_REG_CONFIG, &config))
+    {
+        return false;
+    }
+
+    config &= (uint16_t)~INA231A_CONFIG_MODE_MASK;
+
+    // MODE = 0 is power-down; anything else resumes conversions. 0b111 is
+    // shunt+bus continuous, the mode this board runs in normally.
+    if (!powerDown)
+    {
+        config |= INA231A_CONFIG_MODE_MASK;
+    }
+
+    // The Calibration register is unaffected by a mode change, so resuming
+    // does not need INA231A_Configure() to run again.
+    return INA231A_WriteReg16(address, INA231A_REG_CONFIG, config);
+}
+
+// AVG/VBUSCT/VSHCT all index their own table; kept local to the status
+// print since nothing else in the driver reasons about conversion timing.
+static const char* INA231A_AveragingName(uint16_t config)
+{
+    static const char* const names[8] = { "1", "4", "16", "64", "128", "256", "512", "1024" };
+
+    return names[(config & INA231A_CONFIG_AVG_MASK) >> 9];
+}
+
+static const char* INA231A_ConversionTimeName(uint16_t field)
+{
+    static const char* const names[8] = { "140 us", "204 us", "332 us", "588 us",
+                                          "1.1 ms", "2.116 ms", "4.156 ms", "8.244 ms" };
+
+    return names[field & 0x7u];
+}
+
+static const char* INA231A_ModeName(uint16_t config)
+{
+    switch (config & INA231A_CONFIG_MODE_MASK)
+    {
+        case 0x0u: return "power-down";
+        case 0x1u: return "shunt triggered";
+        case 0x2u: return "bus triggered";
+        case 0x3u: return "shunt+bus triggered";
+        case 0x4u: return "power-down";
+        case 0x5u: return "shunt continuous";
+        case 0x6u: return "bus continuous";
+        default:   return "shunt+bus continuous";
+    }
+}
+
 void INA231A_PrintStatus(uint16_t address)
 {
     uint16_t config;
+    uint16_t maskEnable;
     uint16_t calibration;
     uint16_t rawCurrent;
     uint16_t rawPower;
@@ -265,8 +346,39 @@ void INA231A_PrintStatus(uint16_t address)
 
     porDefault = (config == INA231A_CONFIG_POR_DEFAULT);
     terminalTextAttributes(porDefault ? GREEN_COLOR : YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Configuration register: 0x%04X (%s)\n\r", config,
+    printf("    Configuration register: 0x%04X (%s%s)\n\r", config,
+           (config & INA231A_CONFIG_RST) ? "RST " : "",
            porDefault ? "power-on-reset default" : "reconfigured, or not an INA231A");
+    printf("        Mode: %s, Averaging: %s samples\n\r",
+           INA231A_ModeName(config), INA231A_AveragingName(config));
+    printf("        Conversion time -- bus: %s, shunt: %s\n\r",
+           INA231A_ConversionTimeName((config & INA231A_CONFIG_VBUSCT_MASK) >> 6),
+           INA231A_ConversionTimeName((config & INA231A_CONFIG_VSHCT_MASK) >> 3));
+
+    if (INA231A_ReadReg16(address, INA231A_REG_MASK_ENABLE, &maskEnable))
+    {
+        // OVF invalidates the Current/Power registers, so flag it loudly
+        terminalTextAttributes((maskEnable & INA231A_MASK_OVF) ? RED_COLOR : GREEN_COLOR,
+                               BLACK_COLOR, NORMAL_FONT);
+        printf("    Mask/Enable register: 0x%04X (%s%s%s%s%s%s%s%s%s%s%s)\n\r", maskEnable,
+               (maskEnable & INA231A_MASK_SOL)  ? "SOL "  : "",
+               (maskEnable & INA231A_MASK_SUL)  ? "SUL "  : "",
+               (maskEnable & INA231A_MASK_BOL)  ? "BOL "  : "",
+               (maskEnable & INA231A_MASK_BUL)  ? "BUL "  : "",
+               (maskEnable & INA231A_MASK_POL)  ? "POL "  : "",
+               (maskEnable & INA231A_MASK_CNVR) ? "CNVR " : "",
+               (maskEnable & INA231A_MASK_AFF)  ? "AFF "  : "",
+               (maskEnable & INA231A_MASK_CVRF) ? "CVRF " : "",
+               (maskEnable & INA231A_MASK_OVF)  ? "OVF "  : "",
+               (maskEnable & INA231A_MASK_APOL) ? "APOL " : "",
+               (maskEnable & INA231A_MASK_LEN)  ? "LEN "  : "");
+
+        if (maskEnable & INA231A_MASK_OVF)
+        {
+            printf("        MATH OVERFLOW -- Current and Power registers are invalid\n\r");
+        }
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    }
 
     if (INA231A_ReadReg16(address, INA231A_REG_CALIBRATION, &calibration))
     {

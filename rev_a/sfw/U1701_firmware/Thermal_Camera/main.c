@@ -177,10 +177,6 @@ void main(void) {
     // live_telemetry_print_request is not persistent, so always clear it at boot
     live_telemetry_print_request = 0;
 
-    // live_telemetry_enable survives a soft reset, so the first refresh after
-    // one has to paint the whole page rather than diff against a stale shadow
-    live_telemetry_full_repaint = 1;
-
     printf("\r\nCause of most recent device reset: %s\r\n\r\n", getResetCauseString(reset_cause));
     terminalTextAttributesReset();
     
