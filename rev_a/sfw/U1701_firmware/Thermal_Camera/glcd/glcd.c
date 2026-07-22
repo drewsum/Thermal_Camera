@@ -39,10 +39,19 @@
 #include "gpio/pin_macros.h"
 #include "usb_uart/terminal_control.h"
 
-// GLCDLxMODE.COLORMODE encoding (PIC32 Family Reference Manual Register
-// 54-9) for 24-bit packed RGB888 -- matches this driver's frame buffer
-// layout and the panel's native 24-bit interface.
-#define GLCD_COLORMODE_RGB888   0xBu
+// GLCDLxMODE.COLORMODE encodings (PIC32 Family Reference Manual Register
+// 54-9). RGB888 matches Layer 0's frame buffer layout and the panel's
+// native 24-bit interface; ARGB8888 (0xAARRGGBB, one byte per channel with
+// alpha in the top byte) matches Layer 1's overlay buffers and LVGL's
+// LV_COLOR_FORMAT_ARGB8888.
+//
+// UNVERIFIED ON HARDWARE: the numeric encodings come from Microchip's
+// Harmony plib_glcd.h, not from the datasheet, the family reference manual
+// or the XC32 device header (none of which enumerate this field). If the
+// overlay's reds and blues come out swapped, the fix is almost certainly to
+// use RGBA8888 (0x2) here instead.
+#define GLCD_COLORMODE_RGB888     0xBu
+#define GLCD_COLORMODE_ARGB8888   0x6u
 
 // Layer blend functions (GLCDLxMODE SRCBLEND<11:8>/DESTBLEND<15:12>):
 // standard source-over compositing, matching Microchip's Harmony reference
@@ -137,6 +146,75 @@ bool GLCD_Initialize(void)
     return true;
 }
 
+bool GLCD_OverlayInitialize(void)
+{
+    if ((GLCDMODE & _GLCDMODE_LCDEN_MASK) == 0)
+    {
+        // GLCD_Initialize() hasn't run (or failed): timing isn't programmed
+        // and the panel isn't being driven, so an enabled Layer 1 would
+        // composite over nothing
+        return false;
+    }
+
+    // Both buffers start fully transparent (alpha = 0 in every pixel, which
+    // for ARGB8888 means all-zero) so that whichever one is scanned out
+    // before the GUI has drawn anything shows Layer 0 unmodified.
+    memset((void *)GLCD_OVERLAY_BUFFER_A_ADDRESS, 0, GLCD_OVERLAY_SIZE_BYTES);
+    memset((void *)GLCD_OVERLAY_BUFFER_B_ADDRESS, 0, GLCD_OVERLAY_SIZE_BYTES);
+
+    GLCDL1START  = GLCD_XY(0, 0);
+    GLCDL1SIZE   = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
+    GLCDL1RES    = GLCD_XY(GLCD_OVERLAY_WIDTH_PX, GLCD_OVERLAY_HEIGHT_PX);
+    GLCDL1STRIDE = GLCD_OVERLAY_STRIDE_BYTES;
+
+    // Start on buffer B; gui/lv_port_disp.c renders its first frame into
+    // buffer A, off-screen, and flips to it when that frame is complete.
+    GLCD_SetOverlayBaseAddress((const void *)GLCD_OVERLAY_BUFFER_B_ADDRESS);
+
+    // Same source-over blend as Layer 0 (see the constants above) -- with
+    // ARGB8888 the per-pixel alpha drives it, so a transparent pixel shows
+    // Layer 0 and an opaque one hides it. Layer ALPHA stays 0xFF (a global
+    // scale on top of the per-pixel alpha) and MULALPHA stays 0 (the buffer
+    // is not premultiplied; LVGL renders straight ARGB).
+    GLCDL1MODE = _GLCDL1MODE_LAYEREN_MASK
+               | (0xFFu << _GLCDL1MODE_ALPHA_POSITION)
+               | (GLCD_DESTBLEND_INV_SRCGBL << _GLCDL1MODE_DESTBLEND_POSITION)
+               | (GLCD_SRCBLEND_ALPHA_SRCGBL << _GLCDL1MODE_SRCBLEND_POSITION)
+               | (GLCD_COLORMODE_ARGB8888 << _GLCDL1MODE_COLORMODE_POSITION);
+
+    return true;
+}
+
+void GLCD_SetOverlayBaseAddress(const void *buffer)
+{
+    // Physical address, for the same reason as Layer 0's GLCDL0BADDR above:
+    // the layer DMA is a separate DDR2 bus master, not a CPU KSEG access.
+    GLCDL1BADDR = KVA_TO_PA((uint32_t)buffer);
+}
+
+bool GLCD_WaitOverlayVSync(void)
+{
+    // CP0 Count runs at SYSCLK/2. Two frame periods at this panel's ~60Hz
+    // is a generous bound: whatever the phase when this is called, a healthy
+    // panel enters vertical blanking within one frame.
+    uint32_t start = _CP0_GET_COUNT();
+    uint32_t timeout_ticks = (uint32_t)(SYSCLK_INT / 2u) / 30u;
+
+    // Already blanking: wait it out first, otherwise a caller that arrives
+    // late in the blanking interval could flip just as scanout resumes
+    while (GLCDSTAT & _GLCDSTAT_VSYNC_MASK)
+    {
+        if ((_CP0_GET_COUNT() - start) > timeout_ticks) return false;
+    }
+
+    while ((GLCDSTAT & _GLCDSTAT_VSYNC_MASK) == 0)
+    {
+        if ((_CP0_GET_COUNT() - start) > timeout_ticks) return false;
+    }
+
+    return true;
+}
+
 // Derives the actual output GCLK frequency from REFCLKO5 (per
 // core/device_control.c's REFCLK5Initialize()/printClockStatus() formula:
 // REFCLKO5 = SYSCLK/(2*RODIV) for RODIV != 0, else SYSCLK passthrough) and
@@ -166,6 +244,10 @@ void GLCD_PrintStatus(void)
     uint32_t glcdl0size   = GLCDL0SIZE;
     uint32_t glcdl0stride = GLCDL0STRIDE;
     uint32_t glcdl0baddr  = GLCDL0BADDR;
+    uint32_t glcdl1mode   = GLCDL1MODE;
+    uint32_t glcdl1size   = GLCDL1SIZE;
+    uint32_t glcdl1stride = GLCDL1STRIDE;
+    uint32_t glcdl1baddr  = GLCDL1BADDR;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- GLCD Controller ---\n\r");
@@ -206,6 +288,30 @@ void GLCD_PrintStatus(void)
     printf("    Layer 0 Base Address (physical): 0x%08lX\n\r", (unsigned long)glcdl0baddr);
     printf("    Frame Buffer (CPU, KSEG1 uncached): 0x%08lX, %lu bytes\n\r",
             (unsigned long)GLCD_FRAMEBUFFER_BASE_ADDRESS, (unsigned long)GLCD_FRAMEBUFFER_SIZE_BYTES);
+
+    // Layer 1 is only enabled once the GUI is running (GLCD_OverlayInitialize())
+    if (glcdl1mode & _GLCDL1MODE_LAYEREN_MASK)
+    {
+        printf("    Layer 1 (GUI overlay): Enabled=1 ColorMode=0x%lX Alpha=0x%02lX Size=%lux%lu Stride=%luB\n\r",
+                (unsigned long)(glcdl1mode & _GLCDL1MODE_COLORMODE_MASK),
+                (unsigned long)((glcdl1mode & _GLCDL1MODE_ALPHA_MASK) >> _GLCDL1MODE_ALPHA_POSITION),
+                (unsigned long)(glcdl1size >> 16) & 0x7FFu, (unsigned long)(glcdl1size & 0x7FFu),
+                (unsigned long)(glcdl1stride & 0xFFFFu));
+        printf("    Layer 1 Base Address (physical): 0x%08lX (buffer %s)\n\r",
+                (unsigned long)glcdl1baddr,
+                (glcdl1baddr == KVA_TO_PA(GLCD_OVERLAY_BUFFER_A_ADDRESS)) ? "A" :
+                (glcdl1baddr == KVA_TO_PA(GLCD_OVERLAY_BUFFER_B_ADDRESS)) ? "B" : "?");
+        printf("    Overlay Buffers (CPU, KSEG1 uncached): A 0x%08lX, B 0x%08lX, %lu bytes each\n\r",
+                (unsigned long)GLCD_OVERLAY_BUFFER_A_ADDRESS,
+                (unsigned long)GLCD_OVERLAY_BUFFER_B_ADDRESS,
+                (unsigned long)GLCD_OVERLAY_SIZE_BYTES);
+    }
+    else
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Layer 1 (GUI overlay): disabled (GUI not initialized)\n\r");
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    }
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    LCD_ENABLE_PIN (panel RESET, RJ11): %s\n\r", LCD_ENABLE_PIN ? "high (released)" : "low (in reset)");

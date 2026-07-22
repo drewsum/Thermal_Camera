@@ -5,6 +5,7 @@
 #include "application/error_handler.h"
 #include "application/telemetry.h"
 #include "core/device_control.h"
+#include "gui/gui.h"
 #include "usb_uart/terminal_control.h"
 #include "gpio/pin_macros.h"
 
@@ -31,6 +32,12 @@ void heartbeatServices(void) {
         if (heartbeat_systick % 100 == 0) live_telemetry_print_request = 1;
 
     }
+
+    // Ask GUI_Tasks() to re-read the values shown on the GUI overlay (clock,
+    // ambient temperature, battery) every 500ms. Outside the
+    // live_telemetry_enable block above on purpose: the panel keeps updating
+    // whether or not the terminal is in live telemetry mode.
+    if (heartbeat_systick % 50 == 0) gui_refresh_request = 1;
 
     // Update error LEDs based on error handler status
     update_error_leds_flag = 1;

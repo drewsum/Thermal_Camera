@@ -9,25 +9,34 @@
     flash) into the GLCD frame buffer in DDR2.
 
   Description:
-    Decoding is done by the vendored lodepng library
-    (application/lodepng/, zlib license, decode-only build -- see the
-    marked configuration block at the top of lodepng.h). This module owns
-    lodepng's memory: it provides the lodepng_malloc()/lodepng_realloc()/
-    lodepng_free() hooks (enabled by LODEPNG_NO_COMPILE_ALLOCATORS),
-    backed by a bump-allocator arena in DDR2 rather than the internal-RAM
-    heap -- a decoded 320x240 frame plus zlib's working buffers peak at
-    several hundred KB, which does not fit this device's 115KB heap but is
-    a rounding error against 32MB of DDR2.
+    Decoding is done by lodepng, which is vendored as part of LVGL
+    (gui/lvgl/src/libs/lodepng/, zlib license) rather than separately --
+    one PNG decoder in the tree, one set of allocators, one place to patch.
+    LVGL's copy allocates through lv_malloc(), so a decode comes out of the
+    4MB LVGL heap in DDR2 (LV_MEM_ADR/LV_MEM_SIZE in gui/lv_conf.h, mapped
+    in gui/gui.h) rather than the device's 115KB internal-RAM heap, which a
+    decoded 320x240 frame plus zlib's working buffers would blow through
+    several times over.
 
-    DDR2 partitioning (this module's reservation, alongside the frame
-    buffer reservation documented in glcd/glcd.h): the arena occupies
-    physical DDR2 offset +1MB through +5MB, accessed through the CACHED
-    (KSEG0) alias for decode speed. That never conflicts with the GLCD's
-    DMA, which only reads the frame buffer region (offset 0), and the
-    final blit into the frame buffer goes through the UNCACHED (KSEG1)
-    alias -- so no cache maintenance is needed anywhere (same coherency
-    reasoning as core/ddr2.h's cache note). The arena is reset wholesale
-    at the start of every load; nothing in it persists between calls.
+    WARNING for anyone reading lodepng's own documentation: LVGL's copy is
+    patched and its decode entry points do NOT behave as upstream describes.
+    lodepng_decode_memory()'s out-parameter is an lv_draw_buf_t descriptor,
+    not a pixel buffer; the pixels live at its ->data, it is always
+    allocated as LV_COLOR_FORMAT_ARGB8888 (4 bytes/pixel) whatever color
+    type is requested, and it must be released with lv_draw_buf_destroy()
+    rather than free()/lv_free(). image_loader.c therefore asks for
+    LCT_RGBA and packs 4-byte pixels down to the frame buffer's 3-byte
+    RGB888 itself.
+
+    Because that heap is a real allocator and not the bump arena this
+    module used to own, every buffer taken here is released on every exit
+    path -- a leak would eventually starve both the decoder and the GUI.
+
+    The heap is the CACHED (KSEG0) DDR2 alias, for decode speed; the final
+    blit into the frame buffer goes through the UNCACHED (KSEG1) alias, so
+    no cache maintenance is needed anywhere (same coherency reasoning as
+    core/ddr2.h's cache note). GUI_Initialize() (gui/gui.c) must have run
+    before any decode, since it is what hands LVGL its heap.
 
     Requirements on the PNG: any color type/bit depth lodepng can decode
     (it converts to 24-bit RGB), but the pixel dimensions must be exactly
@@ -53,15 +62,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// DDR2 decode arena (lodepng allocator backing store): physical DDR2
-// offset +1MB..+5MB, through the CACHED (KSEG0) alias. Public (rather than
-// private to image_loader.c) so other modules -- currently just the
-// "Storage Usage?" command -- can report this reservation without
-// duplicating the constants. See the file header above for the
-// partitioning/coherency rationale.
-#define IMAGE_LOADER_ARENA_BASE   ((uint8_t *)(DDR2_KSEG0_BASE_ADDRESS + 0x00100000u))
-#define IMAGE_LOADER_ARENA_SIZE   0x00400000u
 
 // Which filesystem volume to load from (see sdhc/sd_fileio.h and
 // spi/flash_fileio.h for the two volumes' mount lifecycles).

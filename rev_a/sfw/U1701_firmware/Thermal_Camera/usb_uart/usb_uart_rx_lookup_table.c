@@ -40,6 +40,7 @@
 #include "usb/usb.h"
 #include "usb/device_driver/usb_msd.h"
 #include "glcd/glcd.h"
+#include "gui/gui.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
 
@@ -234,6 +235,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       SDHC\r\n"
         "       USB\r\n"
         "       GLCD\r\n"
+        "       GUI\r\n"
         "       Backlight PWM\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
@@ -300,6 +302,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     }
     else if (strcmp(rx_peripheral_name, "GLCD") == 0) {
         GLCD_PrintStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "GUI") == 0) {
+        GUI_PrintStatus();
     }
     else if (strcmp(rx_peripheral_name, "Backlight PWM") == 0) {
         BacklightPWM_PrintStatus();
@@ -1114,13 +1119,21 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("DDR2 SDRAM (known firmware reservations, not a live allocator):\r\n");
     {
-        uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES + IMAGE_LOADER_ARENA_SIZE;
+        // Full map (and the rationale for each) is in gui/gui.h. The LVGL
+        // heap is the one entry with a live utilization figure -- see
+        // "Peripheral Status? GUI" -- since PNG decodes share it.
+        uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES
+                + (2u * GLCD_OVERLAY_SIZE_BYTES)
+                + GUI_LVGL_HEAP_SIZE_BYTES;
 
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Total: %10lu bytes (%lu KB)\r\n",
                 (unsigned long) DDR2_SIZE_BYTES, (unsigned long) (DDR2_SIZE_BYTES / 1024u));
+        // Labels stay within printStorageReservationLine()'s %-22s column
         printStorageReservationLine("GLCD Frame Buffer:", GLCD_FRAMEBUFFER_SIZE_BYTES, DDR2_SIZE_BYTES);
-        printStorageReservationLine("PNG Decode Arena:", IMAGE_LOADER_ARENA_SIZE, DDR2_SIZE_BYTES);
+        printStorageReservationLine("GUI Overlay Buffer A:", GLCD_OVERLAY_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("GUI Overlay Buffer B:", GLCD_OVERLAY_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("LVGL Heap:", GUI_LVGL_HEAP_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("Unreserved:", DDR2_SIZE_BYTES - reservedBytes, DDR2_SIZE_BYTES);
     }
 

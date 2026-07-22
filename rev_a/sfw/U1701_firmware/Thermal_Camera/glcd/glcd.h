@@ -28,15 +28,25 @@
     bring-up evidence behind that (GLCD register writes bus-fault with a
     slow REFCLKO5), and GLCD_Initialize() below for the CLKDIV choice.
 
-    Frame buffer: Layer 0 only (this driver doesn't use GLCD's 3-layer
-    alpha-blending -- a single opaque layer is all a static/blank buffer
-    needs). Placed at GLCD_FRAMEBUFFER_BASE_ADDRESS, the DDR2 uncached
-    (KSEG1) alias (core/ddr2.h) -- core/ddr2.h has no partition scheme today
-    (the whole 32MB is unclaimed), so this is this driver's own reservation.
-    RGB888 (3 bytes/pixel), matching the panel's native 24-bit depth.
-    GLCD_Initialize() clears it to 0 (black, matching this panel's
-    Normally-Black mode) -- filling it with actual image data is a
-    deliberately separate, later step.
+    Layers: this driver uses two of the GLCD's three layers.
+
+      Layer 0 is the opaque background: GLCD_FRAMEBUFFER_BASE_ADDRESS, RGB888
+      (3 bytes/pixel, matching the panel's native 24-bit depth), written by
+      application/image_loader.c's PNG loader. GLCD_Initialize() clears it to
+      0 (black, matching this panel's Normally-Black mode).
+
+      Layer 1 is a transparent GUI overlay: ARGB8888 (4 bytes/pixel), which
+      the controller composites over Layer 0 per-pixel in hardware, and which
+      LVGL renders into (gui/lv_port_disp.c). It is brought up separately by
+      GLCD_OverlayInitialize() -- a board that never starts the GUI simply
+      never enables Layer 1. It is double buffered: the GUI renders a whole
+      frame into the buffer that is NOT being scanned out, then flips
+      GLCDL1BADDR between them during vertical blanking, so the panel never
+      shows a half-drawn frame.
+
+    All three buffers live in DDR2 through the uncached (KSEG1) alias
+    (core/ddr2.h) -- core/ddr2.h has no allocator, so each is this driver's
+    own reservation, documented in the map in gui/gui.h.
 
     Pins: GD0-23/HSYNC/VSYNC/GCLK/GEN are dedicated (non-PPS) GLCD Controller
     pins per the device datasheet's pinout table -- no gpio/pin_macros.h
@@ -77,6 +87,21 @@ extern "C" {
 // for the GLCD Controller's own DMA (a separate DDR2 bus master) to see it.
 #define GLCD_FRAMEBUFFER_BASE_ADDRESS      DDR2_KSEG1_BASE_ADDRESS
 
+// Layer 1 (GUI overlay) geometry/placement -- same 320x240 as Layer 0, but
+// ARGB8888 so the GLCD Controller can alpha-blend it over Layer 0 per pixel.
+// Two full-screen buffers (see the double-buffering note in the file header),
+// both through the uncached KSEG1 alias for the same coherency reason as
+// Layer 0. Placed clear of Layer 0's ~230KB at DDR2 offset 0; the full DDR2
+// partition map lives in gui/gui.h.
+#define GLCD_OVERLAY_WIDTH_PX              320
+#define GLCD_OVERLAY_HEIGHT_PX             240
+#define GLCD_OVERLAY_BYTES_PER_PIXEL       4u
+#define GLCD_OVERLAY_STRIDE_BYTES          (GLCD_OVERLAY_WIDTH_PX * GLCD_OVERLAY_BYTES_PER_PIXEL)
+#define GLCD_OVERLAY_SIZE_BYTES            ((uint32_t)GLCD_OVERLAY_STRIDE_BYTES * GLCD_OVERLAY_HEIGHT_PX)
+
+#define GLCD_OVERLAY_BUFFER_A_ADDRESS      (DDR2_KSEG1_BASE_ADDRESS + 0x00100000u)
+#define GLCD_OVERLAY_BUFFER_B_ADDRESS      (DDR2_KSEG1_BASE_ADDRESS + 0x00200000u)
+
 // Brings up the GLCD Controller: assumes PMD6bits.GLCDMD == 0 already
 // (application/power_saving.c) and REFCLK5 already configured (by
 // clockInitialize() at boot, before this runs). Programs GLCDCLKCON,
@@ -88,10 +113,34 @@ extern "C" {
 // without PMDInitialize() clearing it).
 bool GLCD_Initialize(void);
 
+// Brings up Layer 1, the transparent ARGB8888 GUI overlay: clears both
+// overlay buffers to fully transparent, programs Layer 1's geometry/blend/
+// color mode, and points it at buffer B -- so whichever buffer the GUI
+// renders into first (buffer A, per gui/lv_port_disp.c) is off-screen and
+// its first frame appears only when it is flipped in. Separate from
+// GLCD_Initialize() so the overlay only exists if a GUI is actually running.
+// Returns false if GLCD_Initialize() hasn't run (LCDEN still clear).
+bool GLCD_OverlayInitialize(void);
+
+// Points Layer 1's DMA at `buffer` (a KSEG0/KSEG1 pointer to one of the two
+// overlay buffers; converted to the physical address GLCDL1BADDR wants).
+// The controller latches the new base at the next frame start, so call this
+// from inside vertical blanking -- see GLCD_WaitOverlayVSync().
+void GLCD_SetOverlayBaseAddress(const void *buffer);
+
+// Blocks until the panel is in vertical blanking (GLCDSTAT.VSYNC), which is
+// the window in which an overlay buffer flip is invisible. Bounded by a CP0
+// Count deadline of roughly two frame periods, so a panel that never asserts
+// VSYNC (or a GLCD that was never enabled) stalls the caller briefly rather
+// than hanging the main loop forever. Returns false on that timeout, which
+// the caller should latch -- the flip is then still safe to perform, it just
+// may tear.
+bool GLCD_WaitOverlayVSync(void);
+
 // Prints GLCD Controller settings (PMD gating state, LCDEN, resolution,
-// timing registers, clock divider + derived GCLK frequency, Layer 0 color
-// mode/size/base address, polarity bits). Backs the "Peripheral Status?
-// GLCD" USB UART command.
+// timing registers, clock divider + derived GCLK frequency, Layer 0 and
+// Layer 1 color mode/size/base address, polarity bits). Backs the
+// "Peripheral Status? GLCD" USB UART command.
 void GLCD_PrintStatus(void);
 
 #ifdef __cplusplus

@@ -39,6 +39,9 @@
 // GLCD
 #include "glcd/glcd.h"
 
+// GUI (LVGL on GLCD Layer 1)
+#include "gui/gui.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -335,6 +338,17 @@ void main(void) {
             &error_handler.flags.backlight_pwm_init_error);
     while(usbUartCheckIfBusy());
 
+    // Bring up LVGL on GLCD Layer 1: a transparent GUI overlay the
+    // controller alpha-blends over the Layer 0 image. Must come after
+    // GLCD_Initialize() (it enables a layer on the running controller) and
+    // after ddr2Initialize() (its two overlay buffers and its 4MB heap are
+    // all in DDR2). That heap also backs every PNG decode
+    // (application/image_loader.c), so this has to run before the
+    // "Display Image:" command can be used.
+    reportInit("Graphics User Interface", GUI_Initialize(),
+            &error_handler.flags.gui_init_error);
+    while(usbUartCheckIfBusy());
+
     #warning "CTP touch controller detection is disabled for now, so the LCD backlight will always be enabled. Re-enable it when the touch controller is working."
 //    // Enable the LCD backlight only if the panel's integrated GT911
 //    // capacitive touch controller responded during I2C bring-up above --
@@ -496,6 +510,10 @@ void main(void) {
 
         // fold any finished I2C telemetry reads into the telemetry struct
         telemetryTasks();
+
+        // redraw the GUI overlay if anything changed, and re-read the values
+        // on screen when heartbeatServices() asks (every 500ms)
+        GUI_Tasks();
 
         if (live_telemetry_print_request && live_telemetry_enable) {
             

@@ -75,7 +75,11 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(usb_msd_init_error,              "USB Mass Storage Init") \
     X(glcd_init_error,                 "GLCD Init") \
     X(backlight_pwm_init_error,        "Backlight PWM Init") \
-    X(battery_charger_fault,           "Battery Charger Fault (MAX8903 nFLT)")
+    X(battery_charger_fault,           "Battery Charger Fault (MAX8903 nFLT)") \
+    X(gui_init_error,                  "GUI (LVGL) Init") \
+    X(gui_lvgl_error,                  "LVGL Runtime Error") \
+    X(gui_heap_exhausted,              "LVGL Heap Exhausted") \
+    X(gui_vsync_timeout,               "GLCD Overlay VSync Timeout")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,
