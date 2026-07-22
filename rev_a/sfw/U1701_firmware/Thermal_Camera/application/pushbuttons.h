@@ -24,8 +24,17 @@
 #define _PUSHBUTTONS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <xc.h>
 #include <sys/attribs.h>
+
+// Set by the ISR below on each SHUTTER press (low-to-high edge), for
+// main-loop code to act on -- the ISR runs at IPL3 and must not do the
+// work itself. Consumed (and cleared) by GUI_Tasks() in gui/gui.c, which
+// advances to the next GUI screen. There is deliberately only one consumer:
+// whoever clears it takes the event, so a second reader would silently
+// steal presses.
+extern volatile uint8_t shutter_button_press_event;
 
 // Enables Port A's change-notification interrupt for the SHUTTER (RA9) and
 // POWER (RA10) pins. Must run after gpioInitialize() (which configures

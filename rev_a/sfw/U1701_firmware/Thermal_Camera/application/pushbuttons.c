@@ -25,6 +25,9 @@ static volatile bool powerPressed = false;
 // SDFileIO_HotSwapTasks() from the main loop, never here at IPL3.
 static volatile bool cardDetectLevel = false;
 
+// Declared in pushbuttons.h -- see there for the single-consumer rule
+volatile uint8_t shutter_button_press_event = 0;
+
 bool pushbuttonsInitialize(void) {
 
     // Disable while (re)configuring
@@ -74,6 +77,10 @@ void __ISR(_CHANGE_NOTICE_A_VECTOR, IPL3SRS) portAChangeNoticeISR(void) {
     }
 
     if (shutterNow && !shutterPressed) {
+        // Latch the press for the main loop (currently the GUI's screen
+        // switch) -- nothing that acts on it belongs at IPL3
+        shutter_button_press_event = 1;
+
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Shutter button pressed\r\n");
         terminalTextAttributesReset();

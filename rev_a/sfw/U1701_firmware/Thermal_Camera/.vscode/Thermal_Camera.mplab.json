@@ -397,10 +397,18 @@
                 "gui/lv_conf.h",
                 "gui/lv_port_disp.h",
                 "gui/lv_port_disp.c",
+                "gui/screens/screen_common.h",
+                "gui/screens/screen_common.c",
                 "gui/screens/demo_screen.h",
                 "gui/screens/demo_screen.c",
+                "gui/screens/system_screen.h",
+                "gui/screens/system_screen.c",
                 "gui/lvgl/src/libs/rle/lv_rle.c",
-                "gui/lvgl/src/libs/rle/lv_rle.h"
+                "gui/lvgl/src/libs/rle/lv_rle.h",
+                "gui/screens/screen_common.h",
+                "gui/screens/screen_common.c",
+                "gui/screens/system_screen.h",
+                "gui/screens/system_screen.c"
             ]
         }
     ]

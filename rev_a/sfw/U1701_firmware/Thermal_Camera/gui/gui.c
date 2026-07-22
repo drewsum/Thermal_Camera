@@ -16,8 +16,10 @@
 #include "gui/lv_port_disp.h"
 #include "gui/lvgl/lvgl.h"
 #include "gui/screens/demo_screen.h"
+#include "gui/screens/system_screen.h"
 
 #include "application/error_handler.h"
+#include "application/pushbuttons.h"
 #include "core/device_control.h"
 #include "glcd/glcd.h"
 #include "usb_uart/terminal_control.h"
@@ -33,6 +35,44 @@
 // unconditionally from main()'s loop, and calling into LVGL before lv_init()
 // (or after a failed init) would dereference an unbuilt global state.
 static bool gui_ready = false;
+
+// *****************************************************************************
+// Section: Screens
+// *****************************************************************************
+// Every screen is built once at init and kept, rather than created and
+// destroyed on each switch: the widgets are small next to the 4MB heap, and
+// keeping them means switching is just a pointer swap with no chance of an
+// allocation failing halfway through a screen change. Only the ACTIVE
+// screen is refreshed (see GUI_Tasks()), so an off-screen one costs nothing
+// per pass. Add a screen by writing its Create/Refresh pair and adding one
+// row here -- the shutter button cycles through however many there are.
+
+typedef struct
+{
+    lv_obj_t *(*create)(void);
+    void (*refresh)(void);
+    lv_obj_t *screen;
+} GUI_SCREEN;
+
+static GUI_SCREEN gui_screens[] =
+{
+    { DemoScreen_Create,   DemoScreen_Refresh,   NULL },
+    { SystemScreen_Create, SystemScreen_Refresh, NULL },
+};
+
+#define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
+
+static uint32_t gui_active_screen = 0;
+
+// Ignore a second shutter press within this long of the last one. The
+// buttons are capacitive and should already produce clean edges, so this is
+// precautionary -- but a bouncing button that toggled the screen twice
+// would look like the press was simply ignored.
+#define GUI_SCREEN_SWITCH_DEBOUNCE_MS   250
+
+// How long the slide between screens takes. Set to 0 for an instant swap if
+// the animation ever misbehaves against the transparent overlay.
+#define GUI_SCREEN_SWITCH_ANIM_MS       250
 
 // Milliseconds since boot, accumulated from CP0 Count deltas. Count runs at
 // SYSCLK/2 and is only 32 bits, so it wraps roughly every 43 seconds --
@@ -128,16 +168,65 @@ bool GUI_Initialize(void)
     // display object must exist before the panel starts compositing Layer 1.
     if (!GLCD_OverlayInitialize()) return false;
 
-    if (!DemoScreen_Create()) return false;
+    // Build every screen, then show the first
+    {
+        uint32_t index;
+
+        for (index = 0; index < GUI_SCREEN_COUNT; index++)
+        {
+            gui_screens[index].screen = gui_screens[index].create();
+
+            if (gui_screens[index].screen == NULL) return false;
+        }
+    }
+
+    gui_active_screen = 0;
+    lv_screen_load(gui_screens[0].screen);
 
     gui_ready = true;
 
     return true;
 }
 
+void GUI_NextScreen(void)
+{
+    if (!gui_ready) return;
+
+    gui_active_screen = (gui_active_screen + 1u) % GUI_SCREEN_COUNT;
+
+    // auto_del = false: the outgoing screen is kept, since these are built
+    // once and cycled through
+    lv_screen_load_anim(gui_screens[gui_active_screen].screen,
+            LV_SCR_LOAD_ANIM_MOVE_LEFT, GUI_SCREEN_SWITCH_ANIM_MS, 0, false);
+
+    // Show current values immediately rather than whatever was on this
+    // screen when it last went out of view (up to 500ms stale, and much
+    // more if it has been off-screen a while)
+    gui_screens[gui_active_screen].refresh();
+}
+
 void GUI_Tasks(void)
 {
     if (!gui_ready) return;
+
+    // Advance to the next screen on a shutter press. Consumed here, at
+    // main-loop level, rather than in the Port A change-notice ISR that
+    // latched it -- building a frame is far too much work for IPL3.
+    if (shutter_button_press_event)
+    {
+        static uint32_t last_switch_ms = 0;
+        uint32_t now_ms = GUI_GetTickMs();
+
+        shutter_button_press_event = 0;
+
+        // Wrap-safe: GUI_GetTickMs() is monotonic, so an unsigned
+        // subtraction stays correct across its (49-day) rollover
+        if ((now_ms - last_switch_ms) >= GUI_SCREEN_SWITCH_DEBOUNCE_MS)
+        {
+            last_switch_ms = now_ms;
+            GUI_NextScreen();
+        }
+    }
 
     // Re-read the live values on screen when heartbeatServices() asks
     // (every 500ms). Cheap: it only touches cached telemetry/RTCC copies,
@@ -145,7 +234,7 @@ void GUI_Tasks(void)
     if (gui_refresh_request)
     {
         gui_refresh_request = 0;
-        DemoScreen_Refresh();
+        gui_screens[gui_active_screen].refresh();
     }
 
     // Drives redraws, animations and LVGL's own timers. Returns quickly

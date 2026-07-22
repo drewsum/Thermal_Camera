@@ -35,18 +35,20 @@
 #ifndef DEMO_SCREEN_H
 #define DEMO_SCREEN_H
 
-#include <stdbool.h>
+#include "gui/lvgl/lvgl.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Builds the screen and makes it active. Call once, after lv_init() and
-// lv_port_disp_init(). Returns false if a widget couldn't be created.
-bool DemoScreen_Create(void);
+// Builds the screen and returns it, without showing it -- gui.c owns which
+// screen is loaded. Call once, after lv_init() and lv_port_disp_init().
+// Returns NULL if a widget couldn't be created.
+lv_obj_t *DemoScreen_Create(void);
 
 // Re-reads the clock, ambient temperature and battery state into the labels.
-// Called from GUI_Tasks() every 500ms; safe to call more often.
+// Called from GUI_Tasks() every 500ms while this screen is the active one;
+// safe to call more often, and before/without Create() having succeeded.
 void DemoScreen_Refresh(void);
 
 #ifdef __cplusplus
