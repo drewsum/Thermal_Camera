@@ -78,6 +78,26 @@ typedef struct
 // subcommand round-trip instead of a plain register read.
 bool BQ27441_Verify(uint16_t address);
 
+// Which step of BQ27441_Configure()'s sequence failed. The sequence has
+// seven distinct failure points and they need very different responses (a
+// CFGUPDATE timeout is a timing problem, a block-write failure is a bus or
+// data-memory-layout problem), so the failure is reported by step rather
+// than as a bare false.
+typedef enum
+{
+    BQ27441_CONFIG_STEP_NONE = 0,
+    BQ27441_CONFIG_STEP_UNSEAL,
+    BQ27441_CONFIG_STEP_ENTER_CFGUPDATE,
+    BQ27441_CONFIG_STEP_OPCONFIG_READ,
+    BQ27441_CONFIG_STEP_OPCONFIG_WRITE,
+    BQ27441_CONFIG_STEP_PROFILE_READ,
+    BQ27441_CONFIG_STEP_PROFILE_WRITE,
+    BQ27441_CONFIG_STEP_EXIT_CFGUPDATE,
+} BQ27441_CONFIG_STEP;
+
+// Human-readable name for a step, for status/error printing.
+const char* BQ27441_ConfigStepName(BQ27441_CONFIG_STEP step);
+
 // Describes the cell fitted to the board, written into the gauge's data
 // memory (subclass 82 "State") by BQ27441_Configure(). Impedance Track
 // gauges every prediction against these, so leaving them at the factory
@@ -122,6 +142,11 @@ typedef struct
 // State of Health only converge on the truth after a full charge/discharge
 // cycle -- the gauge has to relearn the pack, it cannot be told.
 bool BQ27441_Configure(uint16_t address, const BQ27441_BATTERY_PROFILE *profile);
+
+// As BQ27441_Configure(), but returns which step failed instead of printing.
+// BQ27441_Configure() is the normal entry point -- it wraps this and prints
+// the failing step name once, in red, only when something went wrong.
+BQ27441_CONFIG_STEP BQ27441_ConfigureVerbose(uint16_t address, const BQ27441_BATTERY_PROFILE *profile);
 
 // Blocking reads of the standard commands this board's telemetry/status
 // code needs. Each returns false (leaving the output unmodified) on I2C

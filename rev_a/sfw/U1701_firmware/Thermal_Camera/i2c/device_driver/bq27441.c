@@ -37,6 +37,14 @@
 #define BQ27441_REG_INT_TEMPERATURE    0x1Eu
 #define BQ27441_REG_SOH                0x20u   // low byte = %, high byte = status code
 
+// Read-only convenience mirrors of two data-memory values (SLUUAC9A 5.1,
+// 5.2), readable even SEALED with no block-data session. These are the
+// ground truth for whether the BQ27441_Configure() data-flash commits
+// actually landed -- the gauge silently discards a block whose checksum
+// doesn't match, so a "successful" write sequence proves nothing by itself.
+#define BQ27441_REG_OPCONFIG           0x3Au
+#define BQ27441_REG_DESIGN_CAPACITY    0x3Cu
+
 // Control() subcommands -- write [reg=0x00, lsb, msb] (3 bytes), then
 // re-read the 2-byte CONTROL register for the ones that return data.
 #define BQ27441_CTRL_CONTROL_STATUS    0x0000u
@@ -106,12 +114,13 @@
 #define BQ27441_FLAG_SOCF       0x0002u  // low-battery / final SOC threshold
 #define BQ27441_FLAG_DSG        0x0001u  // discharging
 
-// Extended/block-data ("data flash") access -- used only by
-// BQ27441_ConfigureOpConfig(). No existing driver in this codebase
-// touches extended data; modeled on TI SLUUAC9's data-memory access
-// procedure (BlockDataControl/Class/Offset/Data/Checksum) and the
-// well-known open-source SparkFun BQ27441_Arduino_Library's equivalent
-// helpers, written fresh to match this codebase's style.
+// Extended/block-data ("data flash") access -- used only by the
+// BQ27441_Configure() path. No existing driver in this codebase touches
+// extended data; modeled on TI SLUUAC9's data-memory access procedure
+// (BlockDataControl/Class/Offset/Data/Checksum), written fresh to match
+// this codebase's style. The SparkFun BQ27441_Arduino_Library was used as
+// a cross-reference early on but is NOT trustworthy against the TRM: its
+// subclass-82 Taper Rate offset (21) is wrong for this part.
 #define BQ27441_REG_BLOCKDATACONTROL   0x61u   // write 0x00 to enable block-data access
 #define BQ27441_REG_BLOCKDATACLASS     0x3Eu
 #define BQ27441_REG_BLOCKDATAOFFSET    0x3Fu
@@ -146,7 +155,11 @@
 #define BQ27441_STATE_DESIGN_CAPACITY      10u   // mAh
 #define BQ27441_STATE_DESIGN_ENERGY        12u   // mWh
 #define BQ27441_STATE_TERMINATE_VOLTAGE    16u   // mV
-#define BQ27441_STATE_TAPER_RATE           21u   // DesignCapacity / (0.1 * taper current)
+// Offset 27 per SLUUAC9A Table 6-3 -- NOT 21, which the SparkFun Arduino
+// library uses. On this part offset 21 is an unlisted/reserved byte and
+// offsets 22-23 are T Rise (thermal model, default 20), so writing the
+// taper word at 21 silently corrupts T Rise's MSB.
+#define BQ27441_STATE_TAPER_RATE           27u   // DesignCapacity / (0.1 * taper current)
 
 // Bounded retry cap for CFGUPDATE enter/exit polling -- this codebase has
 // no delay/sleep primitive, so these are busy-poll loops capped at a
@@ -253,65 +266,244 @@ static void BQ27441_DecodeFlags(uint16_t raw, BQ27441_FLAG_STATUS *status)
 // Section: Extended (Block-)Data Access -- used only by BQ27441_ConfigureOpConfig()
 // *****************************************************************************
 
-static bool BQ27441_BlockDataControl(uint16_t address)
+// When any step of a block-data session fails, these capture WHICH I2C
+// transaction it was, the driver error it failed with, and the gauge's
+// Flags() register AT THAT MOMENT, so the failure report in
+// BQ27441_Configure() can say more than "a write failed somewhere" -- a
+// NACK and a timeout point at very different problems, and CFGUPMODE in
+// the captured flags settles whether the gauge was actually still in
+// CONFIG UPDATE mode when it refused (it can't be read after the fact:
+// the sequence always exits CFGUPDATE before returning). Only the FIRST
+// failure is kept, matching BQ27441_ConfigureVerbose()'s
+// first-failing-step reporting; ConfigureVerbose() clears it on entry.
+static const char *bq27441BlockFailStep;
+static I2C_ERROR   bq27441BlockFailError;
+static uint16_t    bq27441BlockFailFlags;
+static bool        bq27441BlockFailFlagsValid;
+
+// On a window-readback mismatch, the window itself and the first offending
+// edit are kept for the failure report. The raw hex distinguishes the two
+// remaining explanations at a glance: a clean default-valued block means
+// the gauge ignored the writes; the same bytes shifted by one (the classic
+// misframe on this part) means the READBACK is lying, not the writes.
+static uint8_t  bq27441FailWindow[BQ27441_BLOCKDATA_SIZE];
+static bool     bq27441FailWindowValid;
+static uint8_t  bq27441FailEditOffset;
+static uint16_t bq27441FailEditExpected;
+static uint16_t bq27441FailEditActual;
+
+// Records the first block-data sub-step failure. Always returns false so
+// call sites can `return BQ27441_BlockFail(...)`.
+static bool BQ27441_BlockFail(uint16_t address, const char *step)
+{
+    I2C_ERROR error = I2C_ErrorGet();
+
+    if (bq27441BlockFailStep == NULL)
+    {
+        bq27441BlockFailStep  = step;
+        bq27441BlockFailError = error;
+        // Flags() is a standard command and readable in any state, even the
+        // ones that refuse block-data writes -- but if the bus itself is
+        // down this read fails too, hence the valid flag.
+        bq27441BlockFailFlagsValid =
+            BQ27441_ReadReg16LE(address, BQ27441_REG_FLAGS, &bq27441BlockFailFlags);
+    }
+
+    return false;
+}
+
+static const char* BQ27441_I2CErrorName(I2C_ERROR error)
+{
+    switch (error)
+    {
+        case I2C_ERROR_NONE:              return "none";
+        case I2C_ERROR_NACK:              return "NACK";
+        case I2C_ERROR_BUS_COLLISION:     return "bus collision";
+        case I2C_ERROR_TIMEOUT:           return "timeout";
+        case I2C_ERROR_INVALID_PARAMETER: return "invalid parameter";
+        case I2C_ERROR_QUEUE_FULL:        return "queue full";
+        default:                          return "unknown";
+    }
+}
+
+// Latches the 32-byte window for `classId`/`blockOffset` into the
+// BlockData() command space (TRM 6.1.1: enable block access, select class,
+// select block).
+static bool BQ27441_BlockDataSelect(uint16_t address, uint8_t classId, uint8_t blockOffset)
 {
     uint8_t zero = 0x00u;
 
-    return I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACONTROL, &zero, 1);
-}
+    if (!I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACONTROL, &zero, 1))
+    {
+        return BQ27441_BlockFail(address, "BlockDataControl enable (0x61)");
+    }
 
-static bool BQ27441_BlockDataClass(uint16_t address, uint8_t classId)
-{
-    return I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACLASS, &classId, 1);
-}
+    if (!I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACLASS, &classId, 1))
+    {
+        return BQ27441_BlockFail(address, "BlockDataClass select (0x3E)");
+    }
 
-static bool BQ27441_BlockDataOffset(uint16_t address, uint8_t blockOffset)
-{
-    return I2C_WriteRegister(address, BQ27441_REG_BLOCKDATAOFFSET, &blockOffset, 1);
+    if (!I2C_WriteRegister(address, BQ27441_REG_BLOCKDATAOFFSET, &blockOffset, 1))
+    {
+        return BQ27441_BlockFail(address, "BlockDataOffset select (0x3F)");
+    }
+
+    return true;
 }
 
 static bool BQ27441_ReadExtendedBlock(uint16_t address, uint8_t classId, uint8_t blockOffset,
                                        uint8_t block[BQ27441_BLOCKDATA_SIZE])
 {
-    if (!BQ27441_BlockDataControl(address)) return false;
-    if (!BQ27441_BlockDataClass(address, classId)) return false;
-    if (!BQ27441_BlockDataOffset(address, blockOffset)) return false;
-
-    return I2C_ReadRegister(address, BQ27441_REG_BLOCKDATA, block, BQ27441_BLOCKDATA_SIZE);
-}
-
-// The gauge stores (255 - (sum of the block's 32 bytes)) at
-// BlockDataChecksum; writing it is what commits a modified block.
-static uint8_t BQ27441_ComputeBlockChecksum(const uint8_t block[BQ27441_BLOCKDATA_SIZE])
-{
-    uint16_t sum = 0;
-    uint8_t i;
-
-    for (i = 0; i < BQ27441_BLOCKDATA_SIZE; i++)
-    {
-        sum += block[i];
-    }
-
-    return (uint8_t)(255u - (sum & 0xFFu));
-}
-
-static bool BQ27441_WriteExtendedBlock(uint16_t address, uint8_t classId, uint8_t blockOffset,
-                                        const uint8_t block[BQ27441_BLOCKDATA_SIZE])
-{
-    uint8_t checksum;
-
-    if (!BQ27441_BlockDataControl(address)) return false;
-    if (!BQ27441_BlockDataClass(address, classId)) return false;
-    if (!BQ27441_BlockDataOffset(address, blockOffset)) return false;
-
-    if (!I2C_WriteRegister(address, BQ27441_REG_BLOCKDATA, block, BQ27441_BLOCKDATA_SIZE))
+    if (!BQ27441_BlockDataSelect(address, classId, blockOffset))
     {
         return false;
     }
 
-    checksum = BQ27441_ComputeBlockChecksum(block);
+    if (!I2C_ReadRegister(address, BQ27441_REG_BLOCKDATA, block, BQ27441_BLOCKDATA_SIZE))
+    {
+        return BQ27441_BlockFail(address, "BlockData 32-byte read (0x40)");
+    }
 
-    return I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACHECKSUM, &checksum, 1);
+    return true;
+}
+
+// Data-flash fields are big-endian (MSB first) -- opposite of the
+// little-endian standard commands.
+static uint16_t BQ27441_GetBlockWord(const uint8_t block[BQ27441_BLOCKDATA_SIZE], uint8_t offset)
+{
+    return ((uint16_t)block[offset] << 8) | block[offset + 1];
+}
+
+// One big-endian 16-bit field to change within a 32-byte block window.
+typedef struct
+{
+    uint8_t  offset;   // byte offset of the field within the block
+    uint16_t value;
+} BQ27441_BLOCK_WORD_EDIT;
+
+// Writes `edits` into the block window with SINGLE-BYTE transfers (the
+// packet shape TI's own data-memory example, TRM section 3.1, uses), then
+// commits with a checksum computed from a full read-back of the window
+// rather than TI's old-checksum/data-replacement arithmetic. The gauge
+// NACKs a checksum write whose value doesn't match its own sum of the
+// window (confirmed by TI for this gauge family on E2E), so replacement
+// math is only as good as every 1-byte read it's built on -- and 1-byte
+// reads of the block window are exactly the access pattern this part has
+// a history of misframing on this board. Reading the whole window back in
+// one 32-byte transfer (the proven-aligned access pattern here) does two
+// jobs at once:
+//   1. verifies each written byte actually landed at its offset -- if the
+//      gauge ignored the writes (e.g. not genuinely in CFGUPDATE) or an
+//      merged packet displaced one, this reports it by name instead of
+//      NACKing mysteriously at the checksum;
+//   2. makes the checksum a sum over what the gauge itself returned, so
+//      if the gauge still NACKs it, its reads and its internal window
+//      genuinely disagree -- a bus-integrity fact worth knowing.
+//
+// A full 32-byte block WRITE is deliberately never used: besides needing
+// a 33-byte packet no reference implementation uses, it would drag live
+// gauging state back through the bus (for subclass 82 that includes Qmax
+// and Update Status, whose bit 7 makes the gauge re-SEAL itself on every
+// CFGUPDATE exit).
+//
+// The gauge only transfers the window to Data Memory once the correct
+// checksum lands at BlockDataChecksum(). After that this re-selects the
+// block (re-latching the window from Data Memory) and reads the checksum
+// back: the new value proves the commit landed.
+//
+// Assumes the caller has already unsealed the gauge and entered CFGUPDATE
+// mode.
+static bool BQ27441_WriteBlockWords(uint16_t address, uint8_t classId, uint8_t blockOffset,
+                                    const BQ27441_BLOCK_WORD_EDIT *edits, uint8_t editCount)
+{
+    uint8_t window[BQ27441_BLOCKDATA_SIZE];
+    uint16_t sum;
+    uint8_t newChecksum;
+    uint8_t readback;
+    uint8_t i;
+
+    if (!BQ27441_BlockDataSelect(address, classId, blockOffset))
+    {
+        return false;
+    }
+
+    for (i = 0; i < editCount; i++)
+    {
+        // Big-endian: MSB at the field's offset -- see BQ27441_GetBlockWord()
+        uint8_t bytes[2] = { (uint8_t)(edits[i].value >> 8), (uint8_t)(edits[i].value & 0xFFu) };
+        uint8_t j;
+
+        if (edits[i].offset > (BQ27441_BLOCKDATA_SIZE - 2u))
+        {
+            return BQ27441_BlockFail(address, "edit offset outside 32-byte window");
+        }
+
+        for (j = 0; j < 2u; j++)
+        {
+            uint8_t reg = (uint8_t)(BQ27441_REG_BLOCKDATA + edits[i].offset + j);
+
+            if (!I2C_WriteRegister(address, reg, &bytes[j], 1))
+            {
+                return BQ27441_BlockFail(address, "BlockData single-byte write (0x40+offset)");
+            }
+        }
+    }
+
+    if (!I2C_ReadRegister(address, BQ27441_REG_BLOCKDATA, window, BQ27441_BLOCKDATA_SIZE))
+    {
+        return BQ27441_BlockFail(address, "BlockData window readback (0x40, 32 bytes)");
+    }
+
+    for (i = 0; i < editCount; i++)
+    {
+        uint16_t actual = BQ27441_GetBlockWord(window, edits[i].offset);
+
+        if (actual != edits[i].value)
+        {
+            uint8_t b;
+
+            for (b = 0; b < BQ27441_BLOCKDATA_SIZE; b++)
+            {
+                bq27441FailWindow[b] = window[b];
+            }
+            bq27441FailWindowValid  = true;
+            bq27441FailEditOffset   = edits[i].offset;
+            bq27441FailEditExpected = edits[i].value;
+            bq27441FailEditActual   = actual;
+
+            return BQ27441_BlockFail(address, "window readback mismatch (byte writes not applied)");
+        }
+    }
+
+    sum = 0;
+    for (i = 0; i < BQ27441_BLOCKDATA_SIZE; i++)
+    {
+        sum += window[i];
+    }
+    newChecksum = (uint8_t)(255u - (sum & 0xFFu));
+
+    if (!I2C_WriteRegister(address, BQ27441_REG_BLOCKDATACHECKSUM, &newChecksum, 1))
+    {
+        return BQ27441_BlockFail(address, "BlockDataChecksum write (0x60)");
+    }
+
+    /* Commit verification -- see the function comment */
+    if (!BQ27441_BlockDataSelect(address, classId, blockOffset))
+    {
+        return false;
+    }
+
+    if (!I2C_ReadRegister(address, BQ27441_REG_BLOCKDATACHECKSUM, &readback, 1))
+    {
+        return BQ27441_BlockFail(address, "BlockDataChecksum verify read (0x60)");
+    }
+
+    if (readback != newChecksum)
+    {
+        return BQ27441_BlockFail(address, "commit rejected (checksum readback mismatch)");
+    }
+
+    return true;
 }
 
 static bool BQ27441_EnterConfigUpdate(uint16_t address)
@@ -340,10 +532,12 @@ static bool BQ27441_ExitConfigUpdate(uint16_t address)
     uint32_t attempt;
     uint16_t flags;
 
-    // *** VERIFY: confirm EXIT_RESIM (0x0044) is the TRM-sanctioned way
-    // to exit CFGUPDATE and recompute against a data-memory change made
-    // in this session, vs. a SOFT_RESET (0x0042) issued while still in
-    // CFGUPDATE mode -- some reference implementations use the latter. ***
+    // EXIT_RESIM (0x0044) is TRM-sanctioned (SLUUAC9A Table 4-2): exits
+    // CONFIG UPDATE without an OCV measurement and resimulates with the
+    // updated configuration to refresh StateOfCharge(). TI's section 3.1
+    // example uses SOFT_RESET (0x0042) instead, which also exits;
+    // EXIT_RESIM is kept because it recomputes SOC from the new pack
+    // description without disturbing the OCV/Qmax state.
     if (!BQ27441_ControlWrite(address, BQ27441_CTRL_EXIT_RESIM))
     {
         return false;
@@ -376,59 +570,60 @@ bool BQ27441_Verify(uint16_t address)
     return (deviceType == BQ27441_DEVICE_TYPE_EXPECTED);
 }
 
-// Data-flash fields are big-endian (MSB first) -- opposite of the
-// little-endian standard commands.
-static uint16_t BQ27441_GetBlockWord(const uint8_t block[BQ27441_BLOCKDATA_SIZE], uint8_t offset)
-{
-    return ((uint16_t)block[offset] << 8) | block[offset + 1];
-}
-
-static void BQ27441_SetBlockWord(uint8_t block[BQ27441_BLOCKDATA_SIZE], uint8_t offset, uint16_t value)
-{
-    block[offset]     = (uint8_t)(value >> 8);
-    block[offset + 1] = (uint8_t)(value & 0xFFu);
-}
-
 // Applies the OpConfig bits this board needs. Assumes the caller has already
 // unsealed the gauge and entered CFGUPDATE mode.
-static bool BQ27441_ApplyOpConfig(uint16_t address)
+static BQ27441_CONFIG_STEP BQ27441_ApplyOpConfig(uint16_t address)
 {
     uint8_t block[BQ27441_BLOCKDATA_SIZE];
+    BQ27441_BLOCK_WORD_EDIT edit;
     uint16_t opConfig;
     uint16_t desired;
 
     if (!BQ27441_ReadExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block))
     {
-        return false;
+        return BQ27441_CONFIG_STEP_OPCONFIG_READ;
     }
 
     opConfig = BQ27441_GetBlockWord(block, BQ27441_OPCONFIG_BYTE_OFFSET);
 
     desired  = opConfig;
-    desired |= BQ27441_OPCONFIG_TEMPS_EXTERNAL;   // external thermistor via BIN (TH1401)
+
+    // TEMPS is deliberately CLEARED -- internal die sensor, not the external
+    // thermistor on BIN. Setting it was tried on hardware and the gauge
+    // reported 3029.25 C (raw 0x8100, a saturated 0.1K reading), which then
+    // latched the OT flag and stopped Impedance Track from gauging. Cause is
+    // the rev A divider: TH1401 is a 10k NTC against R1402, a 1.8M pull-up,
+    // so BIN sits essentially at a rail and the ratiometric conversion has
+    // nothing to work with. Do not re-enable this without changing R1402 to
+    // something in the same decade as the thermistor.
+    desired &= (uint16_t)~BQ27441_OPCONFIG_TEMPS_EXTERNAL;
     desired |= BQ27441_OPCONFIG_BATLOWEN;         // GPOUT mirrors SOC1 (-> BATT_LOWBATT_PIN)
     desired &= (uint16_t)~BQ27441_OPCONFIG_GPIOPOL; // GPIOPOL=0: GPOUT active-low when SOC1 asserted
 
     if (desired == opConfig)
     {
-        return true;   // already configured -- don't spend a data-flash write
+        return BQ27441_CONFIG_STEP_NONE;   // already configured -- don't spend a data-flash write
     }
 
-    BQ27441_SetBlockWord(block, BQ27441_OPCONFIG_BYTE_OFFSET, desired);
+    edit.offset = BQ27441_OPCONFIG_BYTE_OFFSET;
+    edit.value  = desired;
 
-    return BQ27441_WriteExtendedBlock(address, BQ27441_OPCONFIG_CLASS_ID, 0, block);
+    return BQ27441_WriteBlockWords(address, BQ27441_OPCONFIG_CLASS_ID, 0, &edit, 1)
+               ? BQ27441_CONFIG_STEP_NONE : BQ27441_CONFIG_STEP_OPCONFIG_WRITE;
 }
 
 // Applies the pack description in `profile`. Assumes the caller has already
 // unsealed the gauge and entered CFGUPDATE mode.
-static bool BQ27441_ApplyBatteryProfile(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+static BQ27441_CONFIG_STEP BQ27441_ApplyBatteryProfile(uint16_t address,
+                                                       const BQ27441_BATTERY_PROFILE *profile)
 {
     uint8_t block[BQ27441_BLOCKDATA_SIZE];
-    bool changed = false;
+    BQ27441_BLOCK_WORD_EDIT edits[4];
+    uint8_t editCount = 0;
 
     if (!BQ27441_ReadExtendedBlock(address, BQ27441_STATE_CLASS_ID, 0, block))
     {
-        return false;
+        return BQ27441_CONFIG_STEP_PROFILE_READ;
     }
 
     // Design Capacity and Design Energy must agree with each other or the
@@ -437,68 +632,183 @@ static bool BQ27441_ApplyBatteryProfile(uint16_t address, const BQ27441_BATTERY_
     if ((BQ27441_GetBlockWord(block, BQ27441_STATE_DESIGN_CAPACITY) != profile->designCapacity_mAh) ||
         (BQ27441_GetBlockWord(block, BQ27441_STATE_DESIGN_ENERGY)   != profile->designEnergy_mWh))
     {
-        BQ27441_SetBlockWord(block, BQ27441_STATE_DESIGN_CAPACITY, profile->designCapacity_mAh);
-        BQ27441_SetBlockWord(block, BQ27441_STATE_DESIGN_ENERGY,   profile->designEnergy_mWh);
-        changed = true;
+        edits[editCount].offset = BQ27441_STATE_DESIGN_CAPACITY;
+        edits[editCount].value  = profile->designCapacity_mAh;
+        editCount++;
+        edits[editCount].offset = BQ27441_STATE_DESIGN_ENERGY;
+        edits[editCount].value  = profile->designEnergy_mWh;
+        editCount++;
     }
 
     if (BQ27441_GetBlockWord(block, BQ27441_STATE_TERMINATE_VOLTAGE) != profile->terminateVoltage_mV)
     {
-        BQ27441_SetBlockWord(block, BQ27441_STATE_TERMINATE_VOLTAGE, profile->terminateVoltage_mV);
-        changed = true;
+        edits[editCount].offset = BQ27441_STATE_TERMINATE_VOLTAGE;
+        edits[editCount].value  = profile->terminateVoltage_mV;
+        editCount++;
     }
 
     if (BQ27441_GetBlockWord(block, BQ27441_STATE_TAPER_RATE) != profile->taperRate)
     {
-        BQ27441_SetBlockWord(block, BQ27441_STATE_TAPER_RATE, profile->taperRate);
-        changed = true;
+        edits[editCount].offset = BQ27441_STATE_TAPER_RATE;
+        edits[editCount].value  = profile->taperRate;
+        editCount++;
     }
 
-    if (!changed)
+    if (editCount == 0)
     {
-        return true;   // already programmed -- data flash has finite endurance
+        return BQ27441_CONFIG_STEP_NONE;   // already programmed -- data flash has finite endurance
     }
 
-    return BQ27441_WriteExtendedBlock(address, BQ27441_STATE_CLASS_ID, 0, block);
+    return BQ27441_WriteBlockWords(address, BQ27441_STATE_CLASS_ID, 0, edits, editCount)
+               ? BQ27441_CONFIG_STEP_NONE : BQ27441_CONFIG_STEP_PROFILE_WRITE;
 }
 
-bool BQ27441_Configure(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+const char* BQ27441_ConfigStepName(BQ27441_CONFIG_STEP step)
 {
-    bool ok;
+    switch (step)
+    {
+        case BQ27441_CONFIG_STEP_NONE:            return "no failure";
+        case BQ27441_CONFIG_STEP_UNSEAL:          return "UNSEAL (Control key write)";
+        case BQ27441_CONFIG_STEP_ENTER_CFGUPDATE: return "enter CFGUPDATE (SET_CFGUPDATE / CFGUPMODE poll)";
+        case BQ27441_CONFIG_STEP_OPCONFIG_READ:   return "read OpConfig block (subclass 64)";
+        case BQ27441_CONFIG_STEP_OPCONFIG_WRITE:  return "write OpConfig block (subclass 64)";
+        case BQ27441_CONFIG_STEP_PROFILE_READ:    return "read pack description block (subclass 82)";
+        case BQ27441_CONFIG_STEP_PROFILE_WRITE:   return "write pack description block (subclass 82)";
+        case BQ27441_CONFIG_STEP_EXIT_CFGUPDATE:  return "exit CFGUPDATE (EXIT_RESIM / CFGUPMODE poll)";
+        default:                                  return "unknown";
+    }
+}
+
+// Body of BQ27441_ConfigureVerbose() -- split out so the wrapper can
+// bracket every exit path with the config-session bus pacing below.
+static BQ27441_CONFIG_STEP BQ27441_ConfigureSession(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+{
+    BQ27441_CONFIG_STEP failedStep = BQ27441_CONFIG_STEP_NONE;
+    BQ27441_CONFIG_STEP step;
 
     if (profile == NULL)
     {
-        return false;
+        return BQ27441_CONFIG_STEP_UNSEAL;
     }
 
     // Harmless if already unsealed -- see the key defines' comment above.
     if (!BQ27441_ControlWrite(address, BQ27441_UNSEAL_KEY_1) ||
         !BQ27441_ControlWrite(address, BQ27441_UNSEAL_KEY_2))
     {
-        return false;
+        return BQ27441_CONFIG_STEP_UNSEAL;
     }
 
     if (!BQ27441_EnterConfigUpdate(address))
     {
-        return false;
+        return BQ27441_CONFIG_STEP_ENTER_CFGUPDATE;
     }
 
     // Both subclasses are updated inside one CFGUPDATE session: entering and
     // exiting is the expensive part (each exit triggers a resimulation), and
-    // a half-applied configuration is worse than none.
-    ok = BQ27441_ApplyOpConfig(address);
-
-    if (!BQ27441_ApplyBatteryProfile(address, profile))
+    // a half-applied configuration is worse than none. On failure the FIRST
+    // failing step is what gets reported, since later ones are usually
+    // consequences of it -- but the sequence still runs to completion so the
+    // gauge is never left sitting in CFGUPDATE mode.
+    step = BQ27441_ApplyOpConfig(address);
+    if ((step != BQ27441_CONFIG_STEP_NONE) && (failedStep == BQ27441_CONFIG_STEP_NONE))
     {
-        ok = false;
+        failedStep = step;
     }
 
-    if (!BQ27441_ExitConfigUpdate(address))
+    step = BQ27441_ApplyBatteryProfile(address, profile);
+    if ((step != BQ27441_CONFIG_STEP_NONE) && (failedStep == BQ27441_CONFIG_STEP_NONE))
     {
-        ok = false;
+        failedStep = step;
     }
 
-    return ok;
+    if (!BQ27441_ExitConfigUpdate(address) && (failedStep == BQ27441_CONFIG_STEP_NONE))
+    {
+        failedStep = BQ27441_CONFIG_STEP_EXIT_CFGUPDATE;
+    }
+
+    return failedStep;
+}
+
+// Inter-packet gap used for the duration of the configuration session,
+// replacing the normal BQ27441_BUS_FREE_TIME_US (70us). REQUIRED, root
+// cause confirmed on hardware 2026-07-22: the gauge's I2C hardware ACKs
+// single-byte writes into the block-data window immediately, but its
+// internal firmware applies them asynchronously -- at the datasheet's own
+// 66us t(BUF) pacing, writes into the subclass-82 window were dropped
+// (ACKed, then read back unmodified moments later, CFGUPMODE still set),
+// which also made every checksum the host computed "wrong" and NACKed at
+// 0x60. At 2ms/packet the same sequence commits first try. The TRM/
+// datasheet document no such service latency; 2ms is empirical with
+// ~30x margin over the documented t(BUF) and costs only tens of ms once
+// per boot, so it is deliberately not tuned tighter. Applies only inside
+// BQ27441_ConfigureVerbose(); telemetry reads stay at 70us.
+#define BQ27441_CONFIG_SESSION_GAP_US   2000u
+
+BQ27441_CONFIG_STEP BQ27441_ConfigureVerbose(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+{
+    BQ27441_CONFIG_STEP failedStep;
+
+    bq27441BlockFailStep       = NULL;
+    bq27441BlockFailError      = I2C_ERROR_NONE;
+    bq27441BlockFailFlags      = 0;
+    bq27441BlockFailFlagsValid = false;
+    bq27441FailWindowValid     = false;
+
+    I2C_SetDeviceBusFreeTime(address, BQ27441_CONFIG_SESSION_GAP_US);
+
+    failedStep = BQ27441_ConfigureSession(address, profile);
+
+    I2C_SetDeviceBusFreeTime(address, BQ27441_BUS_FREE_TIME_US);
+
+    return failedStep;
+}
+
+bool BQ27441_Configure(uint16_t address, const BQ27441_BATTERY_PROFILE *profile)
+{
+    BQ27441_CONFIG_STEP failedStep = BQ27441_ConfigureVerbose(address, profile);
+
+    if (failedStep != BQ27441_CONFIG_STEP_NONE)
+    {
+        // Printed only on failure. Without it the configuration error flag
+        // says something went wrong but not where, and this sequence has
+        // seven distinct ways to fail. The second line narrows a block-data
+        // failure to the exact I2C transaction and driver error.
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    BQ27441 configuration failed at: %s\n\r", BQ27441_ConfigStepName(failedStep));
+        if (bq27441BlockFailStep != NULL)
+        {
+            printf("    Failing block-data transaction: %s, I2C error: %s\n\r",
+                   bq27441BlockFailStep, BQ27441_I2CErrorName(bq27441BlockFailError));
+            if (bq27441BlockFailFlagsValid)
+            {
+                // CFGUPMODE here is the decisive bit: the gauge refuses
+                // data-memory commits outside CONFIG UPDATE mode, and this
+                // is the only record of whether it was still in it at the
+                // moment of failure (the sequence exits before returning).
+                printf("    Flags() at failure: 0x%04X (CFGUPMODE=%u)\n\r",
+                       bq27441BlockFailFlags,
+                       (bq27441BlockFailFlags & BQ27441_FLAG_CFGUPMODE) ? 1u : 0u);
+            }
+            if (bq27441FailWindowValid)
+            {
+                uint8_t b;
+
+                printf("    Edit at offset %u: wrote 0x%04X, read back 0x%04X\n\r",
+                       (unsigned)bq27441FailEditOffset,
+                       bq27441FailEditExpected, bq27441FailEditActual);
+                printf("    Window readback:");
+                for (b = 0; b < BQ27441_BLOCKDATA_SIZE; b++)
+                {
+                    printf("%s%02X", ((b % 16u) == 0u) ? "\n\r        " : " ",
+                           bq27441FailWindow[b]);
+                }
+                printf("\n\r");
+            }
+        }
+        terminalTextAttributesReset();
+    }
+
+    return (failedStep == BQ27441_CONFIG_STEP_NONE);
 }
 
 bool BQ27441_ReadVoltage(uint16_t address, float *volts)
@@ -700,6 +1010,8 @@ void BQ27441_PrintStatus(uint16_t address)
     uint16_t rawFlags;
     uint16_t rawSoc;
     uint16_t rawSoh;
+    uint16_t opConfig;
+    uint16_t designCapacity;
     int16_t rawCurrent;
     float volts;
     float celsius;
@@ -755,6 +1067,22 @@ void BQ27441_PrintStatus(uint16_t address)
                flags.dischargeDetected ? "DSG " : "",
                flags.lowStateOfCharge ? "SOCF " : "",
                flags.configUpdateMode ? "CFGUPMODE " : "");
+    }
+
+    // Ground truth for both BQ27441_Configure() data-flash writes -- these
+    // read the gauge's Data Memory directly (read-only mirrors, no block
+    // session), so they show what actually committed, not what was sent.
+    if (BQ27441_ReadReg16LE(address, BQ27441_REG_OPCONFIG, &opConfig))
+    {
+        printf("    OpConfig: 0x%04X (TEMPS=%u BATLOWEN=%u GPIOPOL=%u)\n\r", opConfig,
+               (opConfig & BQ27441_OPCONFIG_TEMPS_EXTERNAL) ? 1u : 0u,
+               (opConfig & BQ27441_OPCONFIG_BATLOWEN)       ? 1u : 0u,
+               (opConfig & BQ27441_OPCONFIG_GPIOPOL)        ? 1u : 0u);
+    }
+
+    if (BQ27441_ReadReg16LE(address, BQ27441_REG_DESIGN_CAPACITY, &designCapacity))
+    {
+        printf("    Design Capacity (data memory): %u mAh\n\r", (unsigned)designCapacity);
     }
 
     if (BQ27441_ReadVoltage(address, &volts))
