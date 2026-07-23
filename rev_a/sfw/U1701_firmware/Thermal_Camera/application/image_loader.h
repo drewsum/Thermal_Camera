@@ -72,11 +72,16 @@ typedef enum
 } IMAGE_MEDIA;
 
 // Reads `filename` (8.3 name, no volume prefix) from `media`, decodes it
-// as a PNG, and blits it into the GLCD frame buffer. Prints its own
-// colored success/failure diagnostics to the terminal (file errors, PNG
-// decode errors via lodepng_error_text(), dimension mismatches). Returns
-// true only if the frame buffer was actually updated.
+// as a PNG, blits it into the GLCD Layer 2 (still-image) buffer, and enables
+// that layer so the image shows on top of the thermal video and GUI. Prints
+// its own colored success/failure diagnostics to the terminal (file errors,
+// PNG decode errors via lodepng_error_text(), dimension mismatches). Returns
+// true only if the image layer was actually updated.
 bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename);
+
+// Hides the still-image layer (disables GLCD Layer 2), revealing the thermal
+// video (Layer 0) and GUI (Layer 1) again. Safe to call when nothing is shown.
+void ImageLoader_Clear(void);
 
 #ifdef __cplusplus
 }

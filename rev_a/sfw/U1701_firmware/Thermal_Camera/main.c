@@ -42,6 +42,11 @@
 // GUI (LVGL on GLCD Layer 1)
 #include "gui/gui.h"
 
+// FLIR Lepton 3.5 thermal camera (VoSPI on SPI4, CCI on I2C1)
+#include "application/flir/flir.h"
+#include "application/flir/flir_vospi.h"
+#include "application/flir/flir_process.h"
+
 // GPIO
 #include "gpio/pin_macros.h"
 #include "gpio/pic32mzda_gpio_setup.h"
@@ -349,6 +354,22 @@ void main(void) {
             &error_handler.flags.gui_init_error);
     while(usbUartCheckIfBusy());
 
+    // FLIR thermal camera. The sensor stays powered OFF at boot (its GPIOs
+    // are already in their safe boot state -- held in reset, power-down
+    // asserted, master clock gated, rails off); "FLIR Power On" starts it.
+    // Here we only bring up the pieces that are safe to configure cold:
+    //  - Layer 2, the on-demand still-image layer for the PNG loader, disabled
+    //    (the thermal video takes over Layer 0; the image loader moved here).
+    //  - the frame-processing palette LUT.
+    //  - SPI4 + VoSPI DMA + INT1 registers, left idle until capture starts.
+    reportInit("GLCD Layer 2 (still image)", GLCD_Layer2Initialize(), NULL);
+    FLIRProcess_Initialize();
+    FLIR_VOSPI_Initialize();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("    FLIR Lepton driver ready (sensor powered off -- send 'FLIR Power On')\r\n");
+    terminalTextAttributesReset();
+    while(usbUartCheckIfBusy());
+
     #warning "CTP touch controller detection is disabled for now, so the LCD backlight will always be enabled. Re-enable it when the touch controller is working."
 //    // Enable the LCD backlight only if the panel's integrated GT911
 //    // capacitive touch controller responded during I2C bring-up above --
@@ -510,6 +531,10 @@ void main(void) {
 
         // fold any finished I2C telemetry reads into the telemetry struct
         telemetryTasks();
+
+        // advance the FLIR boot/config state machine and render any newly
+        // captured thermal frame onto Layer 0 (no-op while the sensor is off)
+        FLIR_Tasks();
 
         // redraw the GUI overlay if anything changed, and re-read the values
         // on screen when heartbeatServices() asks (every 500ms)

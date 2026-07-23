@@ -102,6 +102,20 @@ extern "C" {
 #define GLCD_OVERLAY_BUFFER_A_ADDRESS      (DDR2_KSEG1_BASE_ADDRESS + 0x00100000u)
 #define GLCD_OVERLAY_BUFFER_B_ADDRESS      (DDR2_KSEG1_BASE_ADDRESS + 0x00200000u)
 
+// Layer 2 (still-image loader) geometry/placement -- full-screen 320x240
+// RGB888, same as Layer 0. This is the top-most layer, so the GLCD composites
+// it ABOVE both the GUI (Layer 1) and the thermal video (Layer 0): while
+// enabled and opaque it hides everything beneath it, which is exactly the
+// intent -- it is disabled by default and only turned on while an image is
+// being shown (application/image_loader.c). Placed at DDR2 +7MB, clear of the
+// reserved 0..7MB region; the full partition map lives in gui/gui.h.
+#define GLCD_LAYER2_WIDTH_PX               320
+#define GLCD_LAYER2_HEIGHT_PX              240
+#define GLCD_LAYER2_BYTES_PER_PIXEL        3u
+#define GLCD_LAYER2_STRIDE_BYTES           (GLCD_LAYER2_WIDTH_PX * GLCD_LAYER2_BYTES_PER_PIXEL)
+#define GLCD_LAYER2_SIZE_BYTES             ((uint32_t)GLCD_LAYER2_STRIDE_BYTES * GLCD_LAYER2_HEIGHT_PX)
+#define GLCD_LAYER2_BASE_ADDRESS           (DDR2_KSEG1_BASE_ADDRESS + 0x00700000u)
+
 // Brings up the GLCD Controller: assumes PMD6bits.GLCDMD == 0 already
 // (application/power_saving.c) and REFCLK5 already configured (by
 // clockInitialize() at boot, before this runs). Programs GLCDCLKCON,
@@ -136,6 +150,21 @@ void GLCD_SetOverlayBaseAddress(const void *buffer);
 // the caller should latch -- the flip is then still safe to perform, it just
 // may tear.
 bool GLCD_WaitOverlayVSync(void);
+
+// Brings up Layer 2, the top-most full-screen RGB888 still-image layer, with
+// the layer DISABLED (LAYEREN=0) so it is invisible until an image is loaded.
+// Programs its geometry/blend/color mode and clears its buffer to black.
+// Returns false if GLCD_Initialize() hasn't run (LCDEN still clear). Separate
+// from GLCD_Initialize() so the layer only exists once something needs it.
+bool GLCD_Layer2Initialize(void);
+
+// Enables or disables Layer 2 (its LAYEREN bit). Enable after writing an image
+// into GLCD_LAYER2_BASE_ADDRESS to show it over the video/GUI; disable to
+// reveal them again. Full-word read-modify-write per the GLCD access rule.
+void GLCD_Layer2SetEnabled(bool enabled);
+
+// Returns whether Layer 2 is currently enabled (LAYEREN set).
+bool GLCD_Layer2IsEnabled(void);
 
 // Prints GLCD Controller settings (PMD gating state, LCDEN, resolution,
 // timing registers, clock divider + derived GCLK frequency, Layer 0 and

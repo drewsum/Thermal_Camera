@@ -39,6 +39,10 @@
                 "adc/adc.h",
                 "application/adc_channels.h",
                 "application/error_handler.h",
+                "application/flir/flir.h",
+                "application/flir/flir_cci.h",
+                "application/flir/flir_process.h",
+                "application/flir/flir_vospi.h",
                 "application/heartbeat_services.h",
                 "application/main.h",
                 "application/pgood_monitor.h",
@@ -77,6 +81,10 @@
                 "adc/adc.c",
                 "application/adc_channels.c",
                 "application/error_handler.c",
+                "application/flir/flir.c",
+                "application/flir/flir_cci.c",
+                "application/flir/flir_process.c",
+                "application/flir/flir_vospi.c",
                 "application/heartbeat_services.c",
                 "application/pgood_monitor.c",
                 "application/power_saving.c",
@@ -408,7 +416,15 @@
                 "gui/screens/screen_common.h",
                 "gui/screens/screen_common.c",
                 "gui/screens/system_screen.h",
-                "gui/screens/system_screen.c"
+                "gui/screens/system_screen.c",
+                "application/flir/flir_cci.h",
+                "application/flir/flir_cci.c",
+                "application/flir/flir_vospi.h",
+                "application/flir/flir_vospi.c",
+                "application/flir/flir_process.h",
+                "application/flir/flir_process.c",
+                "application/flir/flir.h",
+                "application/flir/flir.c"
             ]
         }
     ]

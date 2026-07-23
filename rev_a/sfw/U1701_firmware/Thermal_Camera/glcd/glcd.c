@@ -185,6 +185,58 @@ bool GLCD_OverlayInitialize(void)
     return true;
 }
 
+bool GLCD_Layer2Initialize(void)
+{
+    if ((GLCDMODE & _GLCDMODE_LCDEN_MASK) == 0)
+    {
+        // GLCD_Initialize() hasn't run: no timing programmed, nothing to
+        // composite over.
+        return false;
+    }
+
+    // Clear to black so a stale image never flashes when the layer is enabled
+    // before new content is written.
+    memset((void *)GLCD_LAYER2_BASE_ADDRESS, 0, GLCD_LAYER2_SIZE_BYTES);
+
+    GLCDL2START  = GLCD_XY(0, 0);
+    GLCDL2SIZE   = GLCD_XY(GLCD_LAYER2_WIDTH_PX, GLCD_LAYER2_HEIGHT_PX);
+    GLCDL2RES    = GLCD_XY(GLCD_LAYER2_WIDTH_PX, GLCD_LAYER2_HEIGHT_PX);
+    GLCDL2STRIDE = GLCD_LAYER2_STRIDE_BYTES;
+    GLCDL2BADDR  = KVA_TO_PA(GLCD_LAYER2_BASE_ADDRESS);
+
+    // Same opaque source-over blend as Layer 0, but LAYEREN starts CLEAR so the
+    // layer is invisible until GLCD_Layer2SetEnabled(true). Full-word write
+    // per the GLCD sub-word bus-error rule (see the file header).
+    GLCDL2MODE = (0xFFu << _GLCDL2MODE_ALPHA_POSITION)
+               | (GLCD_DESTBLEND_INV_SRCGBL << _GLCDL2MODE_DESTBLEND_POSITION)
+               | (GLCD_SRCBLEND_ALPHA_SRCGBL << _GLCDL2MODE_SRCBLEND_POSITION)
+               | (GLCD_COLORMODE_RGB888 << _GLCDL2MODE_COLORMODE_POSITION);
+
+    return true;
+}
+
+void GLCD_Layer2SetEnabled(bool enabled)
+{
+    // Full-word read-modify-write of just the LAYEREN bit.
+    uint32_t mode = GLCDL2MODE;
+
+    if (enabled)
+    {
+        mode |= _GLCDL2MODE_LAYEREN_MASK;
+    }
+    else
+    {
+        mode &= ~_GLCDL2MODE_LAYEREN_MASK;
+    }
+
+    GLCDL2MODE = mode;
+}
+
+bool GLCD_Layer2IsEnabled(void)
+{
+    return (GLCDL2MODE & _GLCDL2MODE_LAYEREN_MASK) != 0;
+}
+
 void GLCD_SetOverlayBaseAddress(const void *buffer)
 {
     // Physical address, for the same reason as Layer 0's GLCDL0BADDR above:
@@ -248,6 +300,9 @@ void GLCD_PrintStatus(void)
     uint32_t glcdl1size   = GLCDL1SIZE;
     uint32_t glcdl1stride = GLCDL1STRIDE;
     uint32_t glcdl1baddr  = GLCDL1BADDR;
+    uint32_t glcdl2mode   = GLCDL2MODE;
+    uint32_t glcdl2size   = GLCDL2SIZE;
+    uint32_t glcdl2baddr  = GLCDL2BADDR;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- GLCD Controller ---\n\r");
@@ -310,6 +365,22 @@ void GLCD_PrintStatus(void)
     {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Layer 1 (GUI overlay): disabled (GUI not initialized)\n\r");
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    }
+
+    // Layer 2 is the on-demand still-image layer (application/image_loader.c),
+    // disabled unless an image is currently being shown.
+    if (glcdl2mode & _GLCDL2MODE_LAYEREN_MASK)
+    {
+        printf("    Layer 2 (still image): Enabled=1 ColorMode=0x%lX Size=%lux%lu Base(phys)=0x%08lX\n\r",
+                (unsigned long)(glcdl2mode & _GLCDL2MODE_COLORMODE_MASK),
+                (unsigned long)(glcdl2size >> 16) & 0x7FFu, (unsigned long)(glcdl2size & 0x7FFu),
+                (unsigned long)glcdl2baddr);
+    }
+    else
+    {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Layer 2 (still image): disabled (no image shown)\n\r");
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     }
 

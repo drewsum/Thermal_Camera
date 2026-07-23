@@ -50,10 +50,13 @@
     picture is written down):
 
       +0        230,400 B  KSEG1  GLCD Layer 0 frame buffer  (glcd.h)
+                                    -- thermal video from the FLIR VoSPI path
       +1MB      307,200 B  KSEG1  GLCD Layer 1 overlay buf A (glcd.h)
       +2MB      307,200 B  KSEG1  GLCD Layer 1 overlay buf B (glcd.h)
       +3MB      4MB        KSEG0  LVGL heap                  (lv_conf.h)
-      +7MB      25MB              unreserved
+      +7MB      230,400 B  KSEG1  GLCD Layer 2 still-image buffer (glcd.h)
+      +8MB      2x 38,400 B KSEG1 FLIR VoSPI raw frame buffers A/B (flir_vospi.h)
+      +9MB      23MB              unreserved
 
     The overlay buffers are uncached because the GLCD Controller's DMA reads
     them (same reasoning as Layer 0, see core/ddr2.h's cache note). The LVGL

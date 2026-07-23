@@ -79,7 +79,11 @@ volatile __attribute__((coherent))  uint8_t update_error_leds_flag;
     X(gui_init_error,                  "GUI (LVGL) Init") \
     X(gui_lvgl_error,                  "LVGL Runtime Error") \
     X(gui_heap_exhausted,              "LVGL Heap Exhausted") \
-    X(gui_vsync_timeout,               "GLCD Overlay VSync Timeout")
+    X(gui_vsync_timeout,               "GLCD Overlay VSync Timeout") \
+    X(flir_rail_pgood_timeout,         "FLIR Lepton Rail PGOOD Timeout") \
+    X(flir_boot_timeout,               "FLIR Lepton Boot Timeout") \
+    X(flir_cci_error,                  "FLIR Lepton CCI Configuration") \
+    X(flir_vospi_desync,               "FLIR Lepton VoSPI Desync")
 
 #define ERROR_HANDLER_FLAG_FIELD(name, string)  uint8_t name;
 #define ERROR_HANDLER_FLAG_NAME(name, string)   string,

@@ -154,54 +154,58 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
         return false;
     }
 
-    if ((width != GLCD_FRAMEBUFFER_WIDTH_PX) || (height != GLCD_FRAMEBUFFER_HEIGHT_PX))
+    if ((width != GLCD_LAYER2_WIDTH_PX) || (height != GLCD_LAYER2_HEIGHT_PX))
     {
         lv_draw_buf_destroy(decoded);
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("%s is %ux%u -- the frame buffer requires exactly %ux%u\r\n",
+        printf("%s is %ux%u -- the image layer requires exactly %ux%u\r\n",
                 path, width, height,
-                (unsigned int)GLCD_FRAMEBUFFER_WIDTH_PX, (unsigned int)GLCD_FRAMEBUFFER_HEIGHT_PX);
+                (unsigned int)GLCD_LAYER2_WIDTH_PX, (unsigned int)GLCD_LAYER2_HEIGHT_PX);
         terminalTextAttributesReset();
         return false;
     }
 
-    // Blit into the frame buffer through the uncached alias, packing
-    // lodepng's 4-byte R,G,B,A pixels down to the frame buffer's 3-byte
-    // R,G,B ones. Byte order: the GLCD maps R to GD<7:0>, G to GD<15:8>,
-    // B to GD<23:16>, so little-endian packed RGB888 memory order is
-    // R,G,B -- matching the order lodepng emits for LCT_RGBA. If a
-    // displayed image ever shows red and blue swapped, reverse the three
-    // assignments in the inner loop.
+    // Blit into the Layer 2 image buffer through the uncached alias, packing
+    // lodepng's 4-byte R,G,B,A pixels down to the layer's 3-byte R,G,B ones.
+    // Byte order: the GLCD maps R to GD<7:0>, G to GD<15:8>, B to GD<23:16>,
+    // so little-endian packed RGB888 memory order is R,G,B -- matching the
+    // order lodepng emits for LCT_RGBA. If a displayed image ever shows red
+    // and blue swapped, reverse the three assignments in the inner loop.
     //
     // Packed a row at a time into a small stack buffer rather than written
-    // pixel-by-pixel straight to the frame buffer: the destination is
-    // uncached, where every byte store is its own bus transaction, while
-    // memcpy of a whole row moves words.
+    // pixel-by-pixel straight to the buffer: the destination is uncached,
+    // where every byte store is its own bus transaction, while memcpy of a
+    // whole row moves words.
     {
         const uint8_t *source = decoded->data;
-        uint8_t *destination = (uint8_t *)GLCD_FRAMEBUFFER_BASE_ADDRESS;
-        uint8_t row[GLCD_FRAMEBUFFER_STRIDE_BYTES];
+        uint8_t *destination = (uint8_t *)GLCD_LAYER2_BASE_ADDRESS;
+        uint8_t row[GLCD_LAYER2_STRIDE_BYTES];
         unsigned int x, y;
 
-        for (y = 0; y < GLCD_FRAMEBUFFER_HEIGHT_PX; y++)
+        for (y = 0; y < GLCD_LAYER2_HEIGHT_PX; y++)
         {
-            for (x = 0; x < GLCD_FRAMEBUFFER_WIDTH_PX; x++)
+            for (x = 0; x < GLCD_LAYER2_WIDTH_PX; x++)
             {
                 row[(x * 3u) + 0u] = source[(x * 4u) + 0u];   // R
                 row[(x * 3u) + 1u] = source[(x * 4u) + 1u];   // G
                 row[(x * 3u) + 2u] = source[(x * 4u) + 2u];   // B
-                // source[(x * 4) + 3] is alpha, which Layer 0 (opaque
+                // source[(x * 4) + 3] is alpha, which Layer 2 (opaque
                 // RGB888) has no channel for
             }
 
-            memcpy(destination, row, GLCD_FRAMEBUFFER_STRIDE_BYTES);
+            memcpy(destination, row, GLCD_LAYER2_STRIDE_BYTES);
 
-            source += (uint32_t)GLCD_FRAMEBUFFER_WIDTH_PX * 4u;
-            destination += GLCD_FRAMEBUFFER_STRIDE_BYTES;
+            source += (uint32_t)GLCD_LAYER2_WIDTH_PX * 4u;
+            destination += GLCD_LAYER2_STRIDE_BYTES;
         }
     }
 
     lv_draw_buf_destroy(decoded);
+
+    // Reveal the image: Layer 2 is disabled by default so the thermal video
+    // (Layer 0) and GUI (Layer 1) show; enabling it composites the image on
+    // top. ImageLoader_Clear() hides it again.
+    GLCD_Layer2SetEnabled(true);
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("Displayed %s (%ux%u, %lu byte file, decoded in %lu ms)\r\n",
@@ -210,4 +214,12 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
     terminalTextAttributesReset();
 
     return true;
+}
+
+void ImageLoader_Clear(void)
+{
+    // Hide Layer 2 so the thermal video (Layer 0) and GUI (Layer 1) are visible
+    // again. The buffer contents are left as-is (cheap; re-shown only if a new
+    // image is loaded).
+    GLCD_Layer2SetEnabled(false);
 }

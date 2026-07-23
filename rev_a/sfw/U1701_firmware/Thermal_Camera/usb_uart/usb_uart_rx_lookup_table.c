@@ -43,6 +43,9 @@
 #include "gui/gui.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
+#include "application/flir/flir.h"
+#include "application/flir/flir_process.h"
+#include "application/flir/flir_vospi.h"
 
 USB_UART_COMMAND(helpCommandFunction, "Help", "Prints help message for all supported serial commands") {
 
@@ -244,6 +247,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       USB\r\n"
         "       GLCD\r\n"
         "       GUI\r\n"
+        "       FLIR SPI\r\n"
         "       Backlight PWM\r\n"
         "       RTCC\r\n"
         "       Timer <x> (x = 1-9)") {
@@ -313,6 +317,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     }
     else if (strcmp(rx_peripheral_name, "GUI") == 0) {
         GUI_PrintStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "FLIR SPI") == 0) {
+        FLIR_VOSPI_PrintStatus();
     }
     else if (strcmp(rx_peripheral_name, "Backlight PWM") == 0) {
         BacklightPWM_PrintStatus();
@@ -745,47 +752,86 @@ USB_UART_COMMAND(setRTCCCommand, "Set RTCC:",
 }
 
 USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
-        "Enables the FLIR 1.2V and 2.8V power supplies and blocks until their PGOOD signals go high") {
+        "Powers up the FLIR Lepton 3.5 (rails -> master clock -> reset release) and starts thermal video capture onto GLCD Layer 0. The ~950ms camera boot completes in the background.") {
 
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("Enabling FLIR power supplies...\r\n");
 
-    // Turn on the 1.2V and 2.8V power supplies used by the FLIR module
-    POS1P2_RUN_PIN = HIGH;
-    POS2P8_RUN_PIN = HIGH;
+    // FLIR_PowerOn() runs the ordered rails/clock/reset sequence with bounded
+    // PGOOD waits; the long boot + CCI handshake then finish asynchronously in
+    // FLIR_Tasks() so the console stays responsive. Check "FLIR Status?".
+    if (FLIR_PowerOn()) {
+        printf("FLIR power-up sequence started -- camera booting (~950ms).\r\n");
+        printf("Use 'FLIR Status?' to watch it reach STREAMING.\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("FLIR power-up FAILED (a rail did not reach PGOOD) -- see 'Error Handler Status?'\r\n");
+    }
 
-    // Block on the 1.2V supply and print its status once it's good
-    while (POS1P2_PGOOD_PIN == LOW);
-    printf("    +1.2V supply PGOOD is high\r\n");
-
-    // Block on the 2.8V supply and print its status once it's good
-    while (POS2P8_PGOOD_PIN == LOW);
-    printf("    +2.8V supply PGOOD is high\r\n");
-
-    FLIR_CLK_EN_PIN = HIGH;
-    printf("    FLIR Clock Enabled\r\n");
-    
-    nFLIR_PWR_DWN_PIN = HIGH;
-    printf("    FLIR PWR Down Signal de-asserted\r\n");
-    
-    nFLIR_RESET_PIN = HIGH;
-    printf("    FLIR Reset signal de-asserted\r\n");
-    
-    printf("FLIR power supplies enabled, all PGOOD signals are high\r\n");
     terminalTextAttributesReset();
 
 }
 
-USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off", "Disables the FLIR 1.2V and 2.8V power supplies") {
+USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off",
+        "Stops thermal capture and powers the FLIR Lepton fully down (held in reset, clock gated, both rails off), and blanks the video layer") {
 
-    // Turn off the 1.2V and 2.8V power supplies used by the FLIR module
-    POS1P2_RUN_PIN = LOW;
-    POS2P8_RUN_PIN = LOW;
+    FLIR_PowerOff();
 
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("FLIR power supplies disabled\r\n");
+    printf("FLIR Lepton powered down\r\n");
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flirStatusCommand, "FLIR Status?",
+        "Prints FLIR Lepton module status: state machine, control-signal/rail levels, CCI status and temperatures, capture health, and the active palette/AGC window. (The SPI4/DMA/INT1 MCU peripheral settings are under 'Peripheral Status? FLIR SPI'.)") {
+
+    terminalTextAttributesReset();
+    FLIR_PrintStatus();
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flirPaletteCommand, "FLIR Palette:",
+        "\b\b <palette>: Selects the thermal color palette. Options: Ironbow, Grayscale") {
+
+    char palette_str[16] = {0};
+
+    terminalTextAttributesReset();
+
+    if (sscanf(input_str, "FLIR Palette: %15[^\t\n\r]", palette_str) != 1) {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Usage: FLIR Palette: <Ironbow|Grayscale>\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (strcmp(palette_str, "Ironbow") == 0) {
+        FLIR_SetPalette(FLIR_PALETTE_IRONBOW);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Palette set to Ironbow\r\n");
+    } else if (strcmp(palette_str, "Grayscale") == 0) {
+        FLIR_SetPalette(FLIR_PALETTE_GRAYSCALE);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Palette set to Grayscale\r\n");
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Unknown palette '%s' (options: Ironbow, Grayscale)\r\n", palette_str);
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(clearImageCommand, "Clear Image",
+        "Hides the still-image layer (GLCD Layer 2) loaded by 'Display Image:', revealing the thermal video and GUI again") {
+
+    ImageLoader_Clear();
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Still-image layer hidden\r\n");
     terminalTextAttributesReset();
 
 }
@@ -1136,7 +1182,9 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
         // "Peripheral Status? GUI" -- since PNG decodes share it.
         uint32_t reservedBytes = GLCD_FRAMEBUFFER_SIZE_BYTES
                 + (2u * GLCD_OVERLAY_SIZE_BYTES)
-                + GUI_LVGL_HEAP_SIZE_BYTES;
+                + GUI_LVGL_HEAP_SIZE_BYTES
+                + GLCD_LAYER2_SIZE_BYTES
+                + (2u * FLIR_VOSPI_FRAME_SIZE_BYTES);
 
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Total: %10lu bytes (%lu KB)\r\n",
@@ -1146,6 +1194,8 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
         printStorageReservationLine("GUI Overlay Buffer A:", GLCD_OVERLAY_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("GUI Overlay Buffer B:", GLCD_OVERLAY_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("LVGL Heap:", GUI_LVGL_HEAP_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("GLCD Layer 2 Image:", GLCD_LAYER2_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("FLIR VoSPI Frames (x2):", 2u * FLIR_VOSPI_FRAME_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("Unreserved:", DDR2_SIZE_BYTES - reservedBytes, DDR2_SIZE_BYTES);
     }
 

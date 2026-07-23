@@ -86,13 +86,18 @@ bool PMDInitialize(void) {
     PMD5bits.U5MD = 0;
     PMD5bits.U6MD = 0;
     
-    // Disable all SPI Modules except SPI3 -- driven by spi3.c for the
-    // SST25VF080B SPI NOR flash (sst25vf080b.c); leaving that bit set would
-    // make the module inaccessible
+    // Disable all SPI Modules except SPI3 and SPI4. SPI3 is driven by spi3.c
+    // for the SST25VF080B SPI NOR flash (sst25vf080b.c). SPI4 is the FLIR
+    // Lepton's VoSPI video port (application/flir/flir_vospi.c). Both must be
+    // left enabled here: PMD is lock-protected after this one-shot init (see
+    // this function's header), so a driver cannot clear its own PMD bit later
+    // -- SPI4 is instead gated at runtime with SPI4CONbits.ON (the module
+    // draws negligible current while ON=0 and the sensor is powered down).
+    // Leaving either bit set would make that module permanently inaccessible.
     PMD5bits.SPI1MD = 1;
     PMD5bits.SPI2MD = 1;
     PMD5bits.SPI3MD = 0;
-    PMD5bits.SPI4MD = 1;
+    PMD5bits.SPI4MD = 0;
     #ifdef SPI5CON
     PMD5bits.SPI5MD = 1;
     #endif
