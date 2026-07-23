@@ -168,13 +168,19 @@ static bool I2CDevices_Verify(I2C_DEVICE_ID id)
 }
 
 // Dispatches kind-specific one-time setup for `id`, called once presence is
-// confirmed. Kinds that need no setup (MCP9804) just return true.
+// confirmed.
 static bool I2CDevices_ConfigureOne(I2C_DEVICE_ID id)
 {
     switch (i2cDeviceKinds[id])
     {
+        // The MCP9804 needs no configuration, but shutdown is explicitly
+        // CLEARED rather than assumed clear: I2CDevices_EnterLowPower()
+        // parks every temp sensor in SHDN, and a warm reset (the sleep
+        // path's wake IS one) doesn't power-cycle them. SHDN doesn't block
+        // register reads, so without this the sensors verify fine and then
+        // silently serve frozen temperatures all session.
         case I2C_DEVICE_KIND_MCP9804:
-            return true;
+            return MCP9804_SetShutdown(i2cDeviceAddresses[id], false);
 
         case I2C_DEVICE_KIND_INA231A:
             return INA231A_Configure(i2cDeviceAddresses[id],

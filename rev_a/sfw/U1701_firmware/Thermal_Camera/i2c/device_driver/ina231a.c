@@ -112,16 +112,34 @@ static float INA231A_DecodePower(uint16_t raw, float currentLSB)
 // *****************************************************************************
 
 // The INA231A doesn't expose a manufacturer/device ID register the way the
-// MCP9804 does, so this can only check the Configuration register against
-// its documented power-on-reset value. That means this is reliable right
-// after a power cycle, but returns false-negative "not present" for a
-// device that's alive and working but whose Configuration/Calibration
-// registers were already written this session (e.g. after a warm MCU reset
-// that didn't power-cycle the INA231A, or if Verify() is called again after
-// INA231A_Configure()).
+// MCP9804 does, so this checks the Configuration register against its
+// documented power-on-reset value. A device whose CONFIG doesn't match is
+// NOT immediately reported absent: an INA231A that was reconfigured in a
+// previous session and then warm-reset arrives here alive but non-default
+// -- enterLowPowerSleep() parks every INA231A in MODE=0, and the Software
+// Reset it wakes into doesn't power-cycle the sensors, so before 2026-07-22
+// every post-sleep boot misreported all of them as I2C errors until a
+// battery pull. Instead, command a device self-reset (the RST bit, which
+// self-clears and restores POR defaults) and re-check: a real INA231A
+// comes back reading 0x4127, anything else at this address won't.
 bool INA231A_Verify(uint16_t address)
 {
     uint16_t config;
+
+    if (!INA231A_ReadReg16(address, INA231A_REG_CONFIG, &config))
+    {
+        return false;
+    }
+
+    if (config == INA231A_CONFIG_POR_DEFAULT)
+    {
+        return true;
+    }
+
+    if (!INA231A_WriteReg16(address, INA231A_REG_CONFIG, INA231A_CONFIG_RST))
+    {
+        return false;
+    }
 
     if (!INA231A_ReadReg16(address, INA231A_REG_CONFIG, &config))
     {

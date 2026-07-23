@@ -242,7 +242,18 @@ static void powerDownDisplay(void) {
 // power/clock domain along with the two rails that exist only to feed it.
 static void powerDownIndicatorsAndSensor(void) {
 
-    HEARTBEAT_LED_PIN = LOW;
+    // The heartbeat LED is NOT a GPIO here: RC4 is PPS-routed to OC4
+    // (pic32mzda_gpio_setup.c), so writing LATC4 does nothing while the OC
+    // module owns the pin. Instead the PWM duty goes to 0% -- output low at
+    // every point in the period -- so the pin freezes LOW when the
+    // peripheral clocks stop in Sleep. The write sticks because Timer1
+    // (whose ISR modulates OC4RS for the breathing effect) was stopped at
+    // the top of enterLowPowerSleep(), and the buffered OC4RS value
+    // transfers to the active register at the next Timer2 rollover, 16us
+    // out. OC4 itself stays ON: a running PWM at 0% duty is deterministic,
+    // whereas what a disabled OC module drives through PPS is not.
+    OC4RS = 0;
+
     ERROR_LED_PIN = LOW;
     RESET_LED_PIN = LOW;
     CPU_TRAP_LED_PIN = LOW;
@@ -252,7 +263,7 @@ static void powerDownIndicatorsAndSensor(void) {
     // the asserted polarity is ASSUMED here rather than confirmed against the
     // gate wiring. It is trivially checkable by eye: if the green PGOOD LEDs
     // go out when "Sleep" runs, this is right; if they come ON, flip it.
-    PGOOD_LED_SHDN_PIN = LOW;
+    PGOOD_LED_SHDN_PIN = HIGH;
 
     // Lepton: assert power-down and reset, stop its master clock, then drop
     // the rails that serve only it (+1.2V and +2.8V)
@@ -266,31 +277,60 @@ static void powerDownIndicatorsAndSensor(void) {
 }
 
 // Silences every interrupt source that could pull the core straight back out
-// of Sleep, leaving exactly one wake source armed: Port A change-notice,
-// which carries the POWER button (see application/pushbuttons.c).
+// of Sleep, leaving exactly one wake source armed: Port A change-notice on
+// the POWER button pin alone (see application/pushbuttons.c).
 //
 // The watchdog matters most here. FWDTEN is OFF in configuration, but
 // watchdogTimerInitialize() turns it on at run time, and SWDTPS is
 // SPS1048576 -- roughly 34 seconds off the ~31 kHz LPRC. Left running it
 // would reset the board mid-sleep, every time, which is exactly the
 // long-duration rest this mode exists to provide.
+//
+// *** This function's first version woke instantly, every time (issue
+// found 2026-07-22): it disabled a hand-picked list of sources and left
+// CNIEA0 (SD card detect) armed -- but powerDownStorage() has just cut the
+// SD slot's power, so RA0 drifts through the input threshold as the card-
+// detect pull-up's domain bleeds down, and in mismatch-mode CN that is a
+// wake event. The `wait` fell straight through to deviceReset(). Hence the
+// approach below: mask EVERYTHING, gate CN down to the POWER pin only, let
+// the just-killed power domains settle, THEN take the mismatch baseline. ***
 static void quiesceWakeSources(void) {
+
+    uint32_t settleStart;
 
     stopWatchdogTimer();
 
-    // Heartbeat (Timer1) drives all the periodic telemetry requests
-    T1CONbits.ON = 0;
-    disableInterrupt(timer1);
+    // Mask every interrupt source in the machine rather than a curated
+    // list -- any source left enabled here (ADC scans, RTCC, GLCD, a UART
+    // error...) is a spurious wake. Nothing needs to survive: the wake
+    // path is deviceReset(), so no interrupt state is worth preserving.
+    IEC0CLR = 0xFFFFFFFFu;
+    IEC1CLR = 0xFFFFFFFFu;
+    IEC2CLR = 0xFFFFFFFFu;
+    IEC3CLR = 0xFFFFFFFFu;
+    IEC4CLR = 0xFFFFFFFFu;
+    IEC5CLR = 0xFFFFFFFFu;
+    IEC6CLR = 0xFFFFFFFFu;
 
-    // USB is detached by now, but its event sources can still fire
-    disableInterrupt(usb_general_event);
-    disableInterrupt(usb_dma_event);
-    disableInterrupt(usb_suspend_resume_event);
+    // Gate change-notice down to the POWER button only. Card detect
+    // (CNIEA0) must not wake -- see the header comment -- and the SHUTTER
+    // button has no role while asleep. pushbuttonsInitialize() re-enables
+    // both after the wake reset.
+    CNENAbits.CNIEA0 = 0;
+    CNENAbits.CNIEA10 = 0;
 
-    // I2C is idle by now -- nothing should be queued -- but a stray bus
-    // event would wake the core for no reason
-    disableInterrupt(i2c1_host_event);
-    disableInterrupt(i2c1_bus_collision_event);
+    // Let the domains that powerDown*() just switched off finish decaying
+    // before the mismatch baseline is taken, so a pin mid-drift can't
+    // arm-then-fire. 50ms of CP0 spin: the WDT is already stopped and the
+    // board is about to sleep for hours, so the wait is free.
+    settleStart = _CP0_GET_COUNT();
+    while ((uint32_t)(_CP0_GET_COUNT() - settleStart) < ((SYSCLK_INT / 2u) / 20u));
+
+    // Legacy mismatch-mode CN compares each enabled pin against the value
+    // last READ from the port -- this read makes the settled levels the
+    // baseline. Without it the comparison runs against whatever was read
+    // before the power-down sequence changed everything.
+    (void)PORTA;
 
     // The one source left armed. Change-notice is asynchronous, so it still
     // works with the peripheral clocks stopped.
