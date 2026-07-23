@@ -1044,10 +1044,17 @@ void BQ27441_PrintStatus(uint16_t address)
         bool sealed = (controlStatus & BQ27441_CTRLSTAT_SS) != 0;
 
         terminalTextAttributes(sealed ? YELLOW_COLOR : GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    Control Status: 0x%04X (%s%s%s%s%s%s%s%s)\n\r", controlStatus,
+        // QMAX_UP/RES_UP are the Impedance Track learn-cycle progress bits:
+        // QMAX_UP sets once a valid pair of relaxed OCV readings has updated
+        // the learned capacity, RES_UP once a discharge has updated the Ra
+        // resistance table. Both showing after a full rest/discharge/rest
+        // cycle is the confirmation the gauge relearned the fitted pack.
+        printf("    Control Status: 0x%04X (%s%s%s%s%s%s%s%s%s%s)\n\r", controlStatus,
                sealed ? "SEALED " : "UNSEALED ",
                (controlStatus & BQ27441_CTRLSTAT_INITCOMP)   ? "INITCOMP " : "",
                (controlStatus & BQ27441_CTRLSTAT_VOK)        ? "VOK " : "",
+               (controlStatus & BQ27441_CTRLSTAT_QMAX_UP)    ? "QMAX_UP " : "",
+               (controlStatus & BQ27441_CTRLSTAT_RES_UP)     ? "RES_UP " : "",
                (controlStatus & BQ27441_CTRLSTAT_SLEEP)      ? "SLEEP " : "",
                (controlStatus & BQ27441_CTRLSTAT_HIBERNATE)  ? "HIBERNATE " : "",
                (controlStatus & BQ27441_CTRLSTAT_CALMODE)    ? "CALMODE " : "",
