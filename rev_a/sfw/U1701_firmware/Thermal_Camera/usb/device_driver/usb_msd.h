@@ -8,7 +8,7 @@
     The device tier above usb.c: implements the MSC Bulk-Only Transport
     (CBW/CSW) state machine and the SCSI transparent command set over two
     logical units -- LUN 0 = microSD card (removable, may be absent),
-    LUN 1 = SST25VF080B SPI flash (via sst25vf080b_disk.h, always
+    LUN 1 = W25Q128JV SPI flash (via w25q128jv_disk.h, always
     present). Never touches a USB register; all bus access goes through
     usb.h's USB_Bulk*() primitives.
 
@@ -27,7 +27,7 @@
     ResumeHook re-yields if the device is still configured, closing the
     both-sides-mounted window a host-sleep cycle would otherwise open.
 
-    Durability: LUN 1 writes land in sst25vf080b_disk.c's 4KB staging
+    Durability: LUN 1 writes land in w25q128jv_disk.c's 4KB staging
     buffer. It is flushed on SCSI SYNCHRONIZE CACHE / START STOP UNIT
     (eject) / BOT reset / every hand-back above, plus a write-idle
     timeout in USB_MSD_TimedTasks() -- so a cable yank mid-write can

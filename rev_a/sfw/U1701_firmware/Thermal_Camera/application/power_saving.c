@@ -13,12 +13,13 @@
 #include "gpio/pin_macros.h"
 
 #include "application/backlight_pwm.h"
+#include "application/flir/flir.h"
 #include "i2c/i2c_devices.h"
 #include "i2c/i2c_master.h"
 #include "sdhc/sd_fileio.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "spi/flash_fileio.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/w25q128jv_disk.h"
 #include "usb/usb.h"
 
 // This function disables unused peripherals on startup for power savings
@@ -87,7 +88,7 @@ bool PMDInitialize(void) {
     PMD5bits.U6MD = 0;
     
     // Disable all SPI Modules except SPI3 and SPI4. SPI3 is driven by spi3.c
-    // for the SST25VF080B SPI NOR flash (sst25vf080b.c). SPI4 is the FLIR
+    // for the W25Q128JV SPI NOR flash (w25q128jv.c). SPI4 is the FLIR
     // Lepton's VoSPI video port (application/flir/flir_vospi.c). Both must be
     // left enabled here: PMD is lock-protected after this one-shot init (see
     // this function's header), so a driver cannot clear its own PMD bit later
@@ -181,7 +182,7 @@ bool PMDInitialize(void) {
     // Report success only if the DDR2 controller, SPI3 module, SDHC
     // controller, and GLCD controller were left enabled -- disabling any of
     // these here would freeze all their SFR accesses in
-    // ddr2Initialize()/SST25VF080B_Initialize()/SDHC_Initialize()/
+    // ddr2Initialize()/W25Q128JV_Initialize()/SDHC_Initialize()/
     // GLCD_Initialize()
     return (PMD7bits.DDR2CMD == 0) && (PMD5bits.SPI3MD == 0) && (PMD6bits.SDHCMD == 0)
             && (PMD6bits.GLCDMD == 0);
@@ -214,7 +215,7 @@ static void powerDownStorage(void) {
     // the host can issue a transfer into a volume that no longer exists
     USB_Detach();
 
-    Flash_Disk_Sync();
+    W25Q128JV_Disk_Sync();
     FlashFileIO_Unmount();
 
     // Unmount first (flushes FAT state), then drop SD_PWR_EN_PIN. Powering
@@ -242,10 +243,11 @@ static void powerDownDisplay(void) {
 
 }
 
-// Drops the loads that are just burning current: the indicator LEDs, the
-// PGOOD LED bank (which has its own shutdown pin), and the FLIR Lepton's
-// power/clock domain along with the two rails that exist only to feed it.
-static void powerDownIndicatorsAndSensor(void) {
+// Drops the loads that are just burning current: the indicator LEDs and the
+// PGOOD LED bank (which has its own shutdown pin). The FLIR Lepton is handled
+// separately, in powerDownSensor() -- see that function for why it has to go
+// last.
+static void powerDownIndicators(void) {
 
     // The heartbeat LED is NOT a GPIO here: RC4 is PPS-routed to OC4
     // (pic32mzda_gpio_setup.c), so writing LATC4 does nothing while the OC
@@ -270,14 +272,22 @@ static void powerDownIndicatorsAndSensor(void) {
     // go out when "Sleep" runs, this is right; if they come ON, flip it.
     PGOOD_LED_SHDN_PIN = HIGH;
 
-    // Lepton: assert power-down and reset, stop its master clock, then drop
-    // the rails that serve only it (+1.2V and +2.8V)
-    nFLIR_PWR_DWN_PIN = LOW;
-    nFLIR_RESET_PIN = LOW;
-    FLIR_CLK_EN_PIN = LOW;
+}
 
-    POS1P2_RUN_PIN = LOW;
-    POS2P8_RUN_PIN = LOW;
+// Shuts the FLIR Lepton down. FLIR_PowerOff() owns the sequence (stop VoSPI
+// capture, assert power-down and reset, gate the master clock, drop the two
+// rails that serve only it), so it is called here rather than duplicating the
+// pin writes -- and it also disarms the capture DMA, which raw pin writes
+// would leave running into a dead sensor.
+//
+// This MUST run after every other I2C transaction of the shutdown sequence,
+// including I2CDevices_EnterLowPower(): an unpowered Lepton clamps SDA/SCL
+// low through its I/O structures, so dropping its rails takes I2C1 down for
+// every other device on the bus. (The camera is powered from boot for exactly
+// that reason -- see application/flir/flir.h.)
+static void powerDownSensor(void) {
+
+    FLIR_PowerOff();
 
 }
 
@@ -374,12 +384,16 @@ void enterLowPowerSleep(void) {
 
     powerDownStorage();
     powerDownDisplay();
-    powerDownIndicatorsAndSensor();
+    powerDownIndicators();
 
-    // I2C last of the peripherals: the shutdown commands themselves need a
-    // working bus, and the fuel gauge is deliberately left alone
+    // I2C next-to-last: the shutdown commands themselves need a working bus,
+    // and the fuel gauge is deliberately left alone
     i2cDevicesQuiesced = I2CDevices_EnterLowPower();
     (void)i2cDevicesQuiesced;
+
+    // Dead last, because dropping the Lepton's rails clamps I2C1 low for
+    // everything else on the bus -- see powerDownSensor()
+    powerDownSensor();
 
     quiesceWakeSources();
 

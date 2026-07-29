@@ -424,7 +424,11 @@
                 "application/flir/flir_process.h",
                 "application/flir/flir_process.c",
                 "application/flir/flir.h",
-                "application/flir/flir.c"
+                "application/flir/flir.c",
+                "spi/device_driver/w25q128jv.h",
+                "spi/device_driver/w25q128jv.c",
+                "spi/device_driver/w25q128jv_disk.h",
+                "spi/device_driver/w25q128jv_disk.c"
             ]
         }
     ]

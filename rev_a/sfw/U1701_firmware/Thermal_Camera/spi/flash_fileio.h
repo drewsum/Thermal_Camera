@@ -10,8 +10,8 @@
     volume ("0:", FatFs's default drive).
 
   Description:
-    The SST25VF080B is exposed to FatFs as physical drive 1 through
-    sdhc/fatfs/diskio.c -> sst25vf080b_disk.h (FF_VOLUMES is 2 in
+    The W25Q128JV is exposed to FatFs as physical drive 1 through
+    sdhc/fatfs/diskio.c -> w25q128jv_disk.h (FF_VOLUMES is 2 in
     ffconf.h). Unlike the SD card, the flash is soldered down and always
     present, so "no filesystem yet" just means a fresh/erased part --
     FlashFileIO_MountAndFormatIfNeeded() handles that by f_mkfs()ing a
@@ -45,12 +45,12 @@ extern "C" {
 // partition table -- what both FatFs and USB hosts expect on small
 // media), then labels it FLASH_FILEIO_VOLUME_LABEL. An existing volume's
 // label is set only if currently blank, so a deliberately renamed volume
-// stays renamed. Requires Flash_Disk_Initialize() to have already
+// stays renamed. Requires W25Q128JV_Disk_Initialize() to have already
 // succeeded.
 bool FlashFileIO_MountAndFormatIfNeeded(void);
 
 // Unmounts the FAT volume, flushing the disk layer's staging buffer
-// (Flash_Disk_Sync()) so nothing is left RAM-only. Backing call for the
+// (W25Q128JV_Disk_Sync()) so nothing is left RAM-only. Backing call for the
 // USB yield-to-host handoff.
 bool FlashFileIO_Unmount(void);
 
@@ -60,7 +60,7 @@ bool FlashFileIO_IsMounted(void);
 // Unconditionally re-formats the flash volume (f_mkfs + relabel +
 // remount), destroying its contents. Called by the "SPI Flash Format" USB
 // UART command as the rebuild step immediately after it erases the whole
-// chip (SST25VF080B_EraseChip()).
+// chip (W25Q128JV_EraseChip()).
 bool FlashFileIO_Format(void);
 
 // Prints one line per directory entry via the caller-supplied `printLine`

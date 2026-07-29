@@ -7,15 +7,15 @@
   Summary:
     Thin app-facing FatFs wrappers for the SPI flash volume ("1:"). See
     flash_fileio.h for the role this plays relative to sd_fileio.c and
-    sst25vf080b_disk.c.
+    w25q128jv_disk.c.
 *******************************************************************************/
 
 #include <stdio.h>
 #include <string.h>
 
 #include "spi/flash_fileio.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
-#include "spi/device_driver/sst25vf080b.h"
+#include "spi/device_driver/w25q128jv_disk.h"
+#include "spi/device_driver/w25q128jv.h"
 #include "sdhc/fatfs/ff.h"
 #include "usb_uart/terminal_control.h"
 #include "usb/device_driver/usb_msd.h"
@@ -45,7 +45,7 @@ static bool flash_mounted = false;
 // f_mkfs() scratch space -- FF_MAX_SS (512B) is the minimum legal size;
 // bigger only speeds formatting up, and this volume is 1MB, so minimum it
 // is. Deliberately NOT the disk layer's 4KB staging buffer: mkfs writes
-// this buffer out through Flash_Disk_WriteSectors(), which copies into
+// this buffer out through W25Q128JV_Disk_WriteSectors(), which copies into
 // that staging buffer -- sharing them would make those copies
 // self-overlapping.
 static BYTE mkfs_work[FF_MAX_SS];
@@ -110,14 +110,14 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
         // build the volume now. Provisioning temporarily lifts the
         // boot-default hardware write protect (restored below), otherwise
         // a virgin board could never build its own volume.
-        bool reprotect = SST25VF080B_WriteProtectIsEnabled();
+        bool reprotect = W25Q128JV_WriteProtectIsEnabled();
 
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    No FAT volume on SPI flash, formatting%s...\r\n",
                 reprotect ? " (write protect lifted for provisioning)" : "");
         terminalTextAttributesReset();
 
-        if (reprotect && !SST25VF080B_WriteProtectSet(false))
+        if (reprotect && !W25Q128JV_WriteProtectSet(false))
         {
             flash_mounted = false;
             return false;
@@ -136,13 +136,13 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
                 // calls then no-op)
                 flashFileIOEnsureLabel();
                 flashFileIOEnsureAutorun();
-                Flash_Disk_Sync();
+                W25Q128JV_Disk_Sync();
             }
         }
 
         if (reprotect)
         {
-            SST25VF080B_WriteProtectSet(true);
+            W25Q128JV_WriteProtectSet(true);
         }
 
         if (!mkfsOk)
@@ -160,7 +160,7 @@ bool FlashFileIO_MountAndFormatIfNeeded(void)
         flashFileIOEnsureAutorun();
         // Label/autorun writes may be sitting in the staging buffer --
         // make the volume durable before declaring the mount good
-        Flash_Disk_Sync();
+        W25Q128JV_Disk_Sync();
     }
 
     return flash_mounted;
@@ -173,7 +173,7 @@ bool FlashFileIO_Unmount(void)
 
     // Nothing may be left RAM-only once we're unmounted -- the next
     // consumer (USB host) reads the raw flash
-    return Flash_Disk_Sync();
+    return W25Q128JV_Disk_Sync();
 }
 
 bool FlashFileIO_IsMounted(void)
@@ -205,7 +205,7 @@ bool FlashFileIO_Format(void)
     flash_mounted = true;
     f_setlabel(FLASH_DRIVE_PREFIX FLASH_FILEIO_VOLUME_LABEL);
     flashFileIOEnsureAutorun();
-    return Flash_Disk_Sync();
+    return W25Q128JV_Disk_Sync();
 }
 
 bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
@@ -455,7 +455,7 @@ bool FlashFileIO_SelfTest(void)
     }
 
     // Leave nothing pending in the staging buffer after a self-test pass
-    Flash_Disk_Sync();
+    W25Q128JV_Disk_Sync();
 
     terminalTextAttributes(overallPass ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    Overall: %s\r\n", overallPass ? "PASS" : "FAIL");

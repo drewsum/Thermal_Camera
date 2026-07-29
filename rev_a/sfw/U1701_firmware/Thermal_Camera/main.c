@@ -23,8 +23,8 @@
 
 // SPI
 #include "spi/spi3.h"
-#include "spi/device_driver/sst25vf080b.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/w25q128jv.h"
+#include "spi/device_driver/w25q128jv_disk.h"
 #include "spi/flash_fileio.h"
 
 // SDHC / microSD
@@ -253,6 +253,20 @@ void main(void) {
             &error_handler.flags.adc_init_error);
     while(usbUartCheckIfBusy());
     
+    // Power the FLIR Lepton up BEFORE the I2C bus is touched. This is not
+    // optional: with its +2.8V/+1.2V rails down, the unpowered module clamps
+    // SDA/SCL low through its I/O structures and every other device on I2C1
+    // (temp sensors, power monitors, fuel gauge, touch controller) becomes
+    // unreachable. So the sensor is powered for the whole run -- only the
+    // video stream is on demand ("FLIR Stream On").
+    //
+    // This call is the fast part of the sequence (rails -> PGOOD -> master
+    // clock -> release power-down -> release reset); the camera's ~950ms boot
+    // then overlaps everything below and is collected by FLIR_WaitUntilReady()
+    // once I2C and the display are up. Failures latch flir_* error flags.
+    reportInit("FLIR Lepton Power", FLIR_PowerOn(), NULL);
+    while(usbUartCheckIfBusy());
+
     // setup I2C
     reportInit("I2C Bus Master", I2C_Initialize(),
             &error_handler.flags.i2c_init_error);
@@ -270,8 +284,8 @@ void main(void) {
             &error_handler.flags.ddr2_init_error);
     while(usbUartCheckIfBusy());
 
-    // Initialize the SST25VF080B SPI NOR flash on SPI3
-    reportInit("SPI Flash (SST25VF080B)", SST25VF080B_Initialize(),
+    // Initialize the W25Q128JV SPI NOR flash on SPI3
+    reportInit("SPI Flash (W25Q128JV)", W25Q128JV_Initialize(),
             &error_handler.flags.spi_flash_init_error);
     while(usbUartCheckIfBusy());
 
@@ -304,7 +318,7 @@ void main(void) {
     // 4KB-erase part, then mount -- formats on first boot, so the
     // "formatting..." notice is expected exactly once per blank part)
     reportInit("SPI Flash Filesystem",
-            Flash_Disk_Initialize() && FlashFileIO_MountAndFormatIfNeeded(),
+            W25Q128JV_Disk_Initialize() && FlashFileIO_MountAndFormatIfNeeded(),
             &error_handler.flags.flash_fs_init_error);
     while(usbUartCheckIfBusy());
 
@@ -354,19 +368,26 @@ void main(void) {
             &error_handler.flags.gui_init_error);
     while(usbUartCheckIfBusy());
 
-    // FLIR thermal camera. The sensor stays powered OFF at boot (its GPIOs
-    // are already in their safe boot state -- held in reset, power-down
-    // asserted, master clock gated, rails off); "FLIR Power On" starts it.
-    // Here we only bring up the pieces that are safe to configure cold:
+    // FLIR thermal camera, second half. The rails/clock/reset came up before
+    // the I2C bring-up above and the camera has been booting ever since; the
+    // pieces set up here are the ones that needed DDR2 and the GLCD first:
     //  - Layer 2, the on-demand still-image layer for the PNG loader, disabled
     //    (the thermal video takes over Layer 0; the image loader moved here).
     //  - the frame-processing palette LUT.
     //  - SPI4 + VoSPI DMA + INT1 registers, left idle until capture starts.
+    // FLIR_WaitUntilReady() then collects the boot (normally already elapsed)
+    // and runs the CCI RAW14 configuration, leaving the driver READY: powered
+    // and configured, but not capturing until "FLIR Stream On".
     reportInit("GLCD Layer 2 (still image)", GLCD_Layer2Initialize(), NULL);
     FLIRProcess_Initialize();
     FLIR_VOSPI_Initialize();
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    FLIR Lepton driver ready (sensor powered off -- send 'FLIR Power On')\r\n");
+    if (reportInit("FLIR Lepton Boot + Configuration", FLIR_WaitUntilReady(), NULL)) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Video idle -- send 'FLIR Stream On' to start capture\r\n");
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    Thermal video unavailable -- see 'FLIR Status?'\r\n");
+    }
     terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
 

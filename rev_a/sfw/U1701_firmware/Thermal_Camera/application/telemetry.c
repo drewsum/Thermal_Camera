@@ -19,9 +19,7 @@
 #define TELEM_BODY_SGR      TERMINAL_SGR(CYAN_COLOR, NORMAL_FONT)
 #define TELEM_WARN_SGR      TERMINAL_SGR(YELLOW_COLOR, NORMAL_FONT)
 
-// Rails this page shows, in display order. Superset of telemPwrDest[] below:
-// POS2P8 has no INA231A populated, so its voltage/current/power stay at zero,
-// but its MCP9804 temperature is real and worth showing.
+// Rails this page shows, in display order.
 #define TELEM_PRINT_RAIL_COUNT  6u
 
 static const struct {
@@ -171,20 +169,19 @@ static volatile double * const telemTempDest[TELEM_TEMP_COUNT] = {
 
 static telem_i2c_slot_t telemTempSlot[TELEM_TEMP_COUNT];
 
-// I2C_DEV_PWR_1..3,5,6 (i2c_devices.h; PWR_4/POS2P8 isn't populated on this
-// board) are wired to physical INA231As in the same rail order as their
-// I2C_DEV_TEMP_1..6 temperature sensor counterparts.
-#define TELEM_PWR_COUNT     5u
+// I2C_DEV_PWR_1..6 (i2c_devices.h) are wired to physical INA231As in the same
+// rail order as their I2C_DEV_TEMP_1..6 temperature sensor counterparts.
+#define TELEM_PWR_COUNT     6u
 #define TELEM_PWR_QTY       3u   // voltage, current, power (order below)
 
 static const I2C_DEVICE_ID telemPwrDevice[TELEM_PWR_COUNT] = {
     I2C_DEV_PWR_1, I2C_DEV_PWR_2, I2C_DEV_PWR_3,
-    I2C_DEV_PWR_5, I2C_DEV_PWR_6
+    I2C_DEV_PWR_4, I2C_DEV_PWR_5, I2C_DEV_PWR_6
 };
 
 static volatile telemetry_parameters_ps_t * const telemPwrDest[TELEM_PWR_COUNT] = {
-    &telemetry.pos12,  &telemetry.pos3p0, &telemetry.pos1p8,
-    &telemetry.pos1p2, &telemetry.backlight
+    &telemetry.pos12,  &telemetry.pos3p0,   &telemetry.pos1p8,
+    &telemetry.pos2p8, &telemetry.pos1p2,   &telemetry.backlight
 };
 
 static bool (* const telemPwrQueueRead[TELEM_PWR_QTY])(I2C_DEVICE_ID, uint8_t*, I2C_TRANSFER_CALLBACK, uintptr_t) = {

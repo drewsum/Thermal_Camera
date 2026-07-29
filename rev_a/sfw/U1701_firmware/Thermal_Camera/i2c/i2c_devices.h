@@ -50,11 +50,6 @@ typedef enum
     I2C_DEVICE_KIND_BQ27441,   // Li-Ion fuel gauge
 } I2C_DEVICE_KIND;
 
-// TODO: addresses/labels below for the 6x INA231A power monitors are
-// placeholders -- fill in real addresses (A1:A0 strapping) and labels.
-// TODO: refdes column below is all placeholder text -- fill in real
-// schematic reference designators (e.g. "U42").
-#warning "POS2P8 PSU Power Monitor is not present on this board, so its I2C address and label are commented out in i2c_devices.h"
 #define I2C_DEVICE_LIST(X) \
     X(I2C_DEV_TEMP_1, I2C_DEVICE_KIND_MCP9804, 0x18, "POS12 Input Gate Temp Sensor", "U302") \
     X(I2C_DEV_TEMP_2, I2C_DEVICE_KIND_MCP9804, 0x19, "POS3P0 PSU Temp Sensor", "U502") \
@@ -66,6 +61,7 @@ typedef enum
     X(I2C_DEV_PWR_1, I2C_DEVICE_KIND_INA231A, 0x40, "POS12 Input Gate Power Monitor", "U301") \
     X(I2C_DEV_PWR_2, I2C_DEVICE_KIND_INA231A, 0x41, "POS3P0 PSU Power Monitor", "U501") \
     X(I2C_DEV_PWR_3, I2C_DEVICE_KIND_INA231A, 0x42, "POS1P8 PSU Power Monitor", "U701") \
+    X(I2C_DEV_PWR_4, I2C_DEVICE_KIND_INA231A, 0x43, "POS2P8 PSU Power Monitor", "U901") \
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
     X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
     X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301") \

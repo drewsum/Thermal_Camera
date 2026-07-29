@@ -8,8 +8,8 @@
     Blocking driver for the SPI3 peripheral in master mode.
 
   Description:
-    SPI3 has exactly one device on this board (the SST25VF080B SPI NOR
-    flash, sst25vf080b.c/h), so unlike i2c_master.h this driver has no
+    SPI3 has exactly one device on this board (the W25Q128JV SPI NOR
+    flash, w25q128jv.c/h), so unlike i2c_master.h this driver has no
     transaction queue and no notion of addressing multiple devices -- it is
     a thin, blocking byte-shift primitive. Chip select is NOT managed here:
     it's a device-specific GPIO (nFLASH_SPI_CS_PIN, pin_macros.h) toggled by

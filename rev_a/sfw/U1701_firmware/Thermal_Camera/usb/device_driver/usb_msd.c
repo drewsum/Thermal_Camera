@@ -18,8 +18,8 @@
 #include "usb/usb.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "sdhc/sd_fileio.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
-#include "spi/device_driver/sst25vf080b.h"
+#include "spi/device_driver/w25q128jv_disk.h"
+#include "spi/device_driver/w25q128jv.h"
 #include "spi/flash_fileio.h"
 #include "usb_uart/terminal_control.h"
 
@@ -144,12 +144,12 @@ static bool msdSdSync(void)
 
 static bool msdFlashIsPresent(void)
 {
-    return Flash_Disk_IsInitialized();
+    return W25Q128JV_Disk_IsInitialized();
 }
 
 static bool msdFlashIsWriteProtected(void)
 {
-    return SST25VF080B_WriteProtectIsEnabled();
+    return W25Q128JV_WriteProtectIsEnabled();
 }
 
 static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
@@ -169,10 +169,10 @@ static const msd_lun_ops_t msd_luns[USB_MSD_NUM_LUNS] = {
         .inquiry_product = "Thermal Cam SPI ",
         .isPresent = msdFlashIsPresent,
         .isWriteProtected = msdFlashIsWriteProtected,
-        .sectorCount = Flash_Disk_GetSectorCount,
-        .readSectors = Flash_Disk_ReadSectors,
-        .writeSectors = Flash_Disk_WriteSectors,
-        .sync = Flash_Disk_Sync
+        .sectorCount = W25Q128JV_Disk_GetSectorCount,
+        .readSectors = W25Q128JV_Disk_ReadSectors,
+        .writeSectors = W25Q128JV_Disk_WriteSectors,
+        .sync = W25Q128JV_Disk_Sync
     }
 };
 
@@ -318,7 +318,7 @@ int16_t USB_MSD_HandleClassRequest(const usb_setup_packet_t *setup,
     {
         usb_msd_counters.bot_resets++;
         USB_BulkReset();
-        Flash_Disk_Sync();
+        W25Q128JV_Disk_Sync();
         bot_state = MSD_STATE_WAIT_CBW;
         return 0;
     }
@@ -991,14 +991,14 @@ static void msdTrySendCsw(void)
 
 void USB_MSD_TimedTasks(void)
 {
-    if (!Flash_Disk_IsDirty())
+    if (!W25Q128JV_Disk_IsDirty())
     {
         return;
     }
 
-    if (Flash_Disk_TicksSinceLastWrite() >= MSD_FLUSH_IDLE_TICKS)
+    if (W25Q128JV_Disk_TicksSinceLastWrite() >= MSD_FLUSH_IDLE_TICKS)
     {
-        if (Flash_Disk_Sync())
+        if (W25Q128JV_Disk_Sync())
         {
             usb_msd_counters.staging_syncs++;
         }
@@ -1033,7 +1033,7 @@ static void msdHandMediaBack(void)
     }
 
     // Nothing the host wrote may be left RAM-only
-    if (Flash_Disk_Sync())
+    if (W25Q128JV_Disk_Sync())
     {
         usb_msd_counters.staging_syncs++;
     }
@@ -1151,9 +1151,9 @@ void USB_MSD_PrintStatus(void)
                 msd_lun_state[lun].ascq);
     }
 
-    if (Flash_Disk_IsDirty()) terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    if (W25Q128JV_Disk_IsDirty()) terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Flash Staging Dirty:                      %s\n\r",
-            Flash_Disk_IsDirty() ? "T" : "F");
+            W25Q128JV_Disk_IsDirty() ? "T" : "F");
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
 
     printf("    CBWs Received:                            %lu\n\r",

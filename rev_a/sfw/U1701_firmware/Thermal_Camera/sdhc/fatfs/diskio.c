@@ -22,12 +22,12 @@
 #include "sdhc/fatfs/ff.h"
 #include "sdhc/fatfs/diskio.h"
 #include "sdhc/device_driver/sd_card.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
-#include "spi/device_driver/sst25vf080b.h"
+#include "spi/device_driver/w25q128jv_disk.h"
+#include "spi/device_driver/w25q128jv.h"
 
 // Physical drive mapping (FF_VOLUMES is 2 in ffconf.h):
 //   pdrv 0 = SD card (sd_card.h), FatFs's default drive
-//   pdrv 1 = SPI flash (sst25vf080b_disk.h), always present
+//   pdrv 1 = SPI flash (w25q128jv_disk.h), always present
 #define SD_DISKIO_PDRV      0u
 #define FLASH_DISKIO_PDRV   1u
 
@@ -47,11 +47,11 @@ DSTATUS disk_status(BYTE pdrv)
             // initialized-or-not. STA_PROTECT makes FatFs return
             // FR_WRITE_PROTECTED from every write API (f_write, f_mkfs,
             // f_setlabel...) while the hardware write protect is on.
-            if (!Flash_Disk_IsInitialized())
+            if (!W25Q128JV_Disk_IsInitialized())
             {
                 return STA_NOINIT;
             }
-            return SST25VF080B_WriteProtectIsEnabled() ? STA_PROTECT : 0;
+            return W25Q128JV_WriteProtectIsEnabled() ? STA_PROTECT : 0;
 
         default:
             return STA_NOINIT;
@@ -66,13 +66,13 @@ DSTATUS disk_initialize(BYTE pdrv)
             return SD_Card_Initialize() ? 0 : (STA_NOINIT | STA_NODISK);
 
         case FLASH_DISKIO_PDRV:
-            if (!Flash_Disk_Initialize())
+            if (!W25Q128JV_Disk_Initialize())
             {
                 return STA_NOINIT;
             }
             // f_mkfs checks THIS return for STA_PROTECT (mount-time
             // writes check disk_status above)
-            return SST25VF080B_WriteProtectIsEnabled() ? STA_PROTECT : 0;
+            return W25Q128JV_WriteProtectIsEnabled() ? STA_PROTECT : 0;
 
         default:
             return STA_NOINIT;
@@ -87,7 +87,7 @@ DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
             return SD_Card_ReadBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
         case FLASH_DISKIO_PDRV:
-            return Flash_Disk_ReadSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
+            return W25Q128JV_Disk_ReadSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
         default:
             return RES_PARERR;
@@ -102,7 +102,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
             return SD_Card_WriteBlocks((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
         case FLASH_DISKIO_PDRV:
-            return Flash_Disk_WriteSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
+            return W25Q128JV_Disk_WriteSectors((uint32_t)sector, buff, (uint16_t)count) ? RES_OK : RES_ERROR;
 
         default:
             return RES_PARERR;
@@ -155,22 +155,22 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
             case CTRL_SYNC:
                 // Unlike the SD path, this one is real: the flash disk
                 // layer write-caches a 4KB erase page (see
-                // sst25vf080b_disk.h) that must be flushed for f_sync()/
+                // w25q128jv_disk.h) that must be flushed for f_sync()/
                 // f_close() to actually be durable.
-                return Flash_Disk_Sync() ? RES_OK : RES_ERROR;
+                return W25Q128JV_Disk_Sync() ? RES_OK : RES_ERROR;
 
             case GET_SECTOR_COUNT:
-                *(LBA_t *)buff = (LBA_t)Flash_Disk_GetSectorCount();
+                *(LBA_t *)buff = (LBA_t)W25Q128JV_Disk_GetSectorCount();
                 return RES_OK;
 
             case GET_SECTOR_SIZE:
-                *(WORD *)buff = FLASH_DISK_SECTOR_SIZE;
+                *(WORD *)buff = W25Q128JV_DISK_SECTOR_SIZE;
                 return RES_OK;
 
             case GET_BLOCK_SIZE:
                 // True erase-block ratio (4KB page / 512B sector) so
                 // f_mkfs() aligns the data area to erase boundaries
-                *(DWORD *)buff = FLASH_DISK_SECTORS_PER_PAGE;
+                *(DWORD *)buff = W25Q128JV_DISK_SECTORS_PER_PAGE;
                 return RES_OK;
 
             default:

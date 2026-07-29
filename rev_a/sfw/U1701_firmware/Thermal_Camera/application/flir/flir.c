@@ -73,11 +73,18 @@ static void FLIR_DelayMs(uint32_t ms)
         _ok;                                                                  \
     })
 
+// Clears the thermal video layer so the last captured frame doesn't linger
+// once capture stops.
+static void FLIR_BlankVideoLayer(void)
+{
+    memset((void *)GLCD_FRAMEBUFFER_BASE_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
+}
+
 static void FLIR_HardOff(void)
 {
     // Assert power-down and reset, gate the master clock, drop both rails.
-    // Mirrors powerDownIndicatorsAndSensor() in application/power_saving.c --
-    // keep the two in sync.
+    // powerDownSensor() in application/power_saving.c calls FLIR_PowerOff()
+    // (which lands here) rather than repeating this sequence.
     FLIR_VOSPI_Stop();
 
     nFLIR_PWR_DWN_PIN = LOW;
@@ -86,6 +93,18 @@ static void FLIR_HardOff(void)
 
     POS2P8_RUN_PIN = LOW;
     POS1P2_RUN_PIN = LOW;
+}
+
+// Fault path for a camera that is powered but not talking (boot never
+// completed, or the CCI configuration was rejected). Capture is disarmed but
+// the rails, master clock, and reset release are deliberately LEFT UP: an
+// unpowered Lepton clamps SDA/SCL low and would take the rest of I2C1 down
+// with it, so a mute camera must not cost the board its I2C bus. Only a rail
+// that never reached PGOOD gets the full FLIR_HardOff() (see FLIR_PowerOn()).
+static void FLIR_FaultKeepPowered(void)
+{
+    FLIR_VOSPI_Stop();
+    flirState = FLIR_STATE_FAULT;
 }
 
 bool FLIR_PowerOn(void)
@@ -105,6 +124,10 @@ bool FLIR_PowerOn(void)
 
     if (!FLIR_WAIT_PGOOD(POS1P2_PGOOD_PIN) || !FLIR_WAIT_PGOOD(POS2P8_PGOOD_PIN))
     {
+        // The one fault that does drop the rails: a regulator that never
+        // reaches PGOOD is not powering the module anyway (so the I2C bus is
+        // already lost) and may be sitting into a short, which is not
+        // something to leave enabled.
         error_handler.flags.flir_rail_pgood_timeout = 1;
         FLIR_HardOff();
         flirState = FLIR_STATE_FAULT;
@@ -127,12 +150,57 @@ bool FLIR_PowerOn(void)
     return true;
 }
 
+bool FLIR_WaitUntilReady(void)
+{
+    // FLIR_Tasks() bounds both waits itself (the boot poll times out into
+    // FAULT, the CCI configuration is one-shot), so this cannot spin forever.
+    while (flirState == FLIR_STATE_BOOTING || flirState == FLIR_STATE_CONFIGURING)
+    {
+        kickTheDog();
+        FLIR_Tasks();
+    }
+
+    return (flirState == FLIR_STATE_READY);
+}
+
+bool FLIR_StreamOn(void)
+{
+    if (flirState == FLIR_STATE_STREAMING)
+    {
+        return true;
+    }
+
+    if (flirState != FLIR_STATE_READY)
+    {
+        return false;
+    }
+
+    FLIR_VOSPI_Start();
+    flirState = FLIR_STATE_STREAMING;
+    return true;
+}
+
+void FLIR_StreamOff(void)
+{
+    if (flirState != FLIR_STATE_STREAMING)
+    {
+        return;
+    }
+
+    // Capture off only -- rails, master clock, and reset stay where they are,
+    // so the sensor keeps its configuration and its I2C pins keep driving.
+    FLIR_VOSPI_Stop();
+    FLIR_BlankVideoLayer();
+
+    flirState = FLIR_STATE_READY;
+}
+
 void FLIR_PowerOff(void)
 {
     FLIR_HardOff();
 
     // Blank Layer 0 so the last thermal frame doesn't linger on screen.
-    memset((void *)GLCD_FRAMEBUFFER_BASE_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
+    FLIR_BlankVideoLayer();
 
     flirState = FLIR_STATE_OFF;
 }
@@ -158,8 +226,7 @@ void FLIR_Tasks(void)
             else if (elapsed > ((FLIR_BOOT_WAIT_MS + FLIR_BOOT_POLL_MS) * FLIR_TICKS_PER_MS))
             {
                 error_handler.flags.flir_boot_timeout = 1;
-                FLIR_HardOff();
-                flirState = FLIR_STATE_FAULT;
+                FLIR_FaultKeepPowered();
             }
             break;
         }
@@ -167,14 +234,14 @@ void FLIR_Tasks(void)
         case FLIR_STATE_CONFIGURING:
             if (FLIR_CCI_ConfigureRaw14Video())
             {
-                FLIR_VOSPI_Start();
-                flirState = FLIR_STATE_STREAMING;
+                // Powered and configured, but capture stays disarmed until
+                // "FLIR Stream On" (FLIR_StreamOn()).
+                flirState = FLIR_STATE_READY;
             }
             else
             {
                 error_handler.flags.flir_cci_error = 1;
-                FLIR_HardOff();
-                flirState = FLIR_STATE_FAULT;
+                FLIR_FaultKeepPowered();
             }
             break;
 
@@ -191,6 +258,7 @@ void FLIR_Tasks(void)
             break;
 
         case FLIR_STATE_OFF:
+        case FLIR_STATE_READY:
         case FLIR_STATE_FAULT:
         default:
             break;
@@ -214,6 +282,7 @@ static const char *FLIR_StateString(FLIR_STATE state)
         case FLIR_STATE_OFF:         return "OFF";
         case FLIR_STATE_BOOTING:     return "BOOTING";
         case FLIR_STATE_CONFIGURING: return "CONFIGURING";
+        case FLIR_STATE_READY:       return "READY (video idle)";
         case FLIR_STATE_STREAMING:   return "STREAMING";
         case FLIR_STATE_FAULT:       return "FAULT";
         default:                     return "?";

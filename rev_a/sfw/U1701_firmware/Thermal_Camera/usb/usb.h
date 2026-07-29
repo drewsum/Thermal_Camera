@@ -14,7 +14,7 @@
 
   Description:
     Layering: usb.c (this, MUSB registers) -> usb_msd.c (BOT/SCSI, 2 LUNs)
-    -> sd_card.h / sst25vf080b_disk.h (block backends). usb.c calls up
+    -> sd_card.h / w25q128jv_disk.h (block backends). usb.c calls up
     into usb_msd.c only through the USB_MSD_*Hook()/USB_MSD_Tasks()
     seams declared in usb_msd.h; usb_msd.c never touches a USB register,
     only the USB_Bulk*() primitives below.

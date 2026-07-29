@@ -10,7 +10,7 @@
 
   Description:
     This is the "device driver" layer in the sdhc.c (bus/peripheral) +
-    sd_card.c (device) split, the same shape as spi3.c + sst25vf080b.c.
+    sd_card.c (device) split, the same shape as spi3.c + w25q128jv.c.
     It owns the card power/detect sequencing (SD_PWR_EN_PIN,
     SD_CARD_DETECT_PIN, gpio/pin_macros.h) and the full SD card
     identification state machine (CMD0 -> CMD8 -> ACMD41 -> CMD2 -> CMD3 ->

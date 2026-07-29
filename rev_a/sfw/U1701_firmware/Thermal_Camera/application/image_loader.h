@@ -68,7 +68,7 @@ extern "C" {
 typedef enum
 {
     IMAGE_MEDIA_SD_CARD,    // FatFs volume "0:" (microSD card)
-    IMAGE_MEDIA_SPI_FLASH,  // FatFs volume "1:" (SST25VF080B SPI flash)
+    IMAGE_MEDIA_SPI_FLASH,  // FatFs volume "1:" (W25Q128JV SPI flash)
 } IMAGE_MEDIA;
 
 // Reads `filename` (8.3 name, no volume prefix) from `media`, decodes it

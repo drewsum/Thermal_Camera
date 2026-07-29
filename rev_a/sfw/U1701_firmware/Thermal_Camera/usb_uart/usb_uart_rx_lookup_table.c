@@ -31,8 +31,8 @@
 #include "core/ddr2.h"
 #include "i2c/i2c_devices.h"
 #include "spi/spi3.h"
-#include "spi/device_driver/sst25vf080b.h"
-#include "spi/device_driver/sst25vf080b_disk.h"
+#include "spi/device_driver/w25q128jv.h"
+#include "spi/device_driver/w25q128jv_disk.h"
 #include "spi/flash_fileio.h"
 #include "sdhc/sdhc.h"
 #include "sdhc/device_driver/sd_card.h"
@@ -534,7 +534,7 @@ USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, REVERSE_FONT);
         printf("\r\nSPI Flash Device Status:\r\n");
         terminalTextAttributesReset();
-        SST25VF080B_PrintStatus();
+        W25Q128JV_PrintStatus();
     }
 
     if (want_usb) {
@@ -751,8 +751,38 @@ USB_UART_COMMAND(setRTCCCommand, "Set RTCC:",
     
 }
 
+USB_UART_COMMAND(flirStreamOnCommand, "FLIR Stream On",
+        "Starts thermal video capture (VoSPI) onto GLCD Layer 0. The sensor is already powered and configured from boot, so this takes effect immediately.") {
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+
+    if (FLIR_StreamOn()) {
+        printf("Thermal video streaming to Layer 0\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Cannot stream: the Lepton is not booted and configured -- see 'FLIR Status?'\r\n");
+        printf("(If it is powered off, 'FLIR Power On' brings it back.)\r\n");
+    }
+
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flirStreamOffCommand, "FLIR Stream Off",
+        "Stops thermal video capture and blanks the video layer. The sensor stays powered, booted, and configured, so 'FLIR Stream On' resumes instantly.") {
+
+    FLIR_StreamOff();
+
+    terminalTextAttributesReset();
+    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Thermal video stopped (sensor still powered and configured)\r\n");
+    terminalTextAttributesReset();
+
+}
+
 USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
-        "Powers up the FLIR Lepton 3.5 (rails -> master clock -> reset release) and starts thermal video capture onto GLCD Layer 0. The ~950ms camera boot completes in the background.") {
+        "Re-powers the FLIR Lepton 3.5 after a 'FLIR Power Off' (rails -> master clock -> reset release, then the CCI configuration). The sensor is already powered at boot, so this is only needed after powering it down. Video stays idle until 'FLIR Stream On'.") {
 
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
@@ -762,7 +792,7 @@ USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
     // FLIR_Tasks() so the console stays responsive. Check "FLIR Status?".
     if (FLIR_PowerOn()) {
         printf("FLIR power-up sequence started -- camera booting (~950ms).\r\n");
-        printf("Use 'FLIR Status?' to watch it reach STREAMING.\r\n");
+        printf("Use 'FLIR Status?' to watch it reach READY, then 'FLIR Stream On'.\r\n");
     } else {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("FLIR power-up FAILED (a rail did not reach PGOOD) -- see 'Error Handler Status?'\r\n");
@@ -773,13 +803,15 @@ USB_UART_COMMAND(flirPowerOnCommand, "FLIR Power On",
 }
 
 USB_UART_COMMAND(flirPowerOffCommand, "FLIR Power Off",
-        "Stops thermal capture and powers the FLIR Lepton fully down (held in reset, clock gated, both rails off), and blanks the video layer") {
+        "Debug only: powers the FLIR Lepton fully down (held in reset, clock gated, both rails off). WARNING -- an unpowered Lepton holds I2C1 low, breaking every other device on the bus. Use 'FLIR Stream Off' to just stop the video.") {
 
     FLIR_PowerOff();
 
     terminalTextAttributesReset();
-    terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("FLIR Lepton powered down\r\n");
+    printf("WARNING: with its rails down the module clamps SDA/SCL low -- every\r\n");
+    printf("         other I2C1 device is unreachable until 'FLIR Power On'.\r\n");
     terminalTextAttributesReset();
 
 }
@@ -851,7 +883,7 @@ USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
         return;
     }
 
-    if (SST25VF080B_WriteProtectIsEnabled()) {
+    if (W25Q128JV_WriteProtectIsEnabled()) {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI flash write protect is enabled -- run \"Flash Write Protect: Off\" first\r\n");
         terminalTextAttributesReset();
@@ -860,7 +892,7 @@ USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
 
     FlashFileIO_Unmount();
 
-    if (!SST25VF080B_EraseChip()) {
+    if (!W25Q128JV_EraseChip()) {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Failed to erase SPI Flash -- FAT volume was NOT reformatted\r\n");
         terminalTextAttributesReset();
@@ -878,7 +910,7 @@ USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
     }
 
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("Note: The SST25VF080B device has limited write endurance, please use sparingly.\r\n");
+    printf("Note: The W25Q128JV device has limited write endurance, please use sparingly.\r\n");
     terminalTextAttributesReset();
 
 }
@@ -1038,7 +1070,7 @@ USB_UART_COMMAND(flashFsInfoCommand, "Flash FS Info?",
         printf("    Volume Label: %s\r\n", label[0] ? label : "(none)");
         printf("    Total Space: %lu KB\r\n", (unsigned long) totalKB);
         printf("    Free Space: %lu KB\r\n", (unsigned long) freeKB);
-        Flash_Disk_PrintStatus();
+        W25Q128JV_Disk_PrintStatus();
     } else {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI flash FAT volume not currently mounted\r\n");
@@ -1231,7 +1263,7 @@ USB_UART_COMMAND(flashWriteProtectQueryCommand, "Flash Write Protect?",
     terminalTextAttributesReset();
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("SPI flash write protect is currently %s\r\n",
-            SST25VF080B_WriteProtectIsEnabled() ? "ENABLED" : "DISABLED");
+            W25Q128JV_WriteProtectIsEnabled() ? "ENABLED" : "DISABLED");
     terminalTextAttributesReset();
 
 }
@@ -1256,7 +1288,7 @@ USB_UART_COMMAND(flashWriteProtectCommand, "Flash Write Protect:",
         return;
     }
 
-    if (turnOn == SST25VF080B_WriteProtectIsEnabled()) {
+    if (turnOn == W25Q128JV_WriteProtectIsEnabled()) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI flash write protect is already %s\r\n", turnOn ? "enabled" : "disabled");
         terminalTextAttributesReset();
@@ -1266,10 +1298,10 @@ USB_UART_COMMAND(flashWriteProtectCommand, "Flash Write Protect:",
     if (turnOn) {
         // Nothing may be stuck in the disk layer's staging buffer once
         // the part starts refusing program/erase
-        Flash_Disk_Sync();
+        W25Q128JV_Disk_Sync();
     }
 
-    if (SST25VF080B_WriteProtectSet(turnOn)) {
+    if (W25Q128JV_WriteProtectSet(turnOn)) {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("SPI flash write protect %s\r\n",
                 turnOn ? "ENABLED -- flash volume is now read-only"

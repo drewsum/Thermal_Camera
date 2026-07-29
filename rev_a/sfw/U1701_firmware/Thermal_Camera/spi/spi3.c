@@ -21,10 +21,13 @@
 // I2C1 (see I2C_PBCLK_HZ in i2c_master.c).
 #define SPI3_PBCLK_HZ                (SYSCLK_INT / 3u)
 
-// The SST25VF080B's plain Read (03h) instruction -- the only read
-// instruction this driver issues -- is speced up to 25 MHz max (its
-// datasheet Table 7-1); other instructions tolerate the part's full
-// 66/80 MHz range, so 25 MHz is the binding ceiling for this driver.
+// Inherited from the SST25VF080B that used to be on this bus: its plain
+// Read (03h) instruction -- the only read instruction this driver issues --
+// was speced up to 25 MHz max (its datasheet Table 7-1). The W25Q128JV now
+// wired here (w25q128jv.c) specs plain Read up to 50 MHz, but this ceiling
+// is left at the old, more conservative value rather than raised to match
+// -- untested at the higher speed, and SPI3_DEFAULT_CLK_HZ below is well
+// under either part's limit.
 #define SPI3_MAX_CLK_HZ              25000000UL
 
 // Conservative default well under the 25 MHz ceiling, for margin.
@@ -84,7 +87,7 @@ bool SPI3_Initialize(void)
     SPI3CONbits.SIDL = 0;      // continue running in CPU Idle mode
     SPI3CONbits.MSTEN = 1;     // master mode
 
-    // SPI Mode 0 (CPOL=0, CPHA=0), which the SST25VF080B supports (along
+    // SPI Mode 0 (CPOL=0, CPHA=0), which the W25Q128JV supports (along
     // with Mode 3). PIC32's CKE is inverted relative to standard CPHA:
     // CKP=0/CKE=1 here is Mode 0, not Mode 1.
     SPI3CONbits.CKP = 0;
