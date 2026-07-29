@@ -758,7 +758,10 @@ USB_UART_COMMAND(flirStreamOnCommand, "FLIR Stream On",
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
 
     if (FLIR_StreamOn()) {
-        printf("Thermal video streaming to Layer 0\r\n");
+        // Capture arms ~200ms from now: VoSPI packet alignment is set by where
+        // clocking starts, and the sensor only restarts on a packet boundary
+        // after /CS has been idle for ~185ms (see flir_vospi.c).
+        printf("Thermal video starting -- capture arms after the ~200ms VoSPI sync window\r\n");
     } else {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Cannot stream: the Lepton is not booted and configured -- see 'FLIR Status?'\r\n");
@@ -821,6 +824,15 @@ USB_UART_COMMAND(flirStatusCommand, "FLIR Status?",
 
     terminalTextAttributesReset();
     FLIR_PrintStatus();
+    terminalTextAttributesReset();
+
+}
+
+USB_UART_COMMAND(flirPacketDumpCommand, "FLIR Packet Dump",
+        "Dumps the leading bytes of the last few VoSPI packets the DMA delivered, decoded. Use this when 'FLIR Status?' shows no frames: it separates a dead SPI link (all FF/00) from a live link carrying only discard packets from a working link that has lost byte alignment.") {
+
+    terminalTextAttributesReset();
+    FLIR_VOSPI_PrintPacketDump();
     terminalTextAttributesReset();
 
 }

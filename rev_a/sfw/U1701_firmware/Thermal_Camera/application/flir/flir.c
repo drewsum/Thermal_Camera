@@ -246,6 +246,10 @@ void FLIR_Tasks(void)
             break;
 
         case FLIR_STATE_STREAMING:
+            // Arms capture when the VoSPI /CS idle window expires, and forces
+            // a re-alignment if the packet stream stalls.
+            FLIR_VOSPI_Tasks();
+
             if (FLIR_VOSPI_FrameReady())
             {
                 const uint16_t *frame = FLIR_VOSPI_TakeFrame();
@@ -312,8 +316,12 @@ void FLIR_PrintStatus(void)
     printf("    Palette: %s\n\r",
            (FLIRProcess_GetPalette() == FLIR_PALETTE_GRAYSCALE) ? "Grayscale" : "Ironbow");
 
+    // Pixels are 16-bit TLinear (centi-Kelvin), so the AGC window doubles as
+    // the scene's temperature span -- a good sanity check on live data.
     FLIRProcess_GetAGCWindow(&agcMin, &agcMax);
-    printf("    AGC window (14-bit counts): %u .. %u\n\r", agcMin, agcMax);
+    printf("    AGC window: %u .. %u counts (%.1f .. %.1f C)\n\r",
+           agcMin, agcMax, ((float)agcMin / 100.0f) - 273.15f,
+           ((float)agcMax / 100.0f) - 273.15f);
 
     // CCI status + temperatures (only meaningful once powered/booted).
     if (flirState != FLIR_STATE_OFF)
@@ -323,9 +331,47 @@ void FLIR_PrintStatus(void)
 
     // VoSPI capture health (statistics, not peripheral settings).
     FLIR_VOSPI_GetStats(&vs);
-    printf("    Capture: frames=%lu  desyncs=%lu  segment errors=%lu  vsyncs=%lu\n\r",
-           (unsigned long)vs.framesCaptured, (unsigned long)vs.desyncCount,
-           (unsigned long)vs.segmentErrors, (unsigned long)vs.vsyncCount);
+    printf("    Capture: %s  frames=%lu\n\r",
+           FLIR_VOSPI_GetCaptureStateString(), (unsigned long)vs.framesCaptured);
+    printf("    Packets: %lu captured, %lu discards (%lu carrying data), last %lu ms ago\n\r",
+           (unsigned long)vs.packetsCaptured, (unsigned long)vs.discardPackets,
+           (unsigned long)(vs.packetsCaptured - vs.discardPackets),
+           (unsigned long)FLIR_VOSPI_MsSinceLastPacket());
+    printf("    Framing: desyncs=%lu  resyncs=%lu  segment errors=%lu  RX overflows=%lu\n\r",
+           (unsigned long)vs.desyncCount, (unsigned long)vs.resyncCount,
+           (unsigned long)vs.segmentErrors, (unsigned long)vs.rxOverflows);
+    printf("    Progress: segments placed=%lu  longest in-sequence run=%lu packets "
+           "(60 = one segment)\n\r",
+           (unsigned long)vs.segmentsPlaced, (unsigned long)vs.maxPacketRun);
+    printf("    Segment restarts (early packet 0, normal): %lu\n\r",
+           (unsigned long)vs.segmentRestarts);
+
+    // Placements per segment. Heavily skewed toward segment 1 means the frame
+    // accumulation is being reset between segments rather than continuing.
+    printf("    Segments placed by id:");
+    {
+        uint8_t s;
+        for (s = 1u; s <= FLIR_VOSPI_SEGMENTS_PER_FRAME; s++)
+            printf("  %u:%lu", s, (unsigned long)vs.segmentsPlacedById[s]);
+        printf("\n\r");
+    }
+    printf("    Stream stalls recovered (partial DMA block): %lu\n\r",
+           (unsigned long)vs.stallRecoveries);
+
+    // Distribution of the packet-20 segment field. 0 = "segment not valid"
+    // (normal); 1..4 are the real segments; anything in 5..7 should never
+    // appear, and an even spread means the field isn't the segment number.
+    printf("    Segment IDs seen at packet 20:");
+    {
+        uint8_t s;
+        for (s = 0; s < 8u; s++) printf("  %u:%lu", s, (unsigned long)vs.segmentIdSeen[s]);
+        printf("\n\r");
+    }
+
+    // vsyncs=0 is normal: the sensor's GPIO3 VSYNC output is not enabled (it
+    // needs a protected OEM CCI command), and capture does not use it.
+    printf("    VSYNC edges: %lu (sensor VSYNC output not enabled -- informational only)\n\r",
+           (unsigned long)vs.vsyncCount);
 
     terminalTextAttributesReset();
 }

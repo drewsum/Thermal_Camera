@@ -101,7 +101,7 @@ void FLIRProcess_Initialize(void)
     FLIRProcess_BuildPalette(activePalette);
     agcSeeded = false;
     smoothMin = 0;
-    smoothMax = 0x3FFF;
+    smoothMax = 0xFFFF;   // pixels are 16-bit TLinear centi-Kelvin, not 14-bit
 }
 
 void FLIRProcess_SetPalette(FLIR_PALETTE palette)
@@ -128,7 +128,7 @@ void FLIRProcess_GetAGCWindow(uint16_t *minCount, uint16_t *maxCount)
 void FLIRProcess_RenderToLayer0(const uint16_t *frame)
 {
     uint32_t i;
-    int32_t rawMin = 0x3FFF;
+    int32_t rawMin = 0xFFFF;   // 16-bit TLinear range, see flir_vospi.c
     int32_t rawMax = 0;
     int32_t range;
     uint32_t y;
