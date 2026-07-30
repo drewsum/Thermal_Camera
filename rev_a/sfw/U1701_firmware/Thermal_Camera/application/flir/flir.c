@@ -74,10 +74,13 @@ static void FLIR_DelayMs(uint32_t ms)
     })
 
 // Clears the thermal video layer so the last captured frame doesn't linger
-// once capture stops.
+// once capture stops. Both Layer 0 buffers: whichever one is being scanned
+// out goes black now, and the off-screen one can't bring the old frame back
+// on the next flip.
 static void FLIR_BlankVideoLayer(void)
 {
     memset((void *)GLCD_FRAMEBUFFER_BASE_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
+    memset((void *)GLCD_FRAMEBUFFER_B_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
 }
 
 static void FLIR_HardOff(void)
@@ -357,6 +360,22 @@ void FLIR_PrintStatus(void)
     }
     printf("    Stream stalls recovered (partial DMA block): %lu\n\r",
            (unsigned long)vs.stallRecoveries);
+
+    // In-place clock restarts (chained mode): each one is a ~20ms blip where
+    // the old path froze for ~300ms. The breakdown says what state the TX
+    // channel was in when the clock stopped -- the root-cause evidence.
+    printf("    Clock unsticks (TX restart, no /CS window): %lu"
+           "  [disabled=%lu never-started=%lu mid-block=%lu]\n\r",
+           (unsigned long)vs.clockUnsticks,
+           (unsigned long)vs.unstickTxDisabled,
+           (unsigned long)vs.unstickTxNeverStarted,
+           (unsigned long)vs.unstickTxMidBlock);
+
+    // Blank packets are a dead MISO line (all-zero headers), not data. A few
+    // right after a resync are normal (the sensor isn't driving yet); a
+    // steady climb during streaming means the sensor keeps dropping the line.
+    printf("    Blank packets (dead MISO): %lu  in %lu wholly-blank blocks\n\r",
+           (unsigned long)vs.blankPackets, (unsigned long)vs.blankBlocks);
 
     // Distribution of the packet-20 segment field. 0 = "segment not valid"
     // (normal); 1..4 are the real segments; anything in 5..7 should never

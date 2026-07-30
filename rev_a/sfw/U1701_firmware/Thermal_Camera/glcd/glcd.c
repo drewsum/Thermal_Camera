@@ -123,11 +123,12 @@ bool GLCD_Initialize(void)
                | (GLCD_SRCBLEND_ALPHA_SRCGBL << _GLCDL0MODE_SRCBLEND_POSITION)
                | (GLCD_COLORMODE_RGB888 << _GLCDL0MODE_COLORMODE_POSITION);
 
-    // Blank the frame buffer (black, matching this panel's Normally-Black
+    // Blank both Layer 0 buffers (black, matching this panel's Normally-Black
     // mode) through the uncached KSEG1 alias -- coherent with the GLCD
     // Controller's DMA with no cache maintenance needed (core/ddr2.h cache
-    // note). Filling it with real image data is a separate, later step.
+    // note). Filling them with real image data is a separate, later step.
     memset((void *)GLCD_FRAMEBUFFER_BASE_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
+    memset((void *)GLCD_FRAMEBUFFER_B_ADDRESS, 0, GLCD_FRAMEBUFFER_SIZE_BYTES);
 
     // Panel reset sequence before the controller starts driving timing
     // signals at it
@@ -242,6 +243,13 @@ void GLCD_SetOverlayBaseAddress(const void *buffer)
     // Physical address, for the same reason as Layer 0's GLCDL0BADDR above:
     // the layer DMA is a separate DDR2 bus master, not a CPU KSEG access.
     GLCDL1BADDR = KVA_TO_PA((uint32_t)buffer);
+}
+
+void GLCD_SetLayer0BaseAddress(const void *buffer)
+{
+    // Same physical-address rule as Layer 1's flip above. Full-word write per
+    // the GLCD access-size rule.
+    GLCDL0BADDR = KVA_TO_PA((uint32_t)buffer);
 }
 
 bool GLCD_WaitOverlayVSync(void)

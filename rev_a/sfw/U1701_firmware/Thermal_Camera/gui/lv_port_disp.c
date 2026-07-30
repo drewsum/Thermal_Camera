@@ -13,6 +13,7 @@
 #include "gui/lvgl/lvgl.h"
 #include "glcd/glcd.h"
 #include "application/error_handler.h"
+#include "application/flir/flir.h"
 
 // Called by LVGL once per redrawn area. In DIRECT render mode LVGL has
 // already written the pixels into the off-screen overlay buffer itself, so
@@ -26,10 +27,24 @@ static void GUI_DisplayFlush(lv_display_t *display, const lv_area_t *area, uint8
 
     if (lv_display_flush_is_last(display))
     {
-        // Flip inside vertical blanking so the swap is invisible. A timeout
-        // here means the panel never asserted VSYNC; the flip is still done
-        // (a possibly-torn frame beats a frozen GUI), it is just recorded.
-        if (!GLCD_WaitOverlayVSync()) error_handler.flags.gui_vsync_timeout = 1;
+        // While thermal video is streaming, the video's cadence outranks the
+        // GUI's flip cosmetics: this wait blocks the main loop for up to a
+        // panel frame (~17ms), and a video frame that completes behind it is
+        // presented late -- at ~9fps that jitter reads as stutter. Skipping
+        // the wait is safe against mid-scan tearing (GLCDL1BADDR is latched
+        // at the next frame start); the residual risk is only LVGL starting
+        // its next frame into the just-freed buffer before that latch, which
+        // takes an animation redrawing on consecutive main-loop passes --
+        // worst case a one-frame glitch in the overlay, accepted while video
+        // is on screen.
+        if (FLIR_GetState() != FLIR_STATE_STREAMING)
+        {
+            // Flip inside vertical blanking so the swap is invisible. A
+            // timeout here means the panel never asserted VSYNC; the flip is
+            // still done (a possibly-torn frame beats a frozen GUI), it is
+            // just recorded.
+            if (!GLCD_WaitOverlayVSync()) error_handler.flags.gui_vsync_timeout = 1;
+        }
 
         GLCD_SetOverlayBaseAddress(px_map);
     }

@@ -73,11 +73,15 @@ extern "C" {
 #define FLIR_VOSPI_PACKETS_PER_BLOCK    60u
 #define FLIR_VOSPI_BLOCK_BYTES          (FLIR_VOSPI_PACKETS_PER_BLOCK * FLIR_VOSPI_PACKET_BYTES)
 
-// Two 160x120 14-bit frame buffers in DDR2 (uncached KSEG1 -- only the CPU
-// touches them, capture ISR writes one while flir_process reads the other).
-// Placed at DDR2 +8MB, clear of the reserved 0..7MB region and the Layer 2
-// image buffer at +7MB; the full partition map lives in gui/gui.h.
-#define FLIR_VOSPI_DDR2_BASE_ADDRESS    (DDR2_KSEG1_BASE_ADDRESS + 0x00800000u)
+// Two 160x120 14-bit frame buffers in DDR2, through the CACHED (KSEG0) alias:
+// only the CPU ever touches them (the capture ISR memcpy()s one full while
+// flir_process reads the other; the VoSPI DMA lands in vospiBlock, not here),
+// so there is no coherency to manage and no reason to pay uncached DDR2
+// single-beat latency -- through KSEG1 the ISR's segment placement and the
+// render's two full-frame read passes were each a few ms of stalled CPU per
+// frame. Placed at DDR2 +8MB, clear of the reserved 0..7MB region and the
+// Layer 2 image buffer at +7MB; the full partition map lives in gui/gui.h.
+#define FLIR_VOSPI_DDR2_BASE_ADDRESS    (DDR2_KSEG0_BASE_ADDRESS + 0x00800000u)
 #define FLIR_VOSPI_FRAME_A_ADDRESS      (FLIR_VOSPI_DDR2_BASE_ADDRESS + 0x00000000u)
 #define FLIR_VOSPI_FRAME_B_ADDRESS      (FLIR_VOSPI_DDR2_BASE_ADDRESS + 0x00010000u)
 #define FLIR_VOSPI_FRAME_SIZE_BYTES     ((uint32_t)FLIR_VOSPI_PIXELS * 2u)
@@ -93,6 +97,19 @@ typedef struct
     uint32_t rxOverflows;      // SPIROV events (each one kills the capture)
     uint32_t stallRecoveries;  // deadlocked partial blocks recovered (a lost
                                // RX byte leaves the block one short forever)
+    uint32_t blankPackets;     // all-zero headers rejected (a dead MISO line
+                               // being clocked in -- NOT a real packet 0)
+    uint32_t blankBlocks;      // blocks in which every packet was blank; a
+                               // short run of these forces a /CS resync
+
+    // Chained mode only: stopped-clock recoveries done in place (TX channel
+    // restart, ~20ms, no /CS window), plus what state the TX channel was
+    // found in each time -- the breakdown that identifies WHY the clock
+    // stops, which the /CS-window recovery always threw away.
+    uint32_t clockUnsticks;        // total in-place TX restarts
+    uint32_t unstickTxDisabled;    // TX found disabled (CHAEN re-enable lost)
+    uint32_t unstickTxNeverStarted;// TX enabled but no byte of its block sourced
+    uint32_t unstickTxMidBlock;    // TX stopped part-way through a block
     uint32_t segmentsPlaced;   // complete 60-packet segments written to a frame
     uint32_t segmentRestarts;  // early packet 0s (sensor truncating a segment
                                // it marked invalid) -- normal, not an error

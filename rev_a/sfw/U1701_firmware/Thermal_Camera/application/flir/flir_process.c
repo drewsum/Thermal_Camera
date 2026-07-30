@@ -95,6 +95,11 @@ static void FLIRProcess_BuildPalette(FLIR_PALETTE palette)
     }
 }
 
+// Which of the two Layer 0 buffers the panel is currently scanning out.
+// GLCD_Initialize() starts scanout on buffer A (GLCD_FRAMEBUFFER_BASE_ADDRESS),
+// so the first render lands in buffer B.
+static bool displayingBufferB;
+
 void FLIRProcess_Initialize(void)
 {
     activePalette = FLIR_PALETTE_IRONBOW;
@@ -102,6 +107,7 @@ void FLIRProcess_Initialize(void)
     agcSeeded = false;
     smoothMin = 0;
     smoothMax = 0xFFFF;   // pixels are 16-bit TLinear centi-Kelvin, not 14-bit
+    displayingBufferB = false;
 }
 
 void FLIRProcess_SetPalette(FLIR_PALETTE palette)
@@ -127,43 +133,59 @@ void FLIRProcess_GetAGCWindow(uint16_t *minCount, uint16_t *maxCount)
 
 void FLIRProcess_RenderToLayer0(const uint16_t *frame)
 {
-    uint32_t i;
-    int32_t rawMin = 0xFFFF;   // 16-bit TLinear range, see flir_vospi.c
-    int32_t rawMax = 0;
+    int32_t frameMin = 0xFFFF;   // 16-bit TLinear range, see flir_vospi.c
+    int32_t frameMax = 0;
     int32_t range;
+    uint32_t scale;
     uint32_t y;
     uint8_t rowRGB[GLCD_FRAMEBUFFER_STRIDE_BYTES];
-    uint8_t *dstBase = (uint8_t *)GLCD_FRAMEBUFFER_BASE_ADDRESS;
+    uint8_t *dstBase;
 
     if (frame == NULL)
     {
         return;
     }
 
-    // --- AGC pass 1: min/max over the frame ---
-    for (i = 0; i < FLIR_VOSPI_PIXELS; i++)
-    {
-        int32_t v = frame[i];
-        if (v < rawMin) rawMin = v;
-        if (v > rawMax) rawMax = v;
-    }
+    // Render into whichever Layer 0 buffer is off-screen, and flip only when
+    // the whole frame is written -- the panel never scans a half-drawn frame
+    // (the single-buffer original tore on any scene motion).
+    dstBase = (uint8_t *)(displayingBufferB ? GLCD_FRAMEBUFFER_BASE_ADDRESS
+                                            : GLCD_FRAMEBUFFER_B_ADDRESS);
 
+    // The AGC window is one frame behind: the render stretches with the
+    // EMA-smoothed window from previous frames while gathering this frame's
+    // min/max for the update below. That folds what used to be a separate
+    // full-frame min/max pass into the render loop, and with the EMA already
+    // smoothing over 2^SHIFT frames, one frame of extra lag is invisible.
+    // The very first frame has no window yet, so seed it with its own pass.
     if (!agcSeeded)
     {
-        smoothMin = rawMin;
-        smoothMax = rawMax;
+        uint32_t i;
+
+        for (i = 0; i < FLIR_VOSPI_PIXELS; i++)
+        {
+            int32_t v = frame[i];
+            if (v < frameMin) frameMin = v;
+            if (v > frameMax) frameMax = v;
+        }
+
+        smoothMin = frameMin;
+        smoothMax = frameMax;
         agcSeeded = true;
-    }
-    else
-    {
-        smoothMin += (rawMin - smoothMin) >> FLIR_AGC_SMOOTH_SHIFT;
-        smoothMax += (rawMax - smoothMax) >> FLIR_AGC_SMOOTH_SHIFT;
+        frameMin = 0xFFFF;
+        frameMax = 0;
     }
 
     range = smoothMax - smoothMin;
     if (range < 1) range = 1;
 
-    // --- Pass 2: stretch -> palette -> 2x upscale into Layer 0 ---
+    // Fixed-point reciprocal so the stretch is one multiply per pixel instead
+    // of a ~30-cycle divide: idx = ((v - min) * (255<<16)/range) >> 16, with
+    // (v - min) clamped to [0, range] first so the product stays within
+    // 255<<16 (no 32-bit overflow) and the index within 0..255.
+    scale = ((uint32_t)255u << 16) / (uint32_t)range;
+
+    // --- Stretch -> palette -> 2x upscale into the back buffer ---
     // Each of the 120 source rows becomes two identical 320px destination
     // rows; each source pixel becomes two horizontal destination pixels.
     for (y = 0; y < FLIR_VOSPI_HEIGHT_PX; y++)
@@ -173,14 +195,18 @@ void FLIRProcess_RenderToLayer0(const uint16_t *frame)
 
         for (x = 0; x < FLIR_VOSPI_WIDTH_PX; x++)
         {
-            int32_t stretched = (((int32_t)srcRow[x] - smoothMin) * 255) / range;
+            int32_t v = srcRow[x];
+            int32_t diff = v - smoothMin;
             uint8_t idx;
             const uint8_t *rgb;
             uint32_t d = x * 6u;   // 2 dest px * 3 bytes
 
-            if (stretched < 0) stretched = 0;
-            else if (stretched > 255) stretched = 255;
-            idx = (uint8_t)stretched;
+            if (v < frameMin) frameMin = v;
+            if (v > frameMax) frameMax = v;
+
+            if (diff < 0) diff = 0;
+            else if (diff > range) diff = range;
+            idx = (uint8_t)((((uint32_t)diff * scale) + 0x8000u) >> 16);
             rgb = paletteLUT[idx];
 
             // Two horizontal copies (2x upscale in X).
@@ -198,4 +224,14 @@ void FLIRProcess_RenderToLayer0(const uint16_t *frame)
         memcpy(dstBase + (((y * 2u) + 1u) * GLCD_FRAMEBUFFER_STRIDE_BYTES),
                rowRGB, GLCD_FRAMEBUFFER_STRIDE_BYTES);
     }
+
+    // Advance the AGC window with this frame's measured span, for next frame.
+    smoothMin += (frameMin - smoothMin) >> FLIR_AGC_SMOOTH_SHIFT;
+    smoothMax += (frameMax - smoothMax) >> FLIR_AGC_SMOOTH_SHIFT;
+
+    // Flip: the controller latches the new base address at the next frame
+    // start, so no vertical-blanking wait is needed -- the just-written
+    // buffer goes on screen whole, and the other becomes next frame's target.
+    GLCD_SetLayer0BaseAddress(dstBase);
+    displayingBufferB = !displayingBufferB;
 }

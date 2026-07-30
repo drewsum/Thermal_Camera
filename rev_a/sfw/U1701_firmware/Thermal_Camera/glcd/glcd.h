@@ -87,6 +87,15 @@ extern "C" {
 // for the GLCD Controller's own DMA (a separate DDR2 bus master) to see it.
 #define GLCD_FRAMEBUFFER_BASE_ADDRESS      DDR2_KSEG1_BASE_ADDRESS
 
+// Layer 0 is double buffered for the thermal video: flir_process.c renders
+// each frame into whichever buffer is off-screen, then flips GLCDL0BADDR via
+// GLCD_SetLayer0BaseAddress(). Rendering into the live scanout buffer (the
+// single-buffer original) raced the panel's 60Hz scan top-to-bottom and
+// showed as horizontal shear/tearing on any scene motion. Buffer A is
+// GLCD_FRAMEBUFFER_BASE_ADDRESS (scanned out from boot); buffer B sits in
+// the gap between Layer 0's ~230KB and the +1MB Layer 1 overlay buffers.
+#define GLCD_FRAMEBUFFER_B_ADDRESS         (DDR2_KSEG1_BASE_ADDRESS + 0x00080000u)
+
 // Layer 1 (GUI overlay) geometry/placement -- same 320x240 as Layer 0, but
 // ARGB8888 so the GLCD Controller can alpha-blend it over Layer 0 per pixel.
 // Two full-screen buffers (see the double-buffering note in the file header),
@@ -141,6 +150,12 @@ bool GLCD_OverlayInitialize(void);
 // The controller latches the new base at the next frame start, so call this
 // from inside vertical blanking -- see GLCD_WaitOverlayVSync().
 void GLCD_SetOverlayBaseAddress(const void *buffer);
+
+// Points Layer 0's DMA at `buffer` (a KSEG0/KSEG1 pointer to one of the two
+// Layer 0 buffers). Latched by the controller at the next frame start, so a
+// caller that only ever writes the off-screen buffer (flir_process.c's video
+// flip) needs no vertical-blanking wait -- the mid-frame swap is invisible.
+void GLCD_SetLayer0BaseAddress(const void *buffer);
 
 // Blocks until the panel is in vertical blanking (GLCDSTAT.VSYNC), which is
 // the window in which an overlay buffer flip is invisible. Bounded by a CP0
