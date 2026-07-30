@@ -208,7 +208,7 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
     GLCD_Layer2SetEnabled(true);
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("Displayed %s (%ux%u, %lu byte file, decoded in %lu ms)\r\n",
+    printf("    Displayed %s (%ux%u, %lu byte file, decoded in %lu ms)\r\n",
             path, width, height, (unsigned long)file_bytes,
             (unsigned long)(((uint64_t)(_CP0_GET_COUNT() - decode_start_ticks) * 2000u) / SYSCLK_INT));
     terminalTextAttributesReset();

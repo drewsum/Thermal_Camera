@@ -58,7 +58,7 @@ bool FlashFileIO_Unmount(void);
 bool FlashFileIO_IsMounted(void);
 
 // Unconditionally re-formats the flash volume (f_mkfs + relabel +
-// remount), destroying its contents. Called by the "SPI Flash Format" USB
+// remount), destroying its contents. Called by the "Flash Format" USB
 // UART command as the rebuild step immediately after it erases the whole
 // chip (W25Q128JV_EraseChip()).
 bool FlashFileIO_Format(void);

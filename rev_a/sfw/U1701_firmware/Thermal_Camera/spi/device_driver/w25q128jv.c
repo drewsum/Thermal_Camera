@@ -13,6 +13,7 @@
 #include "spi/device_driver/w25q128jv.h"
 #include "spi/spi3.h"
 #include "core/device_control.h"
+#include "core/watchdog_timer.h"
 #include "gpio/pin_macros.h"
 #include "usb_uart/terminal_control.h"
 #include <xc.h>
@@ -97,6 +98,12 @@ bool W25Q128JV_ReadStatus(uint8_t *status)
 // 100MHz tick rate before wrapping, but each individual delta here (one
 // RDSR1 round-trip) is microseconds, nowhere near that wrap window, so the
 // accumulated total stays correct across any number of wraps.
+//
+// Kicked every iteration: the WDT timeout (2.048s, watchdog_timer.h) is far
+// shorter than Chip Erase's worst case (200s), and each iteration already
+// costs a full RDSR1 SPI round-trip, so kickTheDog()'s overhead here is
+// immaterial. Without this, "Flash Format" reset the MCU mid-erase every
+// time -- the loop's own timeout never got a chance to fire first.
 static bool W25Q128JV_WaitWhileBusy(uint64_t timeoutTicks)
 {
     uint32_t last = _CP0_GET_COUNT();
@@ -105,6 +112,7 @@ static bool W25Q128JV_WaitWhileBusy(uint64_t timeoutTicks)
 
     for (;;)
     {
+        kickTheDog();
         W25Q128JV_ReadStatus(&status);
 
         if (!(status & W25Q128JV_STATUS_BUSY))

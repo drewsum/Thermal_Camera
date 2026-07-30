@@ -62,6 +62,7 @@
 #include "application/pgood_monitor.h"
 #include "application/pushbuttons.h"
 #include "application/backlight_pwm.h"
+#include "application/image_loader.h"
 
 
 ////// I2C
@@ -348,6 +349,15 @@ void main(void) {
             &error_handler.flags.glcd_init_error);
     while(usbUartCheckIfBusy());
 
+    // GLCD Layer 2 (on-demand still-image layer): brought up as early as the
+    // hardware allows -- right after GLCD_Initialize(), ahead of the GUI and
+    // the Lepton -- so the splash screen below can go up before either of
+    // those slower subsystems is ready. Only needs the controller running
+    // (glcd.c checks LCDEN itself); it does NOT need GUI_Initialize(), which
+    // is why this sits here rather than next to ImageLoader_DisplayPNG().
+    reportInit("GLCD Layer 2 (still image)", GLCD_Layer2Initialize(), NULL);
+    while(usbUartCheckIfBusy());
+
     // Backlight brightness is PWM-driven (OC3/Timer4, application/backlight_pwm.c)
     // rather than a plain digital enable pin -- must be initialized after
     // clockInitialize() above (which sets CFGCON.OCACLK=1 under unlock,
@@ -368,22 +378,38 @@ void main(void) {
             &error_handler.flags.gui_init_error);
     while(usbUartCheckIfBusy());
 
+    // Display the splash screen now: Layer 2 has been enabled since right
+    // after GLCD_Initialize() above, and this is the earliest point the PNG
+    // decode itself can run, since it allocates from the LVGL heap that
+    // GUI_Initialize() just handed out (application/image_loader.h). Layer 2
+    // is fully opaque and painted on top of Layer 0/1, so it hides the (still
+    // booting) Lepton and the just-built GUI screens until the splash timer
+    // below dismisses it.
+    ImageLoader_DisplayPNG(IMAGE_MEDIA_SPI_FLASH, "SPLASH.PNG");
+
+    // Non-blocking splash-screen dismiss timer, checked once per superloop
+    // pass (see splash_screen_pending below) instead of a blocking
+    // softwareDelay() (core/device_control.c -- a raw NOP-counting loop with
+    // no time calibration), which used to stall I2C/USB/GUI/FLIR servicing
+    // for its whole duration. GUI_GetTickMs() (gui/gui.c) is the same
+    // monotonic since-boot millisecond source LVGL's own tick already uses,
+    // so no second clock is introduced.
+    #define SPLASH_SCREEN_DISPLAY_MS   3000u   // tune to taste
+    uint32_t splash_screen_shown_tick_ms = GUI_GetTickMs();
+    bool splash_screen_pending = true;
+
     // FLIR thermal camera, second half. The rails/clock/reset came up before
     // the I2C bring-up above and the camera has been booting ever since; the
     // pieces set up here are the ones that needed DDR2 and the GLCD first:
-    //  - Layer 2, the on-demand still-image layer for the PNG loader, disabled
-    //    (the thermal video takes over Layer 0; the image loader moved here).
     //  - the frame-processing palette LUT.
     //  - SPI4 + VoSPI DMA + INT1 registers, left idle until capture starts.
     // FLIR_WaitUntilReady() then collects the boot (normally already elapsed)
     // and runs the CCI RAW14 configuration, leaving the driver READY: powered
-    // and configured, but not capturing until "FLIR Stream On".
-    reportInit("GLCD Layer 2 (still image)", GLCD_Layer2Initialize(), NULL);
+    // and configured, but not capturing until FLIR_StreamOn() below.
     FLIRProcess_Initialize();
     FLIR_VOSPI_Initialize();
     if (reportInit("FLIR Lepton Boot + Configuration", FLIR_WaitUntilReady(), NULL)) {
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    Video idle -- send 'FLIR Stream On' to start capture\r\n");
+        reportInit("FLIR Video Streaming", FLIR_StreamOn(), NULL);
     } else {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Thermal video unavailable -- see 'FLIR Status?'\r\n");
@@ -499,15 +525,30 @@ void main(void) {
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("\n\rType 'Help' for list of supported commands\n\r\n\r");
     terminalTextAttributesReset();
-    
+
     while(true) {
-        
+
         // clear the watchdog if we need to
         if (wdt_clear_request) {
             kickTheDog();
             wdt_clear_request = 0;
         }
-        
+
+        // Non-blocking splash-screen dismiss (splash_screen_shown_tick_ms /
+        // SPLASH_SCREEN_DISPLAY_MS set above, right after the splash was
+        // loaded): hides Layer 2 once it's been up long enough, revealing the
+        // thermal video (Layer 0, streaming if the Lepton came up) and GUI
+        // (Layer 1). Guarded by splash_screen_pending so it fires exactly
+        // once. Unconditional on Lepton/GUI success -- even a failed Lepton
+        // boot must not leave the splash stuck on screen forever. Wrap-safe
+        // unsigned subtraction, same reasoning as GUI_GetTickMs()'s own
+        // comment.
+        if (splash_screen_pending &&
+                ((GUI_GetTickMs() - splash_screen_shown_tick_ms) >= SPLASH_SCREEN_DISPLAY_MS)) {
+            ImageLoader_Clear();
+            splash_screen_pending = false;
+        }
+
         // parse received USB strings if we have a new one received
         if (usb_uart_rx_ready) {
             usbUartRxLUTInterface(usb_uart_rx_buffer);

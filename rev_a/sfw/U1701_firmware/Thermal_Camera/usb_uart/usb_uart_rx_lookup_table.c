@@ -890,7 +890,7 @@ USB_UART_COMMAND(clearImageCommand, "Clear Image",
 
 }
 
-USB_UART_COMMAND(spiFlashFormatCommand, "SPI Flash Format",
+USB_UART_COMMAND(flashFormatCommand, "Flash Format",
         "DESTRUCTIVELY erases the entire SPI Flash chip, then re-formats and remounts its FAT volume (FAT/superfloppy, labeled THERMAL SPI)") {
 
     terminalTextAttributesReset();
