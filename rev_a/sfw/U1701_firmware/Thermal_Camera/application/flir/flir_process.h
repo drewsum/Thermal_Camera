@@ -48,6 +48,19 @@ typedef enum
     FLIR_PALETTE_COUNT
 } FLIR_PALETTE;
 
+// One index -> R,G,B stop in a palette's gradient (see flir_process.c). A
+// palette LUT is these, linearly interpolated to 256 entries; the GUI reuses
+// the same stops to paint a scale that always matches the LUT exactly.
+typedef struct { uint8_t idx, r, g, b; } FLIR_PaletteControlPoint;
+
+// Must be >= the largest palette's control-point count (flir_process.c
+// enforces this at compile time against ironbowPoints, currently the
+// largest at 9). Sized here, rather than derived from the private point
+// arrays, so callers can size a fixed-length buffer for
+// FLIRProcess_GetPalettePoints() without depending on flir_process.c's
+// internals.
+#define FLIR_PALETTE_MAX_CONTROL_POINTS   9u
+
 // Builds the active palette LUT (default ironbow) and resets the AGC state.
 // Call once at startup before the first RenderToLayer0().
 void FLIRProcess_Initialize(void);
@@ -71,6 +84,23 @@ void FLIRProcess_RenderToLayer0(const uint16_t *frame);
 // Reports the AGC window (smoothed min/max sensor counts) from the last render,
 // for the status print. Either pointer may be NULL.
 void FLIRProcess_GetAGCWindow(uint16_t *minCount, uint16_t *maxCount);
+
+// Same AGC window as FLIRProcess_GetAGCWindow(), converted from raw 16-bit
+// TLinear centi-Kelvin counts to degrees Celsius -- this is the min/max of
+// the temperature range the last render's palette stretch actually covers,
+// for on-screen display. Either pointer may be NULL. Returns false (and
+// still writes the boot-default window, which converts to nonsense degrees)
+// until FLIRProcess_RenderToLayer0() has processed at least one frame --
+// callers displaying this should leave a placeholder rather than show it.
+bool FLIRProcess_GetAGCWindowCelsius(float *minCelsius, float *maxCelsius);
+
+// Returns the control points (idx -> R,G,B, idx ascending) that build
+// `palette`'s 256-entry LUT, for painting a GUI scale that matches it
+// exactly. Writes the array pointer to *points (owned by flir_process.c,
+// valid for the program's lifetime) and returns the point count, which is
+// always <= FLIR_PALETTE_MAX_CONTROL_POINTS. Returns 0 and leaves *points
+// untouched for an out-of-range palette.
+uint32_t FLIRProcess_GetPalettePoints(FLIR_PALETTE palette, const FLIR_PaletteControlPoint **points);
 
 #ifdef __cplusplus
 }

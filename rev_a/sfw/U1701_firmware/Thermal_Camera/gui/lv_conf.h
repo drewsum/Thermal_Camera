@@ -499,8 +499,12 @@
 #define LV_IMAGE_HEADER_CACHE_DEF_CNT 0
 
 /** Number of stops allowed per gradient. Increase this to allow more stops.
- *  This adds (sizeof(lv_color_t) + 1) bytes per additional stop. */
-#define LV_GRADIENT_MAX_STOPS   2
+ *  This adds (sizeof(lv_color_t) + 1) bytes per additional stop.
+ *  9 to fit the FLIR palette scale on screen_home.c: it paints its gradient
+ *  straight from a palette's control points (application/flir/flir_process.h
+ *  FLIR_PALETTE_MAX_CONTROL_POINTS), and ironbow -- the largest palette --
+ *  has 9 of them. */
+#define LV_GRADIENT_MAX_STOPS   9
 
 /** Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  *  - 0:   round down,

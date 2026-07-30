@@ -15,7 +15,7 @@
 #include "gui/gui.h"
 #include "gui/lv_port_disp.h"
 #include "gui/lvgl/lvgl.h"
-#include "gui/screens/demo_screen.h"
+#include "gui/screens/screen_home.h"
 #include "gui/screens/system_screen.h"
 
 #include "application/error_handler.h"
@@ -56,7 +56,7 @@ typedef struct
 
 static GUI_SCREEN gui_screens[] =
 {
-    { DemoScreen_Create,   DemoScreen_Refresh,   NULL },
+    { ScreenHome_Create,   ScreenHome_Refresh,   NULL },
     { SystemScreen_Create, SystemScreen_Refresh, NULL },
 };
 

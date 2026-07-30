@@ -35,8 +35,8 @@ static bool    agcSeeded;
 // The Lepton is run in RAW14/TLinear mode (flir_cci.c) rather than the
 // sensor's own AGC/colorizer, so all of these are software approximations
 // of FLIR's named palettes rather than a copy of proprietary on-camera LUTs.
-typedef struct { uint8_t idx, r, g, b; } FLIR_PaletteControlPoint;
-
+// FLIR_PaletteControlPoint itself is public (flir_process.h) -- the GUI
+// reuses it to paint a scale from these same stops.
 #define FLIR_PALETTE_POINT_COUNT(points)   ((uint32_t)(sizeof(points) / sizeof((points)[0])))
 
 static const FLIR_PaletteControlPoint ironbowPoints[] = {
@@ -110,6 +110,13 @@ static const FLIR_PaletteControlPoint glowbowPoints[] = {
     { 200, 255, 170,  40 },
     { 255, 255, 255, 200 },
 };
+
+// ironbowPoints is the largest control-point array (9); catch a future
+// palette outgrowing FLIR_PALETTE_MAX_CONTROL_POINTS (flir_process.h) at
+// build time instead of silently truncating the GUI's gradient scale.
+#if FLIR_PALETTE_MAX_CONTROL_POINTS < 9
+#error "FLIR_PALETTE_MAX_CONTROL_POINTS must cover ironbowPoints (9 stops)"
+#endif
 
 static uint8_t lerp8(uint8_t a, uint8_t b, uint32_t num, uint32_t den)
 {
@@ -219,6 +226,51 @@ void FLIRProcess_GetAGCWindow(uint16_t *minCount, uint16_t *maxCount)
 {
     if (minCount != NULL) *minCount = (uint16_t)smoothMin;
     if (maxCount != NULL) *maxCount = (uint16_t)smoothMax;
+}
+
+// Same formula as the AGC window print in flir.c: pixels are raw 16-bit
+// TLinear centi-Kelvin counts (flir_cci.c runs the Lepton in RAW14/TLinear
+// mode), so Celsius = counts/100 - 273.15.
+#define FLIR_PROCESS_KELVIN_OFFSET_C   273.15f
+
+bool FLIRProcess_GetAGCWindowCelsius(float *minCelsius, float *maxCelsius)
+{
+    if (minCelsius != NULL) *minCelsius = ((float)smoothMin / 100.0f) - FLIR_PROCESS_KELVIN_OFFSET_C;
+    if (maxCelsius != NULL) *maxCelsius = ((float)smoothMax / 100.0f) - FLIR_PROCESS_KELVIN_OFFSET_C;
+    return agcSeeded;
+}
+
+uint32_t FLIRProcess_GetPalettePoints(FLIR_PALETTE palette, const FLIR_PaletteControlPoint **points)
+{
+    switch (palette)
+    {
+        case FLIR_PALETTE_WHITEHOT:
+            *points = whiteHotPoints;
+            return FLIR_PALETTE_POINT_COUNT(whiteHotPoints);
+        case FLIR_PALETTE_BLACKHOT:
+            *points = blackHotPoints;
+            return FLIR_PALETTE_POINT_COUNT(blackHotPoints);
+        case FLIR_PALETTE_RAINBOW:
+            *points = rainbowPoints;
+            return FLIR_PALETTE_POINT_COUNT(rainbowPoints);
+        case FLIR_PALETTE_RAINBOW_HC:
+            *points = rainbowHCPoints;
+            return FLIR_PALETTE_POINT_COUNT(rainbowHCPoints);
+        case FLIR_PALETTE_ARCTIC:
+            *points = arcticPoints;
+            return FLIR_PALETTE_POINT_COUNT(arcticPoints);
+        case FLIR_PALETTE_LAVA:
+            *points = lavaPoints;
+            return FLIR_PALETTE_POINT_COUNT(lavaPoints);
+        case FLIR_PALETTE_GLOWBOW:
+            *points = glowbowPoints;
+            return FLIR_PALETTE_POINT_COUNT(glowbowPoints);
+        case FLIR_PALETTE_IRONBOW:
+            *points = ironbowPoints;
+            return FLIR_PALETTE_POINT_COUNT(ironbowPoints);
+        default:
+            return 0;
+    }
 }
 
 void FLIRProcess_RenderToLayer0(const uint16_t *frame)

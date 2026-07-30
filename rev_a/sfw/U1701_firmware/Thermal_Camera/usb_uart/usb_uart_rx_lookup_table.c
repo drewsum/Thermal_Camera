@@ -857,6 +857,14 @@ USB_UART_COMMAND(flirPaletteCommand, "FLIR Palette:",
     for (p = (FLIR_PALETTE)0; p < FLIR_PALETTE_COUNT; p++) {
         if (strcmp(palette_str, FLIRProcess_PaletteName(p)) == 0) {
             FLIR_SetPalette(p);
+
+            // Wakes GUI_Tasks() on the very next main-loop pass rather than
+            // waiting for heartbeatServices()'s 500ms tick, so the home
+            // screen's palette scale (gui/screens/screen_home.c) repaints
+            // right away instead of lagging the command by up to half a
+            // second.
+            gui_refresh_request = 1;
+
             terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
             printf("Palette set to %s\r\n", FLIRProcess_PaletteName(p));
             terminalTextAttributesReset();
