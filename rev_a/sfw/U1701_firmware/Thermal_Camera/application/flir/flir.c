@@ -316,8 +316,7 @@ void FLIR_PrintStatus(void)
            (unsigned)FLIR_CLK_EN_PIN, (unsigned)nFLIR_PWR_DWN_PIN, (unsigned)nFLIR_RESET_PIN,
            (unsigned)POS1P2_PGOOD_PIN, (unsigned)POS2P8_PGOOD_PIN);
 
-    printf("    Palette: %s\n\r",
-           (FLIRProcess_GetPalette() == FLIR_PALETTE_GRAYSCALE) ? "Grayscale" : "Ironbow");
+    printf("    Palette: %s\n\r", FLIRProcess_PaletteName(FLIRProcess_GetPalette()));
 
     // Pixels are 16-bit TLinear (centi-Kelvin), so the AGC window doubles as
     // the scene's temperature span -- a good sanity check on live data.

@@ -30,8 +30,16 @@ static bool    agcSeeded;
 
 // --- Palette generation ----------------------------------------------------
 
-// Ironbow control points (index -> R,G,B), linearly interpolated to fill 256.
-static const struct { uint8_t idx, r, g, b; } ironbowPoints[] = {
+// A palette is a handful of index -> R,G,B control points, linearly
+// interpolated to fill all 256 LUT entries (see FLIRProcess_BuildFromPoints).
+// The Lepton is run in RAW14/TLinear mode (flir_cci.c) rather than the
+// sensor's own AGC/colorizer, so all of these are software approximations
+// of FLIR's named palettes rather than a copy of proprietary on-camera LUTs.
+typedef struct { uint8_t idx, r, g, b; } FLIR_PaletteControlPoint;
+
+#define FLIR_PALETTE_POINT_COUNT(points)   ((uint32_t)(sizeof(points) / sizeof((points)[0])))
+
+static const FLIR_PaletteControlPoint ironbowPoints[] = {
     {   0,   0,   0,   0 },
     {  32,   0,   0,  80 },
     {  64,  60,   0, 120 },
@@ -43,41 +51,89 @@ static const struct { uint8_t idx, r, g, b; } ironbowPoints[] = {
     { 255, 255, 255, 255 },
 };
 
+static const FLIR_PaletteControlPoint whiteHotPoints[] = {
+    {   0,   0,   0,   0 },
+    { 255, 255, 255, 255 },
+};
+
+static const FLIR_PaletteControlPoint blackHotPoints[] = {
+    {   0, 255, 255, 255 },
+    { 255,   0,   0,   0 },
+};
+
+static const FLIR_PaletteControlPoint rainbowPoints[] = {
+    {   0,   0,   0, 140 },
+    {  40,   0,   0, 255 },
+    {  80,   0, 255, 255 },
+    { 120,   0, 255,   0 },
+    { 160, 255, 255,   0 },
+    { 200, 255, 128,   0 },
+    { 230, 255,   0,   0 },
+    { 255, 255, 255, 255 },
+};
+
+static const FLIR_PaletteControlPoint rainbowHCPoints[] = {
+    {   0,   0,   0,   0 },
+    {  20,  40,   0,  80 },
+    {  60,   0,   0, 255 },
+    { 100,   0, 200, 200 },
+    { 140,   0, 255,   0 },
+    { 180, 255, 255,   0 },
+    { 220, 255,   0,   0 },
+    { 255, 255, 255, 255 },
+};
+
+static const FLIR_PaletteControlPoint arcticPoints[] = {
+    {   0,   0,  20,  60 },
+    {  60,   0,  80, 160 },
+    { 120,  60, 160, 220 },
+    { 180, 180, 220, 255 },
+    { 220, 255, 255, 255 },
+    { 255, 255,  60,   0 },
+};
+
+static const FLIR_PaletteControlPoint lavaPoints[] = {
+    {   0,   0,   0,   0 },
+    {  60,  40,   0,  80 },
+    { 110, 120,   0, 120 },
+    { 150, 200,   0,  80 },
+    { 190, 255,  60,   0 },
+    { 230, 255, 160,   0 },
+    { 255, 255, 255,  80 },
+};
+
+static const FLIR_PaletteControlPoint glowbowPoints[] = {
+    {   0,   0,   0,   0 },
+    {  50,  40,   0,  20 },
+    { 100, 120,  20,  20 },
+    { 150, 220,  80,   0 },
+    { 200, 255, 170,  40 },
+    { 255, 255, 255, 200 },
+};
+
 static uint8_t lerp8(uint8_t a, uint8_t b, uint32_t num, uint32_t den)
 {
     return (uint8_t)((int32_t)a + (((int32_t)b - (int32_t)a) * (int32_t)num) / (int32_t)den);
 }
 
-static void FLIRProcess_BuildIronbow(void)
+static void FLIRProcess_BuildFromPoints(const FLIR_PaletteControlPoint *points, uint32_t count)
 {
     uint32_t seg;
-    uint32_t count = (sizeof(ironbowPoints) / sizeof(ironbowPoints[0])) - 1u;
 
-    for (seg = 0; seg < count; seg++)
+    for (seg = 0; seg < count - 1u; seg++)
     {
-        uint32_t lo = ironbowPoints[seg].idx;
-        uint32_t hi = ironbowPoints[seg + 1].idx;
+        uint32_t lo = points[seg].idx;
+        uint32_t hi = points[seg + 1].idx;
         uint32_t span = hi - lo;
         uint32_t i;
 
         for (i = lo; i <= hi; i++)
         {
             uint32_t n = i - lo;
-            paletteLUT[i][0] = lerp8(ironbowPoints[seg].r, ironbowPoints[seg + 1].r, n, span);
-            paletteLUT[i][1] = lerp8(ironbowPoints[seg].g, ironbowPoints[seg + 1].g, n, span);
-            paletteLUT[i][2] = lerp8(ironbowPoints[seg].b, ironbowPoints[seg + 1].b, n, span);
+            paletteLUT[i][0] = lerp8(points[seg].r, points[seg + 1].r, n, span);
+            paletteLUT[i][1] = lerp8(points[seg].g, points[seg + 1].g, n, span);
+            paletteLUT[i][2] = lerp8(points[seg].b, points[seg + 1].b, n, span);
         }
-    }
-}
-
-static void FLIRProcess_BuildGrayscale(void)
-{
-    uint32_t i;
-    for (i = 0; i < 256u; i++)
-    {
-        paletteLUT[i][0] = (uint8_t)i;
-        paletteLUT[i][1] = (uint8_t)i;
-        paletteLUT[i][2] = (uint8_t)i;
     }
 }
 
@@ -85,13 +141,47 @@ static void FLIRProcess_BuildPalette(FLIR_PALETTE palette)
 {
     switch (palette)
     {
-        case FLIR_PALETTE_GRAYSCALE:
-            FLIRProcess_BuildGrayscale();
+        case FLIR_PALETTE_WHITEHOT:
+            FLIRProcess_BuildFromPoints(whiteHotPoints, FLIR_PALETTE_POINT_COUNT(whiteHotPoints));
+            break;
+        case FLIR_PALETTE_BLACKHOT:
+            FLIRProcess_BuildFromPoints(blackHotPoints, FLIR_PALETTE_POINT_COUNT(blackHotPoints));
+            break;
+        case FLIR_PALETTE_RAINBOW:
+            FLIRProcess_BuildFromPoints(rainbowPoints, FLIR_PALETTE_POINT_COUNT(rainbowPoints));
+            break;
+        case FLIR_PALETTE_RAINBOW_HC:
+            FLIRProcess_BuildFromPoints(rainbowHCPoints, FLIR_PALETTE_POINT_COUNT(rainbowHCPoints));
+            break;
+        case FLIR_PALETTE_ARCTIC:
+            FLIRProcess_BuildFromPoints(arcticPoints, FLIR_PALETTE_POINT_COUNT(arcticPoints));
+            break;
+        case FLIR_PALETTE_LAVA:
+            FLIRProcess_BuildFromPoints(lavaPoints, FLIR_PALETTE_POINT_COUNT(lavaPoints));
+            break;
+        case FLIR_PALETTE_GLOWBOW:
+            FLIRProcess_BuildFromPoints(glowbowPoints, FLIR_PALETTE_POINT_COUNT(glowbowPoints));
             break;
         case FLIR_PALETTE_IRONBOW:
         default:
-            FLIRProcess_BuildIronbow();
+            FLIRProcess_BuildFromPoints(ironbowPoints, FLIR_PALETTE_POINT_COUNT(ironbowPoints));
             break;
+    }
+}
+
+const char *FLIRProcess_PaletteName(FLIR_PALETTE palette)
+{
+    switch (palette)
+    {
+        case FLIR_PALETTE_IRONBOW:     return "Ironbow";
+        case FLIR_PALETTE_WHITEHOT:    return "White Hot";
+        case FLIR_PALETTE_BLACKHOT:    return "Black Hot";
+        case FLIR_PALETTE_RAINBOW:     return "Rainbow";
+        case FLIR_PALETTE_RAINBOW_HC:  return "Rainbow HC";
+        case FLIR_PALETTE_ARCTIC:      return "Arctic";
+        case FLIR_PALETTE_LAVA:        return "Lava";
+        case FLIR_PALETTE_GLOWBOW:     return "Glowbow";
+        default:                       return "?";
     }
 }
 

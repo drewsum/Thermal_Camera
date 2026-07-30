@@ -38,7 +38,13 @@ extern "C" {
 typedef enum
 {
     FLIR_PALETTE_IRONBOW = 0,   // classic thermal black->purple->red->yellow->white
-    FLIR_PALETTE_GRAYSCALE,     // linear white-hot
+    FLIR_PALETTE_WHITEHOT,      // linear white-hot
+    FLIR_PALETTE_BLACKHOT,      // linear black-hot (inverse of white-hot)
+    FLIR_PALETTE_RAINBOW,       // full-spectrum blue(cold)->green->yellow->red->white(hot)
+    FLIR_PALETTE_RAINBOW_HC,    // rainbow, high-contrast variant with a violet floor
+    FLIR_PALETTE_ARCTIC,        // cool blues/whites, with a hot orange/red accent
+    FLIR_PALETTE_LAVA,          // black->purple->magenta->orange->yellow
+    FLIR_PALETTE_GLOWBOW,       // black->red->amber->pale yellow->white glow
     FLIR_PALETTE_COUNT
 } FLIR_PALETTE;
 
@@ -51,6 +57,12 @@ void FLIRProcess_SetPalette(FLIR_PALETTE palette);
 
 // Returns the currently selected palette.
 FLIR_PALETTE FLIRProcess_GetPalette(void);
+
+// Human-readable palette name (e.g. "Ironbow", "Rainbow HC"). Used for the
+// status print and doubles as the token the USB UART "FLIR Palette:" command
+// matches against, so the name set only has to live in one place. Returns
+// "?" for an out-of-range value.
+const char *FLIRProcess_PaletteName(FLIR_PALETTE palette);
 
 // AGC + palette + 2x upscale of a 160x120 14-bit frame (as produced by
 // FLIR_VOSPI_TakeFrame()) into the GLCD Layer 0 RGB888 frame buffer.

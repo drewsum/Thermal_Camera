@@ -838,32 +838,34 @@ USB_UART_COMMAND(flirPacketDumpCommand, "FLIR Packet Dump",
 }
 
 USB_UART_COMMAND(flirPaletteCommand, "FLIR Palette:",
-        "\b\b <palette>: Selects the thermal color palette. Options: Ironbow, Grayscale") {
+        "\b\b <palette>: Selects the thermal color palette. Options: Ironbow, White Hot, Black Hot, Rainbow, Rainbow HC, Arctic, Lava, Glowbow") {
 
-    char palette_str[16] = {0};
+    char palette_str[24] = {0};
+    FLIR_PALETTE p;
 
     terminalTextAttributesReset();
 
-    if (sscanf(input_str, "FLIR Palette: %15[^\t\n\r]", palette_str) != 1) {
+    if (sscanf(input_str, "FLIR Palette: %23[^\t\n\r]", palette_str) != 1) {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Usage: FLIR Palette: <Ironbow|Grayscale>\r\n");
+        printf("Usage: FLIR Palette: <Ironbow|White Hot|Black Hot|Rainbow|Rainbow HC|Arctic|Lava|Glowbow>\r\n");
         terminalTextAttributesReset();
         return;
     }
 
-    if (strcmp(palette_str, "Ironbow") == 0) {
-        FLIR_SetPalette(FLIR_PALETTE_IRONBOW);
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Palette set to Ironbow\r\n");
-    } else if (strcmp(palette_str, "Grayscale") == 0) {
-        FLIR_SetPalette(FLIR_PALETTE_GRAYSCALE);
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Palette set to Grayscale\r\n");
-    } else {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("Unknown palette '%s' (options: Ironbow, Grayscale)\r\n", palette_str);
+    // Matched against FLIRProcess_PaletteName() so the option list can only
+    // ever name palettes the driver actually builds.
+    for (p = (FLIR_PALETTE)0; p < FLIR_PALETTE_COUNT; p++) {
+        if (strcmp(palette_str, FLIRProcess_PaletteName(p)) == 0) {
+            FLIR_SetPalette(p);
+            terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+            printf("Palette set to %s\r\n", FLIRProcess_PaletteName(p));
+            terminalTextAttributesReset();
+            return;
+        }
     }
 
+    terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+    printf("Unknown palette '%s' (options: Ironbow, White Hot, Black Hot, Rainbow, Rainbow HC, Arctic, Lava, Glowbow)\r\n", palette_str);
     terminalTextAttributesReset();
 
 }
