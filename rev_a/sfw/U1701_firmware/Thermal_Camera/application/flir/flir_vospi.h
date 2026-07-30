@@ -102,11 +102,16 @@ typedef struct
     uint32_t blankBlocks;      // blocks in which every packet was blank; a
                                // short run of these forces a /CS resync
 
-    // Chained mode only: stopped-clock recoveries done in place (TX channel
-    // restart, ~20ms, no /CS window), plus what state the TX channel was
-    // found in each time -- the breakdown that identifies WHY the clock
-    // stops, which the /CS-window recovery always threw away.
-    uint32_t clockUnsticks;        // total in-place TX restarts
+    // Chained mode only: stopped-clock recoveries done in place (~20ms, no
+    // /CS window), plus the state the wedge was found in each time -- the
+    // breakdown that identifies WHY the clock stops, which the /CS-window
+    // recovery always threw away.
+    uint32_t clockUnsticks;        // total in-place recoveries attempted
+    uint32_t unstickRxDrains;      // RX FIFO held bytes w/ a live RX channel:
+                                   // master paused on a full FIFO (no SPIROV
+                                   // in master mode); drained via forced cells
+    uint32_t unstickRxDead;        // RX FIFO held bytes with NO RX channel
+                                   // enabled (chain enable lost) -> /CS window
     uint32_t unstickTxDisabled;    // TX found disabled (CHAEN re-enable lost)
     uint32_t unstickTxNeverStarted;// TX enabled but no byte of its block sourced
     uint32_t unstickTxMidBlock;    // TX stopped part-way through a block

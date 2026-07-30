@@ -67,16 +67,17 @@
 // With chaining (1), the re-arm leaves software entirely. Two RX channels
 // (DCH2/DCH3, one per ping-pong block) are cross-chained so the DMA
 // controller enables each one's partner in the same cycle its own block
-// completes -- bench-proven 100% reliable (zero RX overflows across
-// thousands of hand-offs). The TX side is a SINGLE channel (DCH4) with
-// CHAEN, continuously enabled: it just wraps its dummy block forever, so
-// there is no TX hand-off to fail. This replaced a cross-chained TX pair
-// (DCH4/DCH5) whose hand-off intermittently stalled the clock -- bench
-// 2026-07-29: 93 clock-stop stalls in ~33s of streaming, each costing a
-// 100ms detect + 200ms /CS window, i.e. most of the visible stutter, while
-// the RX pair never missed once. The ISR's only job is parsing a completed
-// block, with a whole block time (~9.4ms) of deadline instead of
-// microseconds. DCH5 is free again.
+// completes. The TX side is a SINGLE channel (DCH4) with CHAEN, continuously
+// enabled: it just wraps its dummy block forever, so there is no TX hand-off
+// to fail. (This replaced a cross-chained TX pair whose recovery statistics
+// looked like TX hand-off stalls -- bench 2026-07-29, 93 clock stops in
+// ~33s; the change cut the stall rate ~7x. NOTE: "zero RX overflows" is NOT
+// proof the RX side is healthy -- as an enhanced-buffer master this SPI
+// pauses instead of overflowing when its RX FIFO fills, so an RX-side wedge
+// also presents as a stopped clock; see FLIR_VOSPI_UnstickClock() for how
+// the two are told apart and repaired in place.) The ISR's only job is
+// parsing a completed block, with a whole block time (~9.4ms) of deadline
+// instead of microseconds. DCH5 is free again.
 #define FLIR_VOSPI_USE_CHAINED_DMA  1
 
 // A discard/idle packet has 0xF in the ID word's top nibble.
@@ -158,14 +159,17 @@
 #define FLIR_VOSPI_BLANK_BLOCK_RUN  3u
 
 // Chained-mode clock unstick. Blocks complete every ~9.4ms by hardware alone,
-// so "no packet for 2+ block times" can only mean the clock has stopped (an
-// RX-side death shows up as SPIROV within ~2ms instead, which is checked
-// first). The cure is a TX-side-only restart -- see FLIR_VOSPI_UnstickClock()
-// for why that is alignment-safe and needs no /CS window -- which turns what
-// was a ~300ms freeze into a ~20ms blip. If a few restarts in a row buy no
-// packets, something deeper is wrong and the /CS window is taken after all.
+// so "no packet for 2+ block times" can only mean the byte flow has stopped.
+// FLIR_VOSPI_UnstickClock() diagnoses which side wedged and recovers in
+// place, without the 200ms /CS window -- a ~20ms blip instead of a ~300ms+
+// freeze. If a few recoveries in a row buy no packets, something deeper is
+// wrong and the /CS window is taken after all.
 #define FLIR_VOSPI_UNSTICK_MS       20u
 #define FLIR_VOSPI_MAX_UNSTICKS     3u
+
+// Bound on waiting for a forced RX DMA cell (CFORCE) to complete inside the
+// unstick path -- a couple of bus transactions, so 10us is generous.
+#define FLIR_VOSPI_CFORCE_TIMEOUT_TICKS  (FLIR_VOSPI_TICKS_PER_MS / 100u)
 
 // --- Capture buffers -------------------------------------------------------
 
@@ -244,6 +248,20 @@ static void FLIR_VOSPI_ResetSync(void)
     currentSegment = 0;
     segmentMask = 0;
     packetRun = 0;
+}
+
+// CP0 ticks elapsed since an ISR-maintained timestamp. The ORDER of the two
+// reads is the whole point: the stamp is read FIRST, so an ISR updating it
+// mid-calculation can only make the next call's result smaller -- never
+// negative. The previous pattern (capture CP0 'now' at the top of Tasks,
+// compare stamps against it later) had it backwards: an ISR stamping between
+// the CP0 read and the comparison left stamp > now, the unsigned subtraction
+// wrapped to ~43 seconds, and the watchdog fired on a perfectly healthy
+// stream -- a spurious TX abort or a spurious 200ms resync each time.
+static inline uint32_t FLIR_VOSPI_TicksSince(volatile const uint32_t *stamp)
+{
+    uint32_t s = *stamp;
+    return (uint32_t)(_CP0_GET_COUNT() - s);
 }
 
 void FLIR_VOSPI_Initialize(void)
@@ -536,26 +554,105 @@ static void FLIR_VOSPI_RequestResync(void)
 }
 
 #if FLIR_VOSPI_USE_CHAINED_DMA
-// Restarts a stopped clock by resetting the TX side ONLY -- /CS stays low,
-// the RX chain is not touched, and no /CS idle window is needed.
+// Forces the enabled RX channel to take one byte out of the SPI RX FIFO --
+// exactly the cell transfer the event machinery should have produced, so the
+// byte lands where the DMA would have put it and the packet grid is
+// untouched. Returns false if no RX channel is enabled or the force times out.
+static bool FLIR_VOSPI_ForceRxCell(void)
+{
+    uint32_t start;
+
+    if (DCH2CONbits.CHEN)
+    {
+        DCH2ECONSET = _DCH2ECON_CFORCE_MASK;
+        start = _CP0_GET_COUNT();
+        while (DCH2ECONbits.CFORCE)
+        {
+            if ((uint32_t)(_CP0_GET_COUNT() - start) > FLIR_VOSPI_CFORCE_TIMEOUT_TICKS) return false;
+        }
+        return true;
+    }
+
+    if (DCH3CONbits.CHEN)
+    {
+        DCH3ECONSET = _DCH3ECON_CFORCE_MASK;
+        start = _CP0_GET_COUNT();
+        while (DCH3ECONbits.CFORCE)
+        {
+            if ((uint32_t)(_CP0_GET_COUNT() - start) > FLIR_VOSPI_CFORCE_TIMEOUT_TICKS) return false;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+// Recovers a stopped clock in place -- /CS stays low, no idle window.
 //
-// Why this is alignment-safe: VoSPI packet framing is clock-count based on
-// BOTH ends -- the sensor emits byte N of a packet slot as the Nth byte
-// clocked since /CS assertion, and our RX chops the same continuous byte
-// stream every 164 bytes. A paused clock delays the stream, it does not
-// shift it; only RX-side byte LOSS (an overflow) or an RX restart mid-stream
-// can misalign the grid. So aborting and restarting the TX channel -- even
-// mid-block -- just resumes clocking, and the RX pair carries on capturing
-// exactly where it left off. (The stall itself may have made the sensor
-// abandon its current frame; that shows up as discard/desync packets and is
-// soft-recovered by the parser.)
+// Why in-place recovery is alignment-safe: VoSPI packet framing is
+// clock-count based on BOTH ends -- the sensor emits byte N of a packet slot
+// as the Nth byte clocked since /CS assertion, and our RX chops the same
+// continuous byte stream every 164 bytes. A paused clock delays the stream,
+// it does not shift it; only losing RX bytes, or restarting the RX channels
+// mid-stream, can misalign the grid. So neither draining the RX FIFO through
+// the RX DMA nor aborting/restarting the TX channel touches alignment. (The
+// stall itself may make the sensor abandon its current frame; that shows up
+// as discard/desync packets and is soft-recovered by the parser.)
 //
-// The DCHxCON/SPTR reads happen BEFORE the abort (CABORT resets pointers) and
-// classify the failure for the bench: TX channel found disabled (its CHAEN
-// auto-re-enable was lost), enabled but never sourced a byte (start event
-// lost), or stopped part-way through a block (event flow wedged mid-block).
+// The wedge comes in two flavors, told apart by the RX FIFO:
+//
+//  - RX FIFO holding bytes: the RX side stopped taking them. The bench
+//    evidence (2026-07-29 round 4) is that this SPI, as an enhanced-buffer
+//    MASTER, reacts to a full RX FIFO by pausing new transfers rather than
+//    setting SPIROV -- the clock stops, rxOverflows stays 0 forever (which
+//    is why that counter was previously misread as proof the RX chain was
+//    sound), and restarting the TX side cannot help because its FIFO is
+//    already full and the master is refusing to shift it. TX-restart
+//    unsticks failing 3-for-3 on every real stall while diagnosing
+//    "mid-block" is exactly this signature. Cure: walk the enabled RX
+//    channel through the backlog with forced cell transfers; once there is
+//    room, the master resumes shifting on its own.
+//
+//  - RX FIFO empty: the TX side genuinely stopped feeding the clock. Cure:
+//    abort and re-enable the TX channel (the same software start
+//    ArmChained uses, which has never failed on the bench). The
+//    disabled/never-started/mid-block counters record what state it was
+//    found in.
 static void FLIR_VOSPI_UnstickClock(void)
 {
+    stats.clockUnsticks++;
+
+    if (SPI4STATbits.SPIRBE == 0)
+    {
+        if (DCH2CONbits.CHEN || DCH3CONbits.CHEN)
+        {
+            uint32_t n;
+
+            stats.unstickRxDrains++;
+
+            // FIFO is 16 deep; a forced cell can also legitimately cross a
+            // block boundary, firing the block-complete/chain machinery the
+            // normal way.
+            for (n = 0; (n < 16u) && (SPI4STATbits.SPIRBE == 0); n++)
+            {
+                if (!FLIR_VOSPI_ForceRxCell())
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // Bytes waiting but NO enabled RX channel: the RX chain enable
+            // itself was lost. There is no in-place recovery -- draining
+            // without a live channel would throw bytes away and shift the
+            // grid -- so pay for the /CS window immediately.
+            stats.unstickRxDead++;
+            FLIR_VOSPI_RequestResync();
+        }
+        return;
+    }
+
     if ((DCH4CON & _DCH4CON_CHEN_MASK) == 0)
     {
         stats.unstickTxDisabled++;
@@ -571,10 +668,7 @@ static void FLIR_VOSPI_UnstickClock(void)
 
     DCH4ECONSET = _DCH4ECON_CABORT_MASK;
     DCH4CONCLR = _DCH4CON_CHEN_MASK;
-
-    DCH4CONSET = _DCH4CON_CHEN_MASK;   // same software start ArmChained uses,
-                                       // which has never failed on the bench
-    stats.clockUnsticks++;
+    DCH4CONSET = _DCH4CON_CHEN_MASK;
 }
 #endif
 
@@ -614,12 +708,14 @@ void FLIR_VOSPI_Stop(void)
 
 void FLIR_VOSPI_Tasks(void)
 {
-    uint32_t now = _CP0_GET_COUNT();
+    // All elapsed times below go through FLIR_VOSPI_TicksSince() -- the
+    // stamps are written from ISR context, and reading CP0 before the stamp
+    // wraps the subtraction when an ISR lands in between (see the helper).
 
     if (capturePending)
     {
         // Wait out the VoSPI re-synchronization window before touching /CS.
-        if ((uint32_t)(now - csIdleStartTicks) <
+        if (FLIR_VOSPI_TicksSince(&csIdleStartTicks) <
                 (FLIR_VOSPI_RESYNC_IDLE_MS * FLIR_VOSPI_TICKS_PER_MS))
         {
             return;
@@ -671,7 +767,7 @@ void FLIR_VOSPI_Tasks(void)
     // used to cost. A few fruitless restarts in a row mean the problem is not
     // the TX channel; pay for the full resync.
     if (captureRunning &&
-        ((uint32_t)(now - lastPacketTicks) >
+        (FLIR_VOSPI_TicksSince(&lastPacketTicks) >
                 (FLIR_VOSPI_UNSTICK_MS * FLIR_VOSPI_TICKS_PER_MS)))
     {
         consecutiveUnsticks++;
@@ -696,7 +792,7 @@ void FLIR_VOSPI_Tasks(void)
     // Recovering needs the full /CS idle window, not just a re-arm -- bytes
     // were lost, so the packet alignment is gone with them.
     if (captureRunning &&
-        ((uint32_t)(now - lastPacketTicks) >
+        (FLIR_VOSPI_TicksSince(&lastPacketTicks) >
                 (FLIR_VOSPI_DEADLOCK_MS * FLIR_VOSPI_TICKS_PER_MS)))
     {
         stats.stallRecoveries++;
@@ -708,7 +804,7 @@ void FLIR_VOSPI_Tasks(void)
     // either a hunt for a packet 0 that misalignment will never produce, or a
     // stream that has stopped (a lost DMA interrupt, the sensor re-booting).
     if (captureRunning &&
-        ((uint32_t)(now - lastProgressTicks) >
+        (FLIR_VOSPI_TicksSince(&lastProgressTicks) >
                 (FLIR_VOSPI_STALL_TIMEOUT_MS * FLIR_VOSPI_TICKS_PER_MS)))
     {
         FLIR_VOSPI_RequestResync();
@@ -738,7 +834,7 @@ uint32_t FLIR_VOSPI_MsSinceLastPacket(void)
         return 0;
     }
 
-    return (uint32_t)(_CP0_GET_COUNT() - lastPacketTicks) / FLIR_VOSPI_TICKS_PER_MS;
+    return FLIR_VOSPI_TicksSince(&lastPacketTicks) / FLIR_VOSPI_TICKS_PER_MS;
 }
 
 const char *FLIR_VOSPI_GetCaptureStateString(void)

@@ -362,11 +362,15 @@ void FLIR_PrintStatus(void)
            (unsigned long)vs.stallRecoveries);
 
     // In-place clock restarts (chained mode): each one is a ~20ms blip where
-    // the old path froze for ~300ms. The breakdown says what state the TX
-    // channel was in when the clock stopped -- the root-cause evidence.
-    printf("    Clock unsticks (TX restart, no /CS window): %lu"
-           "  [disabled=%lu never-started=%lu mid-block=%lu]\n\r",
+    // the old path froze for ~300ms. The breakdown says what state the wedge
+    // was found in -- the root-cause evidence. rx-drain is a full RX FIFO
+    // pausing the master (recovered by forcing the RX DMA through the
+    // backlog); the tx-* cases are the TX channel restarted in place.
+    printf("    Clock unsticks (in place, no /CS window): %lu"
+           "  [rx-drain=%lu rx-dead=%lu tx-disabled=%lu tx-never-started=%lu tx-mid-block=%lu]\n\r",
            (unsigned long)vs.clockUnsticks,
+           (unsigned long)vs.unstickRxDrains,
+           (unsigned long)vs.unstickRxDead,
            (unsigned long)vs.unstickTxDisabled,
            (unsigned long)vs.unstickTxNeverStarted,
            (unsigned long)vs.unstickTxMidBlock);
