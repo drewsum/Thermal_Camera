@@ -524,7 +524,7 @@
     "last_paths": {
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "C:/Users/drewm/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/hdw/CTP_interposer/CTP_interposer/gerbers",
       "specctra_dsn": "",
       "vrml": ""
     },
