@@ -327,12 +327,18 @@ static void quiesceWakeSources(void) {
     IEC5CLR = 0xFFFFFFFFu;
     IEC6CLR = 0xFFFFFFFFu;
 
-    // Gate change-notice down to the POWER button only. Card detect
-    // (CNIEA0) must not wake -- see the header comment -- and the SHUTTER
-    // button has no role while asleep. pushbuttonsInitialize() re-enables
-    // both after the wake reset.
-    CNENAbits.CNIEA0 = 0;
-    CNENAbits.CNIEA10 = 0;
+    // Gate change-notice down to the POWER button only, by writing the whole
+    // enable register rather than clearing the two bits known to be set:
+    // whatever else ever enables a Port A CN pin, this leaves RA9 as the one
+    // and only wake source. Card detect (CNIEA0) in particular must not wake
+    // -- see the header comment -- and the SHUTTER button has no role while
+    // asleep. pushbuttonsInitialize() re-enables all three after the wake
+    // reset.
+    //
+    // RA9 is POWER: pin_macros.h cross-maps RA9/RA10 to match the swapped
+    // board silkscreen, so this is NOT the RA10 the schematic net name
+    // suggests.
+    CNENA = (1u << 9);
 
     // Let the domains that powerDown*() just switched off finish decaying
     // before the mismatch baseline is taken, so a pin mid-drift can't
@@ -363,7 +369,7 @@ void enterLowPowerSleep(void) {
     terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    The fuel gauge stays powered so it can take an open-circuit voltage reading.\r\n");
     printf("    Unplug USB/DC power for the cell to actually relax -- a charger keeps it loaded.\r\n");
-    printf("    Press RESET to come back.\r\n");
+    printf("    Press the POWER button to wake (the board resets on wake).\r\n");
     terminalTextAttributesReset();
 
     // Everything below kills the UART's clock eventually, so make sure the
@@ -408,13 +414,13 @@ void enterLowPowerSleep(void) {
     // compiler must not hoist anything across it, hence the memory clobber.
     __asm__ volatile ("wait" ::: "memory");
 
-    // Execution resumes here after a Port A change-notice wake. There is no
-    // resume path yet -- half the board is powered down and the drivers'
-    // in-memory state no longer matches the hardware -- so the only safe
-    // thing to do is start over from a known state. This is also what makes
-    // the eventual power-button toggle straightforward: a press wakes the
-    // core here, and a real implementation would restore the subsystems
-    // above in reverse order instead of resetting.
+    // Execution resumes here on the POWER button's change-notice -- the
+    // press edge, since that is the first transition after the pin was
+    // baselined above. Resetting is the resume path, deliberately: half the
+    // board is powered down and every driver's in-memory state disagrees
+    // with its hardware, so a full reinitialization from a known state is
+    // both simpler and safer than unwinding the sequence above. The reset
+    // cause is readable afterwards through core/cause_of_reset.c.
     deviceReset();
 
 }

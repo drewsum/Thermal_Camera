@@ -29,7 +29,9 @@
 bool PMDInitialize(void);
 
 // Puts the board into its lowest-power state and executes WAIT, halting the
-// core clock. Backing call for the "Sleep" USB UART command.
+// core clock. Backing call for the "Sleep" USB UART command and for the
+// POWER button's press-then-release gesture (application/pushbuttons.c
+// raises power_button_sleep_request; main.c calls this).
 //
 // The point of this mode is the BQ27441: Impedance Track can only update
 // Qmax from an open-circuit voltage reading, which needs the cell genuinely
@@ -40,16 +42,17 @@ bool PMDInitialize(void);
 // PGOOD bank off, the Lepton and its +1.2V/+2.8V rails down, and every I2C
 // device that has a low-power mode shut down except the gauge and the
 // elapsed-time recorder. The watchdog is stopped (it would otherwise reset
-// the board roughly every 34 seconds of sleep) and every interrupt source
-// but Port A change-notice is masked.
+// the board roughly every 34 seconds of sleep) and every interrupt source is
+// masked except Port A change-notice, which is itself narrowed to the POWER
+// button's pin -- that button is the only thing that can wake the board.
 //
 // Note this only removes the board's own load. A connected charger keeps
 // the cell loaded, so USB/DC has to come out for the cell to actually rest.
 //
-// Does not return: a Port A change-notice (the POWER button) wakes the core,
-// and since no resume path exists yet the function resets the device. When
-// the power button becomes a real toggle, the wake point in this function is
-// where the restore sequence belongs.
+// Does not return: pressing POWER wakes the core, and the wake path is a
+// software reset (the drivers' state no longer matches the powered-down
+// hardware, so the board reinitializes from scratch rather than unwinding
+// the shutdown sequence).
 void enterLowPowerSleep(void);
 
 // This function prints the status of PMD settings

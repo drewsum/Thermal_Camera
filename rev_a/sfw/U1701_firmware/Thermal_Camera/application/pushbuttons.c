@@ -53,6 +53,16 @@ static volatile bool cardDetectLevel = false;
 
 // Declared in pushbuttons.h -- see there for the single-consumer rule
 volatile uint8_t shutter_button_press_event = 0;
+volatile uint8_t power_button_sleep_request = 0;
+
+// Whether a POWER press has been seen since boot (or since the last
+// completed gesture). It is what makes the sleep gesture press-THEN-release
+// rather than "any release": the board wakes from sleep on the press edge
+// and resets, and pushbuttonInit() below then seeds the button as held
+// because the user's finger is still on the pad. The release that follows
+// must not be read as a fresh gesture, or the board would drop straight
+// back into sleep the moment it was woken.
+static bool power_press_seen = false;
 
 // Accepts a settled level change for one button: latches the event for
 // pushbuttonsTasks() and opens a fresh lockout. Callers must have already
@@ -110,6 +120,8 @@ bool pushbuttonsInitialize(void) {
     cardDetectLevel = (SD_CARD_DETECT_PIN != 0);
 
     shutter_button_press_event = 0;
+    power_button_sleep_request = 0;
+    power_press_seen = false;
 
     // Legacy "mismatch" mode (EDGEDETECT = 0): the CNIEAx bits below fire
     // on any change (either direction) on that pin; edge direction is
@@ -219,6 +231,7 @@ void pushbuttonsTasks(void) {
 
     if (power_button.press_event) {
         power_button.press_event = 0;
+        power_press_seen = true;
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Power button pressed\r\n");
         terminalTextAttributesReset();
@@ -226,6 +239,16 @@ void pushbuttonsTasks(void) {
 
     if (power_button.release_event) {
         power_button.release_event = 0;
+
+        // Press-then-release completes the sleep gesture. Only the flag is
+        // raised here: enterLowPowerSleep() unmounts filesystems, waits on
+        // I2C and never returns, none of which belongs inside the button
+        // module's tasks function. main.c acts on it.
+        if (power_press_seen) {
+            power_press_seen = false;
+            power_button_sleep_request = 1;
+        }
+
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Power button released\r\n");
         terminalTextAttributesReset();

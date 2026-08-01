@@ -643,6 +643,17 @@ void main(void) {
         // latched -- the printing has to happen out here, not at IPL3
         pushbuttonsTasks();
 
+        // a completed POWER press-then-release is the sleep gesture. This
+        // does not return: the board quiesces, executes WAIT, and the next
+        // POWER press wakes the core straight into a software reset (see
+        // application/power_saving.c). The flag is cleared first anyway so
+        // the request can't survive into the next boot through some future
+        // early-return path.
+        if (power_button_sleep_request) {
+            power_button_sleep_request = 0;
+            enterLowPowerSleep();
+        }
+
         // queue I2C temperature sensor reads if heartbeatServices() requested it
         // (non-blocking: the I2C interrupt clocks the transfers out in the background)
         if (temp_sense_data_request) {

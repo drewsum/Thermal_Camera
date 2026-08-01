@@ -85,10 +85,11 @@ USB_UART_COMMAND(resetCommand, "Reset", "Executes an MCU software reset") {
 
 }
 
-USB_UART_COMMAND(sleepCommand, "Sleep", "Enters low-power sleep so the fuel gauge can take an open-circuit reading (press RESET to exit)") {
+USB_UART_COMMAND(sleepCommand, "Sleep", "Enters low-power sleep so the fuel gauge can take an open-circuit reading (press POWER to wake)") {
 
     // Everything about this lives in application/power_saving.c -- see
     // enterLowPowerSleep() for what gets shut down and why. Does not return.
+    // Same entry point the POWER button's press-then-release gesture uses.
     enterLowPowerSleep();
 
 }

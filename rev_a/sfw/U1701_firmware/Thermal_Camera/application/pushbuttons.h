@@ -46,6 +46,18 @@
 // reader would silently steal presses.
 extern volatile uint8_t shutter_button_press_event;
 
+// Set once the POWER button has been pressed and then released -- the
+// gesture that puts the board to sleep. main.c consumes this by calling
+// enterLowPowerSleep() (which does not return), and like the shutter event
+// above it is meant to have exactly one consumer, which clears it.
+//
+// The gesture is deliberately press-AND-release rather than press alone:
+// the board wakes from sleep on the POWER pin's change-notice, which is the
+// press edge, and the resulting reset re-seeds this module with the button
+// already held. Acting on the press would mean the same touch that woke the
+// board immediately put it back to sleep.
+extern volatile uint8_t power_button_sleep_request;
+
 // Enables Port A's change-notification interrupt for the SHUTTER (RA9) and
 // POWER (RA10) pins. Must run after gpioInitialize() (which configures
 // RA9/RA10 as digital inputs) and interruptControllerInitialize().
