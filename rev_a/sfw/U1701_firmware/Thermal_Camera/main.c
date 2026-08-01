@@ -239,21 +239,21 @@ void main(void) {
             &error_handler.flags.watchdog_init_error);
     while(usbUartCheckIfBusy());
     
-    bool rtcc_ok = rtccInitialize();
-    // Deep_Sleep_Reset and VBAT_Wake keep the RTCC running across the event
-    // specifically so its time doesn't need to be cleared here -- only clear
-    // it when the time was never reliably set (POR) or the backup battery
-    // that was supposed to maintain it is missing/depleted (VBAT_POR)
-    if (reset_cause == POR_Reset || reset_cause == VBAT_POR) rtccClear();
-    reportInit("Real Time Clock-Calendar", rtcc_ok,
-            &error_handler.flags.rtcc_init_error);
-    while(usbUartCheckIfBusy());
-    
-    // Enable ADC
-    reportInit("Analog to Digital Converter", ADCInitialize(),
-            &error_handler.flags.adc_init_error);
-    while(usbUartCheckIfBusy());
-    
+    // ---- Splash-screen fast path ------------------------------------------
+    // Everything from here to ImageLoader_DisplayPNG() below is exactly the
+    // dependency chain the splash needs, and nothing else: DDR2 (frame
+    // buffers + LVGL heap), the SPI flash and its FAT volume (where
+    // SPLASH.PNG lives), the GLCD and its Layer 2, the backlight, and LVGL
+    // (whose heap lodepng decodes into).
+    //
+    // The RTCC, ADC, I2C bus + device probe, SDHC controller and USB device
+    // stack all used to run in here; none of them is needed to put a picture
+    // on the panel, and together with their console output they were pushing
+    // the splash several hundred milliseconds later than necessary. They now
+    // run immediately AFTER the splash is lit -- see "deferred bring-up"
+    // below. Anything added here in future should be able to justify itself
+    // as a splash dependency.
+
     // Power the FLIR Lepton up BEFORE the I2C bus is touched. This is not
     // optional: with its +2.8V/+1.2V rails down, the unpowered module clamps
     // SDA/SCL low through its I/O structures and every other device on I2C1
@@ -268,18 +268,6 @@ void main(void) {
     reportInit("FLIR Lepton Power", FLIR_PowerOn(), NULL);
     while(usbUartCheckIfBusy());
 
-    // setup I2C
-    reportInit("I2C Bus Master", I2C_Initialize(),
-            &error_handler.flags.i2c_init_error);
-    while(usbUartCheckIfBusy());
-    
-    // setup HLVD
-    bool hlvd_ok = hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
-    while(!hlvdIsReady());
-    reportInit("HLVD", hlvd_ok && hlvdIsReady(),
-            &error_handler.flags.hlvd_init_error);
-    while(usbUartCheckIfBusy());
-    
     // Initialize the 32MB DDR2 SDRAM stacked in this device's package
     reportInit("DDR2 SDRAM Controller", ddr2Initialize(),
             &error_handler.flags.ddr2_init_error);
@@ -290,40 +278,13 @@ void main(void) {
             &error_handler.flags.spi_flash_init_error);
     while(usbUartCheckIfBusy());
 
-    // Bring up the SDHC peripheral itself (clocks/interrupt/register
-    // defaults only, no card interaction) -- must succeed regardless of
-    // whether a card happens to be inserted
-    reportInit("SDHC Controller", SDHC_Initialize(),
-            &error_handler.flags.sdhc_init_error);
-    while(usbUartCheckIfBusy());
-
-    // Card detection + mount happens LATER in this sequence -- after the
-    // FLIR bring-up -- see the comment at that call site. Only the SDHC
-    // Controller line above (clocks/registers, no card interaction) runs
-    // here.
-
     // FAT volume "1:" on the SPI flash (512B-sector disk layer over the
     // 4KB-erase part, then mount -- formats on first boot, so the
-    // "formatting..." notice is expected exactly once per blank part)
+    // "formatting..." notice is expected exactly once per blank part).
+    // SPLASH.PNG is read from this volume, so it is on the fast path.
     reportInit("SPI Flash Filesystem",
             W25Q128JV_Disk_Initialize() && FlashFileIO_MountAndFormatIfNeeded(),
             &error_handler.flags.flash_fs_init_error);
-    while(usbUartCheckIfBusy());
-
-    // USB mass storage device (native USBHS module to the on-board hub):
-    // exposes the SD card (LUN 0) and SPI flash (LUN 1) as two removable
-    // drives to a USB host. Requires PMDInitialize() above to have left
-    // the USB module enabled.
-    reportInit("USB Mass Storage Device", USB_Initialize(),
-            &error_handler.flags.usb_msd_init_error);
-    while(usbUartCheckIfBusy());
-
-    // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x
-    // INA231A power monitors); I2CDevices_Initialize() records each device's
-    // own pass/fail into error_handler.flags.<I2C_DEVICE_ID>_i2c_error (the
-    // same flag its runtime reads later latch into on a NACK/timeout), so no
-    // single aggregate flag is passed here
-    reportInit("I2C Devices", I2CDevices_Initialize(), NULL);
     while(usbUartCheckIfBusy());
 
     // Bring up the Graphics LCD Controller for the on-board
@@ -374,6 +335,23 @@ void main(void) {
     // below dismisses it.
     ImageLoader_DisplayPNG(IMAGE_MEDIA_SPI_FLASH, "SPLASH.PNG");
 
+    // Light the panel THE MOMENT the splash is in the frame buffer, and not
+    // one line of init sooner or later.
+    //
+    // BacklightPWM_Initialize() above only programs the OC3/Timer4 PWM; it
+    // leaves the duty cycle at 0, i.e. the backlight physically OFF. This
+    // SetBrightness() call used to sit after the whole FLIR bring-up and the
+    // SD card mount, so the panel stayed dark for that entire stretch even
+    // though the splash pixels had been sitting in the Layer 2 buffer the
+    // whole time -- and once FLIR_WaitUntilReady() grew a multi-second poll
+    // window (application/flir/flir.c), a camera that was slow to answer
+    // held the screen black for seconds. THAT was the "splash takes ages to
+    // appear" delay; the panel was lit last instead of first.
+    //
+    // Everything below this line is therefore invisible to the user: the
+    // splash is already up and covering Layer 0/1 while it runs.
+    BacklightPWM_SetBrightness(100);
+
     // Non-blocking splash-screen dismiss timer, checked once per superloop
     // pass (see splash_screen_pending below) instead of a blocking
     // softwareDelay() (core/device_control.c -- a raw NOP-counting loop with
@@ -381,9 +359,76 @@ void main(void) {
     // for its whole duration. GUI_GetTickMs() (gui/gui.c) is the same
     // monotonic since-boot millisecond source LVGL's own tick already uses,
     // so no second clock is introduced.
+    //
+    // The clock starts HERE rather than at the top of boot, so the splash
+    // gets its full display time no matter how long the deferred bring-up
+    // below takes.
     #define SPLASH_SCREEN_DISPLAY_MS   3000u   // tune to taste
     uint32_t splash_screen_shown_tick_ms = GUI_GetTickMs();
     bool splash_screen_pending = true;
+
+    // ---- Deferred bring-up ------------------------------------------------
+    // Everything the splash does NOT depend on, moved below it so none of it
+    // sits between power-on and a lit panel. Ordering constraints that still
+    // apply within this block: I2C_Initialize() must precede the device
+    // probe and the battery read; the device probe must precede the battery
+    // read; SDHC_Initialize() must precede the card mount further down.
+
+    bool rtcc_ok = rtccInitialize();
+    // Deep_Sleep_Reset and VBAT_Wake keep the RTCC running across the event
+    // specifically so its time doesn't need to be cleared here -- only clear
+    // it when the time was never reliably set (POR) or the backup battery
+    // that was supposed to maintain it is missing/depleted (VBAT_POR)
+    if (reset_cause == POR_Reset || reset_cause == VBAT_POR) rtccClear();
+    reportInit("Real Time Clock-Calendar", rtcc_ok,
+            &error_handler.flags.rtcc_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Enable ADC
+    reportInit("Analog to Digital Converter", ADCInitialize(),
+            &error_handler.flags.adc_init_error);
+    while(usbUartCheckIfBusy());
+
+    // setup I2C -- still after FLIR_PowerOn() above, which is the constraint
+    // that actually matters (an unpowered Lepton clamps SDA/SCL low)
+    reportInit("I2C Bus Master", I2C_Initialize(),
+            &error_handler.flags.i2c_init_error);
+    while(usbUartCheckIfBusy());
+
+    // setup HLVD
+    bool hlvd_ok = hlvdInitialize(5, HLVD_DIRECTION_LOW_VOLTAGE);
+    while(!hlvdIsReady());
+    reportInit("HLVD", hlvd_ok && hlvdIsReady(),
+            &error_handler.flags.hlvd_init_error);
+    while(usbUartCheckIfBusy());
+
+    // Bring up the SDHC peripheral itself (clocks/interrupt/register
+    // defaults only, no card interaction) -- must succeed regardless of
+    // whether a card happens to be inserted. Card detection + mount happens
+    // later still, after the FLIR bring-up; see that call site.
+    reportInit("SDHC Controller", SDHC_Initialize(),
+            &error_handler.flags.sdhc_init_error);
+    while(usbUartCheckIfBusy());
+
+    // USB mass storage device (native USBHS module to the on-board hub):
+    // exposes the SD card (LUN 0) and SPI flash (LUN 1) as two removable
+    // drives to a USB host. Requires PMDInitialize() above to have left
+    // the USB module enabled.
+    reportInit("USB Mass Storage Device", USB_Initialize(),
+            &error_handler.flags.usb_msd_init_error);
+    while(usbUartCheckIfBusy());
+
+    // probe every device in I2C_DEVICE_LIST (7x MCP9804 temp sensors + 6x
+    // INA231A power monitors); I2CDevices_Initialize() records each device's
+    // own pass/fail into error_handler.flags.<I2C_DEVICE_ID>_i2c_error (the
+    // same flag its runtime reads later latch into on a NACK/timeout), so no
+    // single aggregate flag is passed here.
+    //
+    // Note: with no battery installed this reports failure, because the
+    // BQ27441 fuel gauge is powered from the cell -- an expected outcome on
+    // a bench board running from USB, not a bus fault.
+    reportInit("I2C Devices", I2CDevices_Initialize(), NULL);
+    while(usbUartCheckIfBusy());
 
     // FLIR thermal camera, second half. The rails/clock/reset came up before
     // the I2C bring-up above and the camera has been booting ever since; the
@@ -439,6 +484,11 @@ void main(void) {
     terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
 
+    // NOTE: the backlight is turned on much earlier now -- immediately after
+    // the splash screen is decoded, see BacklightPWM_SetBrightness(100) up
+    // there. Re-enabling the touch-controller gate below means moving that
+    // call back down here, which would put the panel back to staying dark
+    // until the FLIR bring-up finishes.
     #warning "CTP touch controller detection is disabled for now, so the LCD backlight will always be enabled. Re-enable it when the touch controller is working."
 //    // Enable the LCD backlight only if the panel's integrated GT911
 //    // capacitive touch controller responded during I2C bring-up above --
@@ -456,8 +506,6 @@ void main(void) {
 //    }
 //    terminalTextAttributesReset();
 //    while(usbUartCheckIfBusy());
-
-    BacklightPWM_SetBrightness(100);
 
     // Battery presence heuristic: the BQ27441's BAT_DET flag (Flags()
     // bit3) is forced to 1 on this board -- BIN's NTC + pull-up
