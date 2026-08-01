@@ -83,15 +83,6 @@ lv_obj_t *SystemScreen_Create(void)
 
     if (!Screen_CreateHeader(screen, "System Status", &header)) return NULL;
 
-    // --- Bottom bar: how to get back --------------------------------------
-    {
-        lv_obj_t *bottom_bar = Screen_CreateBar(screen, LV_ALIGN_BOTTOM_MID);
-        if (bottom_bar == NULL) return NULL;
-
-        if (Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
-                LV_ALIGN_LEFT_MID, 0, 0, "Shutter: next screen") == NULL) return NULL;
-    }
-
     // --- Body panel -------------------------------------------------------
     panel = lv_obj_create(screen);
     if (panel == NULL) return NULL;

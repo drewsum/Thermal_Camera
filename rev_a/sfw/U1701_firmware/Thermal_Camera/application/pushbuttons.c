@@ -77,8 +77,8 @@ void __ISR(_CHANGE_NOTICE_A_VECTOR, IPL3SRS) portAChangeNoticeISR(void) {
     }
 
     if (shutterNow && !shutterPressed) {
-        // Latch the press for the main loop (currently the GUI's screen
-        // switch) -- nothing that acts on it belongs at IPL3
+        // Latch the press for the main loop -- nothing that acts on it
+        // belongs at IPL3. Currently unconsumed; see pushbuttons.h.
         shutter_button_press_event = 1;
 
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);

@@ -23,10 +23,11 @@
                                   plumbing, the screen list, and GUI_Tasks()
                                   from main()
 
-    Screens: all of them are built at init and kept; the shutter button
-    (via shutter_button_press_event, pushbuttons.h) cycles through them.
-    gui.c holds the list -- adding a screen means writing a Create/Refresh
-    pair and adding one row to it.
+    Screens: all of them are built at init and kept. gui.c holds the list --
+    adding a screen means writing a Create/Refresh pair and adding one row
+    to it. Switching between them is GUI_NextScreen(); nothing currently
+    calls it (the panel's touch controller is not wired up -- see below),
+    so it is exposed for a future UART command or menu.
 
     Module shape mirrors application/image_loader.c and application/telemetry.c:
     one Initialize() at boot and one Tasks() called every pass of main()'s
@@ -112,14 +113,12 @@ volatile __attribute__((coherent)) uint8_t gui_refresh_request;
 bool GUI_Initialize(void);
 
 // Pumps LVGL. Call every pass of main()'s loop. Cheap when there is nothing
-// to redraw. Also consumes shutter_button_press_event (pushbuttons.h) to
-// switch screens. Does nothing if GUI_Initialize() didn't succeed.
+// to redraw. Does nothing if GUI_Initialize() didn't succeed.
 void GUI_Tasks(void);
 
 // Switches to the next screen, wrapping around, with a slide animation.
-// Normally driven by the shutter button via GUI_Tasks(); exposed so a UART
-// command or a future menu can do the same. No-op until GUI_Initialize()
-// has succeeded.
+// Nothing currently calls this; exposed for a future UART command or menu.
+// No-op until GUI_Initialize() has succeeded.
 void GUI_NextScreen(void);
 
 // Milliseconds since boot, derived from CP0 Count. LVGL's tick source; also

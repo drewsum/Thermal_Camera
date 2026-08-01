@@ -19,7 +19,6 @@
 #include "gui/screens/system_screen.h"
 
 #include "application/error_handler.h"
-#include "application/pushbuttons.h"
 #include "core/device_control.h"
 #include "glcd/glcd.h"
 #include "usb_uart/terminal_control.h"
@@ -45,7 +44,7 @@ static bool gui_ready = false;
 // allocation failing halfway through a screen change. Only the ACTIVE
 // screen is refreshed (see GUI_Tasks()), so an off-screen one costs nothing
 // per pass. Add a screen by writing its Create/Refresh pair and adding one
-// row here -- the shutter button cycles through however many there are.
+// row here.
 
 typedef struct
 {
@@ -63,12 +62,6 @@ static GUI_SCREEN gui_screens[] =
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
 
 static uint32_t gui_active_screen = 0;
-
-// Ignore a second shutter press within this long of the last one. The
-// buttons are capacitive and should already produce clean edges, so this is
-// precautionary -- but a bouncing button that toggled the screen twice
-// would look like the press was simply ignored.
-#define GUI_SCREEN_SWITCH_DEBOUNCE_MS   250
 
 // How long the slide between screens takes. Set to 0 for an instant swap if
 // the animation ever misbehaves against the transparent overlay.
@@ -208,25 +201,6 @@ void GUI_NextScreen(void)
 void GUI_Tasks(void)
 {
     if (!gui_ready) return;
-
-    // Advance to the next screen on a shutter press. Consumed here, at
-    // main-loop level, rather than in the Port A change-notice ISR that
-    // latched it -- building a frame is far too much work for IPL3.
-    if (shutter_button_press_event)
-    {
-        static uint32_t last_switch_ms = 0;
-        uint32_t now_ms = GUI_GetTickMs();
-
-        shutter_button_press_event = 0;
-
-        // Wrap-safe: GUI_GetTickMs() is monotonic, so an unsigned
-        // subtraction stays correct across its (49-day) rollover
-        if ((now_ms - last_switch_ms) >= GUI_SCREEN_SWITCH_DEBOUNCE_MS)
-        {
-            last_switch_ms = now_ms;
-            GUI_NextScreen();
-        }
-    }
 
     // Re-read the live values on screen when heartbeatServices() asks
     // (every 500ms). Cheap: it only touches cached telemetry/RTCC copies,

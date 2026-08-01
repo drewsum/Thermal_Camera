@@ -25,7 +25,6 @@
       | | GUI Heap            [####------]  12%        | |
       | | Errors              none                     | |
       | +----------------------------------------------+ |
-      | Shutter: next screen                             |
       +--------------------------------------------------+
 
     Everything shown is read from a cached copy (telemetry, the error
