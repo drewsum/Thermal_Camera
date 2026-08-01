@@ -19,6 +19,8 @@
 #include "application/main.h"
 #include "application/telemetry.h"
 #include "application/flir/flir_process.h"
+#include "usb/device_driver/usb_msd.h"
+#include "sdhc/sd_fileio.h"
 
 // The scale's gradient has one stop per palette control point (see
 // ScreenHomeUpdateScaleGradient()) -- gui/lv_conf.h must allow at least that
@@ -42,9 +44,11 @@
 // alone. NULL until ScreenHome_Create() succeeds, which is what makes
 // ScreenHome_Refresh() safe to call unconditionally.
 static SCREEN_HEADER header;
-static lv_obj_t *ambient_label   = NULL;
 static lv_obj_t *battery_bar     = NULL;
 static lv_obj_t *battery_label   = NULL;
+static lv_obj_t *sd_label        = NULL;
+static lv_obj_t *usb_label       = NULL;
+static lv_obj_t *menu_label      = NULL;
 
 static lv_obj_t *scale_gradient   = NULL;
 static lv_obj_t *scale_max_label  = NULL;
@@ -112,6 +116,25 @@ static lv_obj_t *ScreenHomeCreateChipLabel(lv_obj_t *parent, const char *text)
     return label;
 }
 
+// Dims a status label to gray/translucent when `active` is false, full
+// white when true -- shared by the SD-mounted and USB-enumerated chips so
+// an absent card or an unplugged/unenumerated host both read as "off" at
+// a glance rather than sitting there as a static label with no real
+// meaning.
+static void ScreenHomeSetStatusLabelActive(lv_obj_t *label, bool active)
+{
+    if (active)
+    {
+        lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_COVER, LV_PART_MAIN);
+    }
+    else
+    {
+        lv_obj_set_style_text_color(label, lv_color_hex(0x808080), LV_PART_MAIN);
+        lv_obj_set_style_text_opa(label, LV_OPA_50, LV_PART_MAIN);
+    }
+}
+
 lv_obj_t *ScreenHome_Create(void)
 {
     lv_obj_t *screen = Screen_Create();
@@ -120,29 +143,41 @@ lv_obj_t *ScreenHome_Create(void)
 
     if (!Screen_CreateHeader(screen, PROJECT_NAME_STR, &header)) return NULL;
 
-    // --- Bottom bar: ambient temperature and battery state ----------------
+    // --- Bottom bar: battery state, SD card and USB host status -----------
     lv_obj_t *bottom_bar = Screen_CreateBar(screen, LV_ALIGN_BOTTOM_MID);
     if (bottom_bar == NULL) return NULL;
 
-    ambient_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
-            LV_ALIGN_LEFT_MID, 0, 0, "Amb --.- C");
     battery_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
-            LV_ALIGN_RIGHT_MID, 0, 0, "---");
+            LV_ALIGN_LEFT_MID, 0, 0, "---");
 
-    if ((ambient_label == NULL) || (battery_label == NULL)) return NULL;
+    if (battery_label == NULL) return NULL;
 
     battery_bar = lv_bar_create(bottom_bar);
     if (battery_bar == NULL) return NULL;
 
     lv_obj_set_size(battery_bar, SCREEN_HOME_BATTERY_WIDTH_PX, SCREEN_HOME_BATTERY_HEIGHT_PX);
-    // Sits immediately left of the percentage label, which is ~34px wide at
+    // Sits immediately right of the percentage label, which is ~34px wide at
     // this font -- offset by that plus a gap
-    lv_obj_align(battery_bar, LV_ALIGN_RIGHT_MID, -44, 0);
+    lv_obj_align(battery_bar, LV_ALIGN_LEFT_MID, 44, 0);
     lv_bar_set_range(battery_bar, 0, 100);
     lv_bar_set_value(battery_bar, 0, LV_ANIM_OFF);
     lv_obj_set_style_bg_color(battery_bar, lv_color_hex(0x404040), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(battery_bar, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_bg_color(battery_bar, lv_color_hex(0x30C030), LV_PART_INDICATOR);
+
+    usb_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
+            LV_ALIGN_RIGHT_MID, 0, 0, "USB");
+    // Sits just left of "USB" (~30px wide at this font) plus a gap
+    sd_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
+            LV_ALIGN_RIGHT_MID, -38, 0, "SD");
+
+    if ((usb_label == NULL) || (sd_label == NULL)) return NULL;
+
+    // Centered footer entry -- not wired to anything yet, just staking out
+    // the spot for it before touch input lands
+    menu_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
+            LV_ALIGN_CENTER, 0, 0, "Menu");
+    if (menu_label == NULL) return NULL;
 
     // --- Left side: FLIR palette scale -------------------------------------
     scale_gradient = lv_obj_create(screen);
@@ -181,16 +216,23 @@ void ScreenHome_Refresh(void)
     float maxCelsius;
 
     // ScreenHome_Create() either finishes or leaves these NULL
-    if ((ambient_label == NULL) || (battery_bar == NULL) || (battery_label == NULL) ||
-        (scale_gradient == NULL) || (scale_max_label == NULL) || (scale_min_label == NULL)) return;
+    if ((battery_bar == NULL) || (battery_label == NULL) || (sd_label == NULL) ||
+        (usb_label == NULL) || (scale_gradient == NULL) || (scale_max_label == NULL) ||
+        (scale_min_label == NULL)) return;
 
     Screen_RefreshHeader(&header);
 
-    // snprintf() rather than lv_label_set_text_fmt(): LVGL's built-in
-    // sprintf (LV_USE_STDLIB_SPRINTF = LV_STDLIB_BUILTIN) has no floating
-    // point conversions, and XC32's does.
-    snprintf(text, sizeof(text), "Amb %.1f C", telemetry.ambient_temperature);
-    lv_label_set_text(ambient_label, text);
+    ScreenHomeSetStatusLabelActive(sd_label, SDFileIO_IsMounted());
+    // usb_msd_media_owned_by_host (not USB_IsConfigured()) -- with no VBUS
+    // sensing on rev A, a cable unplug only ever shows up as a suspend
+    // event, and usb.c's suspend handler doesn't drop usb_device_state out
+    // of CONFIGURED (only a bus reset does, which happens on the next
+    // reattach). USB_IsConfigured() would therefore stay "active" through
+    // an unplug and only dim/rebrighten on the following replug's
+    // reset->reconfigure sequence. usb_msd_media_owned_by_host is cleared
+    // by USB_MSD_DetachHook() on that same suspend event, so it actually
+    // tracks "a host currently has the media."
+    ScreenHomeSetStatusLabelActive(usb_label, usb_msd_media_owned_by_host != 0);
 
     if (telemetry.battery.present)
     {
@@ -202,6 +244,7 @@ void ScreenHome_Refresh(void)
         lv_bar_set_value(battery_bar, percent, LV_ANIM_OFF);
         lv_obj_remove_flag(battery_bar, LV_OBJ_FLAG_HIDDEN);
 
+        lv_obj_set_style_text_color(battery_label, lv_color_white(), LV_PART_MAIN);
         snprintf(text, sizeof(text), "%ld%%", (long)percent);
         lv_label_set_text(battery_label, text);
     }
@@ -210,7 +253,8 @@ void ScreenHome_Refresh(void)
         // No cell installed (latched at boot in main.c) -- an empty gauge
         // would read as "flat battery", so hide it entirely
         lv_obj_add_flag(battery_bar, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text(battery_label, "USB");
+        lv_obj_set_style_text_color(battery_label, lv_color_hex(0xFFA500), LV_PART_MAIN);
+        lv_label_set_text(battery_label, "No Battery");
     }
 
     ScreenHomeUpdateScaleGradient();

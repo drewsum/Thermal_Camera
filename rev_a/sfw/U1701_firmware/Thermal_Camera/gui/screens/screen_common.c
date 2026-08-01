@@ -80,6 +80,17 @@ bool Screen_CreateHeader(lv_obj_t *screen, const char *title, SCREEN_HEADER *hea
     header->bar = Screen_CreateBar(screen, LV_ALIGN_TOP_MID);
     if (header->bar == NULL) return false;
 
+    // The date/time stack two 14pt lines (16px line height each, 32px
+    // total) in the bar's right corner, but Screen_CreateBar's shared
+    // vertical padding only leaves 20px of content height for them
+    // (SCREEN_BAR_HEIGHT_PX 36 - 2*SCREEN_BAR_PADDING_PX 8) -- too little,
+    // which is why they used to overlap. Tightened here rather than in
+    // Screen_CreateBar itself so single-line bars elsewhere (the home
+    // screen's footer) keep the more generous shared padding. 1px top/bottom
+    // leaves 34px of content, just 2px more than the two lines need.
+    lv_obj_set_style_pad_top(header->bar, 1, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(header->bar, 1, LV_PART_MAIN);
+
     header->title_label = Screen_CreateLabel(header->bar, &lv_font_montserrat_14,
             LV_ALIGN_LEFT_MID, 0, 0, title);
 
@@ -106,11 +117,12 @@ void Screen_RefreshHeader(SCREEN_HEADER *header)
 
     // rtcc_shadow is maintained by the RTCC interrupt (core/rtcc.c) in plain
     // binary -- no BCD conversion or register reads needed here. Its year
-    // field already includes the 2000.
-    snprintf(text, sizeof(text), "%04u-%02u-%02u",
-            (unsigned int)rtcc_shadow.year,
+    // field already includes the 2000. American format (MM-DD-YYYY) to
+    // match how this instrument's operators read a date.
+    snprintf(text, sizeof(text), "%02u-%02u-%04u",
             (unsigned int)rtcc_shadow.month,
-            (unsigned int)rtcc_shadow.day);
+            (unsigned int)rtcc_shadow.day,
+            (unsigned int)rtcc_shadow.year);
     lv_label_set_text(header->date_label, text);
 
     snprintf(text, sizeof(text), "%02u:%02u:%02u",

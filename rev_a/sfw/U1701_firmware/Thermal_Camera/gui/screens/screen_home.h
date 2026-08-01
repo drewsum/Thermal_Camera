@@ -12,15 +12,21 @@
     Layout:
 
       +--------------------------------------------------+
-      | Thermal Camera                        2026-07-21 |  translucent bar
+      | Thermal Camera                        07-31-2026 |  translucent bar
       |                                         14:32:07 |
       |    +--+  42.3 C                                  |
       |    |##|                                          |
       |    |##|      (GLCD Layer 0 shows through)         |
       |    |##|                                          |
       |    +--+  18.7 C                                  |
-      | Amb 24.6 C                     Batt [####--] 62% |  translucent bar
+      | [####--] 62%          Menu                  SD  USB |  translucent bar
       +--------------------------------------------------+
+
+    SD and USB are dimmed/translucent when there's no mounted card or no
+    USB host currently holding the mass-storage media, respectively, and
+    full white/opaque otherwise. "Menu" is plain white and inert for now --
+    a placeholder for a future touchscreen entry point, staked out here so
+    the layout doesn't need to shift when it's wired up.
 
     The screen background is fully transparent and the two bars are only
     partly opaque, so whatever application/flir/flir_process.c has rendered
@@ -36,10 +42,12 @@
     (application/flir/flir_process.c: FLIRProcess_GetAGCWindowCelsius())
     that the renderer stretches the image against, converted to Celsius.
 
-    Every value shown is read from a cached copy maintained elsewhere
-    (rtcc_shadow from the RTCC ISR, telemetry from telemetryTasks(), the FLIR
-    AGC window from the last render), never by talking to a device --
-    ScreenHome_Refresh() runs in the main loop and must not block on I2C.
+    Every value shown is read from a cached copy or a plain state flag
+    maintained elsewhere (rtcc_shadow from the RTCC ISR, telemetry from
+    telemetryTasks(), the FLIR AGC window from the last render,
+    usb_msd_media_owned_by_host/SDFileIO_IsMounted() from the USB and SD
+    drivers), never by talking to a device -- ScreenHome_Refresh() runs in
+    the main loop and must not block on I2C/SPI.
 *******************************************************************************/
 
 #ifndef SCREEN_HOME_H
@@ -56,10 +64,10 @@ extern "C" {
 // Returns NULL if a widget couldn't be created.
 lv_obj_t *ScreenHome_Create(void);
 
-// Re-reads the clock, ambient temperature, battery state and FLIR palette
-// scale into the labels. Called from GUI_Tasks() every 500ms while this
-// screen is the active one; safe to call more often, and before/without
-// Create() having succeeded.
+// Re-reads the clock, battery state, SD/USB status and FLIR palette scale
+// into the labels. Called from GUI_Tasks() every 500ms while this screen
+// is the active one; safe to call more often, and before/without Create()
+// having succeeded.
 void ScreenHome_Refresh(void);
 
 #ifdef __cplusplus

@@ -42,6 +42,12 @@ bool SDFileIO_Unmount(void);
 // it must stay powered and initialized.
 bool SDFileIO_UnmountKeepPower(void);
 
+// True while a FAT volume is mounted for local (non-USB-host) use -- false
+// both before the first mount and while usb_msd_media_owned_by_host has
+// the card (SDFileIO_UnmountKeepPower() clears it on handoff). A plain
+// flag read, safe to poll from the GUI.
+bool SDFileIO_IsMounted(void);
+
 // Applies the volume label "SD" if the mounted volume's label is
 // currently blank (a card the user labeled themselves is never
 // re-labeled). This is what names the drive when a USB host mounts the

@@ -15,7 +15,7 @@
     panel instead of a body:
 
       +--------------------------------------------------+
-      | Thermal Camera                        2026-07-21 |
+      | Thermal Camera                        07-31-2026 |
       |                                         14:32:07 |
       |                                                    |
       |              Thermal Camera Unavailable           |

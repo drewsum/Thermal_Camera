@@ -33,7 +33,7 @@ extern "C" {
 // Height of the top/bottom bars, and the inset of their contents. Shared so
 // a screen's body can size itself against them (the usable middle is
 // 240 - 2*SCREEN_BAR_HEIGHT_PX tall).
-#define SCREEN_BAR_HEIGHT_PX     40
+#define SCREEN_BAR_HEIGHT_PX     36
 #define SCREEN_BAR_PADDING_PX    8
 
 // How opaque the bars and panels are over the GLCD Layer 0 image. Enough to

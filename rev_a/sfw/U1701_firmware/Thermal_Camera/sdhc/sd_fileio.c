@@ -84,6 +84,11 @@ bool SDFileIO_UnmountKeepPower(void)
     return true;
 }
 
+bool SDFileIO_IsMounted(void)
+{
+    return sd_mounted;
+}
+
 void SDFileIO_HotSwapTasks(void)
 {
     if (!sd_card_hotswap_event)
