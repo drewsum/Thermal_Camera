@@ -639,6 +639,10 @@ void main(void) {
         // check; the Port A change-notice ISR latches the edge event)
         SDFileIO_HotSwapTasks();
 
+        // report the Power/Shutter button transitions the same Port A ISR
+        // latched -- the printing has to happen out here, not at IPL3
+        pushbuttonsTasks();
+
         // queue I2C temperature sensor reads if heartbeatServices() requested it
         // (non-blocking: the I2C interrupt clocks the transfers out in the background)
         if (temp_sense_data_request) {
