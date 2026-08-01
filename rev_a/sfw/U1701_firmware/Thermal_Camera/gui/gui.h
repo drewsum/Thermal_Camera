@@ -118,8 +118,19 @@ void GUI_Tasks(void);
 
 // Switches to the next screen, wrapping around, with a slide animation.
 // Nothing currently calls this; exposed for a future UART command or menu.
-// No-op until GUI_Initialize() has succeeded.
+// Also leaves the FLIR error screen if it was showing (see
+// GUI_ShowFlirErrorScreen() below). No-op until GUI_Initialize() has
+// succeeded.
 void GUI_NextScreen(void);
+
+// Loads the FLIR error screen (gui/screens/flir_error_screen.c) in place of
+// whatever screen is currently showing, with the reason read from the
+// latched flir_* error_handler flag. main() calls this when
+// FLIR_WaitUntilReady() returns false -- there is no thermal video to show
+// behind the GUI otherwise. Not part of the normal GUI_NextScreen() cycle;
+// call GUI_NextScreen() to leave it. No-op until GUI_Initialize() has
+// succeeded.
+void GUI_ShowFlirErrorScreen(void);
 
 // Milliseconds since boot, derived from CP0 Count. LVGL's tick source; also
 // useful to the screens for their own timing.

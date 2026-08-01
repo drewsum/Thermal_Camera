@@ -17,6 +17,7 @@
 #include "gui/lvgl/lvgl.h"
 #include "gui/screens/screen_home.h"
 #include "gui/screens/system_screen.h"
+#include "gui/screens/flir_error_screen.h"
 
 #include "application/error_handler.h"
 #include "core/device_control.h"
@@ -62,6 +63,14 @@ static GUI_SCREEN gui_screens[] =
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
 
 static uint32_t gui_active_screen = 0;
+
+// The FLIR error screen: built at init like every other screen, but shown
+// only on demand (GUI_ShowFlirErrorScreen()) rather than being part of the
+// gui_screens[] cycle above -- see flir_error_screen.h. gui_flir_error_active
+// tracks whether it, rather than gui_screens[gui_active_screen], is the one
+// GUI_Tasks() should refresh.
+static lv_obj_t *flir_error_screen = NULL;
+static bool gui_flir_error_active = false;
 
 // How long the slide between screens takes. Set to 0 for an instant swap if
 // the animation ever misbehaves against the transparent overlay.
@@ -176,6 +185,11 @@ bool GUI_Initialize(void)
     gui_active_screen = 0;
     lv_screen_load(gui_screens[0].screen);
 
+    // Built alongside the others (see the comment by its declaration), but
+    // not loaded here -- it stays off-screen until GUI_ShowFlirErrorScreen().
+    flir_error_screen = FlirErrorScreen_Create();
+    if (flir_error_screen == NULL) return false;
+
     gui_ready = true;
 
     return true;
@@ -185,6 +199,7 @@ void GUI_NextScreen(void)
 {
     if (!gui_ready) return;
 
+    gui_flir_error_active = false;
     gui_active_screen = (gui_active_screen + 1u) % GUI_SCREEN_COUNT;
 
     // auto_del = false: the outgoing screen is kept, since these are built
@@ -198,6 +213,20 @@ void GUI_NextScreen(void)
     gui_screens[gui_active_screen].refresh();
 }
 
+void GUI_ShowFlirErrorScreen(void)
+{
+    if (!gui_ready) return;
+
+    gui_flir_error_active = true;
+
+    // Instant swap, no slide: this can fire during boot (main() calls it
+    // right after FLIR_WaitUntilReady() fails, before the splash screen on
+    // Layer 2 has been dismissed), where an animation would just be wasted
+    // work under the still-opaque splash.
+    lv_screen_load(flir_error_screen);
+    FlirErrorScreen_Refresh();
+}
+
 void GUI_Tasks(void)
 {
     if (!gui_ready) return;
@@ -208,7 +237,15 @@ void GUI_Tasks(void)
     if (gui_refresh_request)
     {
         gui_refresh_request = 0;
-        gui_screens[gui_active_screen].refresh();
+
+        if (gui_flir_error_active)
+        {
+            FlirErrorScreen_Refresh();
+        }
+        else
+        {
+            gui_screens[gui_active_screen].refresh();
+        }
     }
 
     // Drives redraws, animations and LVGL's own timers. Returns quickly

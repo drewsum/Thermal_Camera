@@ -413,6 +413,10 @@ void main(void) {
     } else {
         terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Thermal video unavailable -- see 'FLIR Status?'\r\n");
+        // No thermal video is coming, so put the FLIR error screen up in
+        // place of the home screen -- it stays hidden behind the splash
+        // (Layer 2) until the dismiss timer below clears it.
+        GUI_ShowFlirErrorScreen();
     }
     terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
