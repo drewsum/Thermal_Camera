@@ -34,17 +34,40 @@
 //    cycles (~200us at 25MHz) to settle; 1ms is a comfortable margin.
 //  - the camera needs ~950ms after reset release before the CCI reports boot
 //    complete; poll for a further window beyond that before giving up.
+//  - a shuttered Lepton then runs an AUTOMATIC FFC shortly after boot, and
+//    the CCI busy bit stays set while it runs -- the datasheet says to allow
+//    a total of ~5 seconds after power-up for boot + auto-FFC. IsBooted()
+//    requires busy clear, so polls landing in that window read "not booted".
+//
+// The poll window is measured from the FIRST CCI poll, NOT from reset
+// release. FLIR_PowerOn() runs very early in main() and FLIR_Tasks() isn't
+// pumped until after DDR2/SD/USB/GLCD/GUI/splash bring-up, so time-since-
+// reset says nothing about how many polls have actually happened. The old
+// scheme (fault at 3s after reset release) left ZERO retries whenever the
+// rest of boot took longer than 3s -- an SD card present at boot added just
+// enough mount time that the one-and-only IsBooted() landed inside the
+// auto-FFC busy window and permanently faulted the camera, while a card-less
+// boot got there earlier and enjoyed a full second of retries. Anchoring the
+// window to the first poll guarantees the same retry budget no matter how
+// long the rest of boot took.
 #define FLIR_PGOOD_TIMEOUT_MS   100u
 #define FLIR_CLK_SETTLE_MS      1u
 #define FLIR_PWRDWN_SETTLE_MS   1u
 #define FLIR_BOOT_WAIT_MS       1000u
-#define FLIR_BOOT_POLL_MS       2000u
+#define FLIR_BOOT_POLL_MS       5000u
 
 static volatile FLIR_STATE flirState = FLIR_STATE_OFF;
 
-// CP0 Count captured when reset was released; the boot waits are measured from
-// here in FLIR_Tasks().
+// CP0 Count captured when reset was released; the fixed FLIR_BOOT_WAIT_MS
+// quiet period is measured from here in FLIR_Tasks().
 static uint32_t flirBootStartTicks;
+
+// CP0 Count captured on the first CCI boot poll -- the FLIR_BOOT_POLL_MS
+// retry window (which also bounds the CONFIGURING retries) is measured from
+// here, so the budget is the same however late main() starts pumping
+// FLIR_Tasks(). See the timing comment above FLIR_BOOT_POLL_MS.
+static uint32_t flirPollStartTicks;
+static bool     flirPollStarted;
 
 // Busy-delay in milliseconds using CP0 Count. Short waits only (the long boot
 // wait is non-blocking, in FLIR_Tasks()); kicks the watchdog to be safe.
@@ -149,6 +172,7 @@ bool FLIR_PowerOn(void)
 
     // 4. The camera now boots (~950ms); FLIR_Tasks() polls the CCI from here.
     flirBootStartTicks = _CP0_GET_COUNT();
+    flirPollStarted = false;
     flirState = FLIR_STATE_BOOTING;
     return true;
 }
@@ -222,11 +246,21 @@ void FLIR_Tasks(void)
                 break;
             }
 
+            // Anchor the retry window to the first poll, not to reset
+            // release -- main() may not get here until well after the camera
+            // finished booting (see the FLIR_BOOT_POLL_MS comment).
+            if (!flirPollStarted)
+            {
+                flirPollStartTicks = _CP0_GET_COUNT();
+                flirPollStarted = true;
+            }
+
             if (FLIR_CCI_IsBooted())
             {
                 flirState = FLIR_STATE_CONFIGURING;
             }
-            else if (elapsed > ((FLIR_BOOT_WAIT_MS + FLIR_BOOT_POLL_MS) * FLIR_TICKS_PER_MS))
+            else if ((uint32_t)(_CP0_GET_COUNT() - flirPollStartTicks) >
+                            (FLIR_BOOT_POLL_MS * FLIR_TICKS_PER_MS))
             {
                 error_handler.flags.flir_boot_timeout = 1;
                 FLIR_FaultKeepPowered();
@@ -241,8 +275,15 @@ void FLIR_Tasks(void)
                 // "FLIR Stream On" (FLIR_StreamOn()).
                 flirState = FLIR_STATE_READY;
             }
-            else
+            else if ((uint32_t)(_CP0_GET_COUNT() - flirPollStartTicks) >
+                            (FLIR_BOOT_POLL_MS * FLIR_TICKS_PER_MS))
             {
+                // Only a persistent refusal is a fault. A single failed
+                // attempt is NOT: the camera's automatic startup FFC can
+                // begin between the IsBooted() pass above and these SET
+                // commands, holding the CCI busy past a single command's
+                // 500ms busy timeout -- retry within the same overall
+                // window instead of latching a permanent fault over it.
                 error_handler.flags.flir_cci_error = 1;
                 FLIR_FaultKeepPowered();
             }

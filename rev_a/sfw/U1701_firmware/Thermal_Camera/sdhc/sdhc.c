@@ -36,7 +36,16 @@
 #define SDHC_TIMEOUT_TICKS(us)      ((uint32_t)(((uint64_t)SYSCLK_INT / 2u) * (us) / 1000000u))
 #define SDHC_CLOCK_TIMEOUT_TICKS    SDHC_TIMEOUT_TICKS(10000u)    // 10ms for ICLKSTABLE
 #define SDHC_RESET_TIMEOUT_TICKS    SDHC_TIMEOUT_TICKS(100000u)   // 100ms for SWRALL self-clear
-#define SDHC_CMD_TIMEOUT_TICKS      SDHC_TIMEOUT_TICKS(1000u)     // 1ms for command inhibit / command complete
+// Command inhibit / command complete. This bound covers the ISR's event
+// LATCH latency, not just wire time: command completion reaches the
+// foreground wait via the IPL2 sdhcISR() -> sdhc_isr_events path, and
+// higher-priority activity (I2C telemetry at IPL7, the FLIR capture ISRs
+// at IPL5, and especially the RTCC ISR at IPL3, which spins on RTCSYNC
+// for up to ~1ms once a second) can hold the IPL2 ISR off well past the
+// old 1ms bound. Bench 2026-08-01: hot-inserting a card while thermal
+// video streamed failed ACMD41 with "timedOut=1 CCIF=1" -- the command
+// HAD completed, the event just latched after the wait expired.
+#define SDHC_CMD_TIMEOUT_TICKS      SDHC_TIMEOUT_TICKS(10000u)    // 10ms, see above
 #define SDHC_DATA_TIMEOUT_TICKS     SDHC_TIMEOUT_TICKS(500000u)   // 500ms for a block transfer
 
 // SD spec: identification-phase clock must not exceed 400kHz. Operating

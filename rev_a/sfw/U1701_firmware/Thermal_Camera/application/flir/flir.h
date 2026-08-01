@@ -66,9 +66,11 @@ bool FLIR_PowerOn(void);
 
 // Pumps FLIR_Tasks() until the boot wait and the CCI configuration handshake
 // have finished, and returns true if the driver reached READY. Blocking, but
-// bounded by the boot timeout in FLIR_Tasks() (~3s worst case, and normally
-// already elapsed by the time main() calls this). Only for boot-time init;
-// everything after that should let FLIR_Tasks() advance in the main loop.
+// bounded by the poll window in FLIR_Tasks() (~6s worst case from the first
+// CCI poll -- sized to ride out the camera's automatic startup FFC, during
+// which the CCI reports busy; normally the camera is long booted and this
+// returns in milliseconds). Only for boot-time init; everything after that
+// should let FLIR_Tasks() advance in the main loop.
 bool FLIR_WaitUntilReady(void);
 
 // Arms VoSPI capture: thermal frames start landing on Layer 0. Requires the

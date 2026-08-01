@@ -297,23 +297,10 @@ void main(void) {
             &error_handler.flags.sdhc_init_error);
     while(usbUartCheckIfBusy());
 
-    // Card detection + mount is intentionally NOT wrapped in reportInit()/
-    // an error_handler flag: an absent microSD card is normal, expected
-    // removable-media behavior, not a controller fault. Only the SDHC
-    // Controller line above reflects an actual init failure.
-    terminalTextAttributesReset();
-    if (SD_Card_Initialize() && SDFileIO_Mount()) {
-        // Label a blank volume "SD" so it has a name when a USB host
-        // mounts the card (never overwrites an existing label)
-        SDFileIO_EnsureLabel();
-        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    microSD card detected and mounted\r\n");
-    } else {
-        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
-        printf("    No microSD card detected\r\n");
-    }
-    terminalTextAttributesReset();
-    while(usbUartCheckIfBusy());
+    // Card detection + mount happens LATER in this sequence -- after the
+    // FLIR bring-up -- see the comment at that call site. Only the SDHC
+    // Controller line above (clocks/registers, no card interaction) runs
+    // here.
 
     // FAT volume "1:" on the SPI flash (512B-sector disk layer over the
     // 4KB-erase part, then mount -- formats on first boot, so the
@@ -417,6 +404,37 @@ void main(void) {
         // place of the home screen -- it stays hidden behind the splash
         // (Layer 2) until the dismiss timer below clears it.
         GUI_ShowFlirErrorScreen();
+    }
+    terminalTextAttributesReset();
+    while(usbUartCheckIfBusy());
+
+    // microSD card detection + mount -- deliberately AFTER the FLIR
+    // bring-up (and therefore after the splash screen), even though the
+    // SDHC controller itself came up much earlier. With a card in the slot
+    // at power-on, running the card bring-up in its old spot (right after
+    // SDHC_Initialize()) put the slot's power-switch inrush and the whole
+    // identification/mount sequence squarely inside the Lepton's ~950ms
+    // boot window, and the camera then never reported boot-complete over
+    // the CCI -- 100% reproducible with a card present, absent without
+    // (bench 2026-08-01; I2C1 itself stayed healthy -- the DS1683 reads
+    // below still worked). Keeping every SD-slot event out of the camera's
+    // boot+configure window is what this ordering buys. Nothing between
+    // here and the old call site needs the card: the USB MSC LUN reports
+    // "no media" until the host actually polls (msdLunMediaReady), and
+    // enumeration doesn't progress until the superloop anyway.
+    //
+    // Not wrapped in reportInit()/an error_handler flag: an absent card is
+    // normal removable-media behavior, not a controller fault.
+    terminalTextAttributesReset();
+    if (SD_Card_Initialize() && SDFileIO_Mount()) {
+        // Label a blank volume "SD" so it has a name when a USB host
+        // mounts the card (never overwrites an existing label)
+        SDFileIO_EnsureLabel();
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    microSD card detected and mounted\r\n");
+    } else {
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    No microSD card detected\r\n");
     }
     terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
