@@ -53,16 +53,21 @@ static volatile bool cardDetectLevel = false;
 
 // Declared in pushbuttons.h -- see there for the single-consumer rule
 volatile uint8_t shutter_button_press_event = 0;
+volatile uint8_t shutter_button_capture_request = 0;
 volatile uint8_t power_button_sleep_request = 0;
 
-// Whether a POWER press has been seen since boot (or since the last
-// completed gesture). It is what makes the sleep gesture press-THEN-release
-// rather than "any release": the board wakes from sleep on the press edge
-// and resets, and pushbuttonInit() below then seeds the button as held
-// because the user's finger is still on the pad. The release that follows
-// must not be read as a fresh gesture, or the board would drop straight
-// back into sleep the moment it was woken.
+// Whether a press has been seen on each button since boot (or since that
+// button's last completed gesture). This is what makes both gestures
+// press-THEN-release rather than "any release".
+//
+// It matters most for POWER: the board wakes from sleep on the press edge and
+// resets, and pushbuttonInit() below then seeds the button as held because
+// the user's finger is still on the pad. The release that follows must not be
+// read as a fresh gesture, or the board would drop straight back into sleep
+// the moment it was woken. SHUTTER has no equivalent hazard but follows the
+// same rule so the two behave alike.
 static bool power_press_seen = false;
+static bool shutter_press_seen = false;
 
 // Accepts a settled level change for one button: latches the event for
 // pushbuttonsTasks() and opens a fresh lockout. Callers must have already
@@ -120,8 +125,10 @@ bool pushbuttonsInitialize(void) {
     cardDetectLevel = (SD_CARD_DETECT_PIN != 0);
 
     shutter_button_press_event = 0;
+    shutter_button_capture_request = 0;
     power_button_sleep_request = 0;
     power_press_seen = false;
+    shutter_press_seen = false;
 
     // Legacy "mismatch" mode (EDGEDETECT = 0): the CNIEAx bits below fire
     // on any change (either direction) on that pin; edge direction is
@@ -217,6 +224,7 @@ void pushbuttonsTasks(void) {
     // next pass instead of being overwritten and lost.
     if (shutter_button.press_event) {
         shutter_button.press_event = 0;
+        shutter_press_seen = true;
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Shutter button pressed\r\n");
         terminalTextAttributesReset();
@@ -224,6 +232,16 @@ void pushbuttonsTasks(void) {
 
     if (shutter_button.release_event) {
         shutter_button.release_event = 0;
+
+        // Press-then-release completes the capture gesture. Only the flag is
+        // raised here: the capture freezes the display, writes a PNG and
+        // switches screens, none of which belongs in this module. main.c
+        // acts on it.
+        if (shutter_press_seen) {
+            shutter_press_seen = false;
+            shutter_button_capture_request = 1;
+        }
+
         terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Shutter button released\r\n");
         terminalTextAttributesReset();

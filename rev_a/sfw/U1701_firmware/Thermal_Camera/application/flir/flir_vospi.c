@@ -207,6 +207,14 @@ static volatile uint16_t *captureFrame;
 static volatile uint16_t *readyFrame;
 static volatile bool frameReadyFlag;
 
+// Whether readyFrame has ever held a real frame. frameReadyFlag alone can't
+// answer that -- it is cleared by every TakeFrame() -- and readyFrame is
+// seeded to a buffer address at init, so it is never NULL. Peek() needs this
+// to tell "the last frame, already consumed by the renderer" (valid, which is
+// exactly what a still capture wants) from "nothing has ever been captured"
+// (uninitialized DDR2).
+static volatile bool frameEverReady;
+
 // --- Capture state machine (all touched only in the DMA ISR) ---------------
 static bool     haveSync;         // locked onto the packet-0..59 sequence
 static uint8_t  expectedPacket;   // next packet number we expect (0..59)
@@ -437,6 +445,7 @@ void FLIR_VOSPI_Initialize(void)
     captureFrame = (volatile uint16_t *)FLIR_VOSPI_FRAME_A_ADDRESS;
     readyFrame   = (volatile uint16_t *)FLIR_VOSPI_FRAME_B_ADDRESS;
     frameReadyFlag = false;
+    frameEverReady = false;
 
     memset((void *)FLIR_VOSPI_FRAME_A_ADDRESS, 0, FLIR_VOSPI_FRAME_SIZE_BYTES);
     memset((void *)FLIR_VOSPI_FRAME_B_ADDRESS, 0, FLIR_VOSPI_FRAME_SIZE_BYTES);
@@ -827,6 +836,16 @@ const uint16_t *FLIR_VOSPI_TakeFrame(void)
     return (const uint16_t *)readyFrame;
 }
 
+const uint16_t *FLIR_VOSPI_PeekFrame(void)
+{
+    if (!frameEverReady)
+    {
+        return NULL;
+    }
+
+    return (const uint16_t *)readyFrame;
+}
+
 uint32_t FLIR_VOSPI_MsSinceLastPacket(void)
 {
     if (!captureRunning)
@@ -956,6 +975,7 @@ static void FLIR_VOSPI_CompleteFrame(void)
                  ? (volatile uint16_t *)FLIR_VOSPI_FRAME_B_ADDRESS
                  : (volatile uint16_t *)FLIR_VOSPI_FRAME_A_ADDRESS;
     frameReadyFlag = true;
+    frameEverReady = true;
     stats.framesCaptured++;
 }
 

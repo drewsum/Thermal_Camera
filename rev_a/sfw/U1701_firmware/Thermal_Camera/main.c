@@ -63,6 +63,7 @@
 #include "application/pushbuttons.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
+#include "application/still_capture.h"
 
 
 ////// I2C
@@ -642,6 +643,20 @@ void main(void) {
         // report the Power/Shutter button transitions the same Port A ISR
         // latched -- the printing has to happen out here, not at IPL3
         pushbuttonsTasks();
+
+        // a completed SHUTTER press-then-release captures a still: the live
+        // thermal video freezes on the last frame, the frame is held in DDR2,
+        // and the save-image prompt comes up (application/still_capture.c).
+        // Cheap when the FLIR isn't streaming -- Trigger() declines and says
+        // why on the console.
+        if (shutter_button_capture_request) {
+            shutter_button_capture_request = 0;
+            StillCapture_Trigger();
+        }
+
+        // writes the held frame to the SD card once the prompt is on screen.
+        // A state compare when no capture is in flight.
+        StillCapture_Tasks();
 
         // a completed POWER press-then-release is the sleep gesture. This
         // does not return: the board quiesces, executes WAIT, and the next

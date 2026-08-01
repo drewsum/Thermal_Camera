@@ -83,6 +83,13 @@ bool FLIR_StreamOn(void);
 // unless streaming.
 void FLIR_StreamOff(void);
 
+// Same as FLIR_StreamOff(), but leaves the Layer 0 buffers alone instead of
+// blanking them. For the still-capture path (application/still_capture.c),
+// which has already repointed Layer 0 at its own frozen frame and must not
+// have the video layer cleared out from under it -- see the implementation
+// for the flip/blank race that makes this a separate entry point.
+void FLIR_StreamOffKeepImage(void);
+
 // Stops capture and returns the sensor to its off state (held in reset,
 // power-down asserted, clock gated, both rails down) and blanks Layer 0.
 // Debug/teardown only: while the rails are down the unpowered module holds

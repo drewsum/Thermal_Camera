@@ -171,6 +171,18 @@ bool FLIR_VOSPI_FrameReady(void);
 // stays valid until the frame after next completes (double buffered).
 const uint16_t *FLIR_VOSPI_TakeFrame(void);
 
+// Same buffer as FLIR_VOSPI_TakeFrame(), but WITHOUT clearing the frame-ready
+// flag -- so the renderer's normal TakeFrame() flow is undisturbed. Returns
+// the most recently completed frame whether or not it has already been
+// consumed, and NULL only until the very first frame completes. This is what
+// a still capture wants: the frame the user is looking at right now, which is
+// by definition one flir.c has already rendered and therefore already taken.
+//
+// The buffer is live: capture keeps running and will overwrite it two frames
+// from now, so a caller keeping the data must copy it out (and, in practice,
+// stop the stream -- see application/still_capture.c).
+const uint16_t *FLIR_VOSPI_PeekFrame(void);
+
 // Copies the current capture statistics.
 void FLIR_VOSPI_GetStats(FLIR_VOSPI_STATS *stats);
 

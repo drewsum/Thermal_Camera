@@ -377,3 +377,12 @@ void FLIRProcess_RenderToLayer0(const uint16_t *frame)
     GLCD_SetLayer0BaseAddress(dstBase);
     displayingBufferB = !displayingBufferB;
 }
+
+const void *FLIRProcess_GetDisplayedLayer0Buffer(void)
+{
+    // displayingBufferB is toggled at the END of the render above, right
+    // after the flip, so it always names the buffer holding the last frame
+    // written -- the one on screen.
+    return (const void *)(displayingBufferB ? GLCD_FRAMEBUFFER_B_ADDRESS
+                                            : GLCD_FRAMEBUFFER_BASE_ADDRESS);
+}

@@ -19,23 +19,24 @@ set(THERMAL_CAMERA_INCLUDE_DIRS
 )
 
 # LVGL configuration, applied to every translation unit because LVGL headers
-# are reachable from application code (application/image_loader.c uses the
-# lodepng that ships inside LVGL):
+# are reachable from application code (application/image_loader.c and
+# application/image_saver.c both use the lodepng that ships inside LVGL):
 #   LV_CONF_INCLUDE_SIMPLE       find lv_conf.h as <lv_conf.h> on the include
 #                                path instead of at a fixed relative location
-#   LODEPNG_NO_COMPILE_ENCODER   nothing in this firmware writes PNGs
 #   LODEPNG_NO_COMPILE_CPP       the C++ wrapper, on a C-only MIPS build
+# LODEPNG_NO_COMPILE_ENCODER used to be set here -- program flash is only 2MB
+# and nothing wrote PNGs. It came off when application/image_saver.c landed:
+# the shutter button saves the captured thermal frame to the SD card as a PNG,
+# so the deflate/encode half now has to be built.
 # LODEPNG_NO_COMPILE_DISK is deliberately NOT set even though nothing here
-# loads a PNG through lodepng's own fopen() helpers (files come from FatFs
-# via application/image_loader.c): LVGL's lv_lodepng.c calls
+# loads or stores a PNG through lodepng's own fopen() helpers (files come from
+# FatFs via image_loader.c/image_saver.c): LVGL's lv_lodepng.c calls
 # lodepng_load_file() unconditionally in its LV_IMAGE_SRC_FILE path, so
 # disabling it would mean patching upstream to link.
-# The lodepng ones are honoured by gui/lvgl/src/libs/lodepng/lodepng.h's own
-# LODEPNG_NO_COMPILE_* guards -- program flash is only 2MB, so the decoder is
-# built decode-only.
+# These are honoured by gui/lvgl/src/libs/lodepng/lodepng.h's own
+# LODEPNG_NO_COMPILE_* guards.
 set(THERMAL_CAMERA_COMPILE_DEFS
     "LV_CONF_INCLUDE_SIMPLE"
-    "LODEPNG_NO_COMPILE_ENCODER"
     "LODEPNG_NO_COMPILE_CPP"
 )
 

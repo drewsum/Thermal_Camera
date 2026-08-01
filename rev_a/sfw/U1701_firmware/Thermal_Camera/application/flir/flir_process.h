@@ -81,6 +81,16 @@ const char *FLIRProcess_PaletteName(FLIR_PALETTE palette);
 // FLIR_VOSPI_TakeFrame()) into the GLCD Layer 0 RGB888 frame buffer.
 void FLIRProcess_RenderToLayer0(const uint16_t *frame);
 
+// Which of the two Layer 0 buffers holds the frame currently on screen (an
+// uncached KSEG1 pointer to GLCD_FRAMEBUFFER_SIZE_BYTES of RGB888). Layer 0
+// is double buffered and this module owns the flip, so it is the only thing
+// that knows which side is live -- application/still_capture.c reads it to
+// snapshot exactly the image the user was looking at when they pressed the
+// shutter, rather than re-rendering (which would re-run AGC and could differ
+// by a shade). Valid before the first render too: it then names buffer A,
+// which GLCD_Initialize() zeroed.
+const void *FLIRProcess_GetDisplayedLayer0Buffer(void);
+
 // Reports the AGC window (smoothed min/max sensor counts) from the last render,
 // for the status print. Either pointer may be NULL.
 void FLIRProcess_GetAGCWindow(uint16_t *minCount, uint16_t *maxCount);

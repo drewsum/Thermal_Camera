@@ -46,6 +46,16 @@
 // reader would silently steal presses.
 extern volatile uint8_t shutter_button_press_event;
 
+// Set once the SHUTTER button has been pressed and then released -- the
+// gesture that captures a still. main.c consumes this by calling
+// StillCapture_Trigger(); one consumer, which clears it, same rule as above.
+//
+// Press-and-release rather than press alone for consistency with the POWER
+// gesture below, and because the capture freezes the display: acting on the
+// press would freeze the image while the user still had a finger on the pad,
+// making it look like the button had stuck.
+extern volatile uint8_t shutter_button_capture_request;
+
 // Set once the POWER button has been pressed and then released -- the
 // gesture that puts the board to sleep. main.c consumes this by calling
 // enterLowPowerSleep() (which does not return), and like the shutter event

@@ -60,7 +60,12 @@
       +7MB      230,400 B  KSEG1  GLCD Layer 2 still-image buffer (glcd.h)
       +8MB      2x 38,400 B KSEG0 FLIR VoSPI raw frame buffers A/B (flir_vospi.h)
                                     -- cached: CPU-only, no DMA touches them
-      +9MB      23MB              unreserved
+      +9MB       38,400 B  KSEG0  still capture, raw 14-bit frame (still_capture.h)
+                                    -- cached, CPU-only, same as the two above
+      +9MB+64KB 230,400 B  KSEG1  still capture, frozen RGB888 image
+                                    -- uncached: Layer 0 scans it out directly
+                                       while the shutter capture is held
+      +10MB     22MB              unreserved
 
     The overlay buffers are uncached because the GLCD Controller's DMA reads
     them (same reasoning as Layer 0, see core/ddr2.h's cache note). The LVGL
@@ -131,6 +136,13 @@ void GUI_NextScreen(void);
 // call GUI_NextScreen() to leave it. No-op until GUI_Initialize() has
 // succeeded.
 void GUI_ShowFlirErrorScreen(void);
+
+// Loads the save-image prompt (gui/screens/screen_save_image.c) over the
+// frozen thermal frame the shutter just captured. application/still_capture.c
+// calls this; like the FLIR error screen it is outside the GUI_NextScreen()
+// cycle, and GUI_NextScreen() is what leaves it. No-op until GUI_Initialize()
+// has succeeded.
+void GUI_ShowSaveImageScreen(void);
 
 // Milliseconds since boot, derived from CP0 Count. LVGL's tick source; also
 // useful to the screens for their own timing.

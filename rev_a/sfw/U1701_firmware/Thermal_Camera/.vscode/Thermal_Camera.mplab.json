@@ -430,7 +430,13 @@
                 "gui/screens/screen_home.c",
                 "gui/screens/screen_home.h",
                 "gui/screens/flir_error_screen.h",
-                "gui/screens/flir_error_screen.c"
+                "gui/screens/flir_error_screen.c",
+                "application/image_saver.h",
+                "application/image_saver.c",
+                "application/still_capture.h",
+                "application/still_capture.c",
+                "gui/screens/screen_save_image.h",
+                "gui/screens/screen_save_image.c"
             ]
         }
     ]

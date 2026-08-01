@@ -222,6 +222,26 @@ void FLIR_StreamOff(void)
     flirState = FLIR_STATE_READY;
 }
 
+void FLIR_StreamOffKeepImage(void)
+{
+    if (flirState != FLIR_STATE_STREAMING)
+    {
+        return;
+    }
+
+    // Deliberately no FLIR_BlankVideoLayer(): the still capture has already
+    // pointed Layer 0 at its own frozen copy of the last frame, and blanking
+    // the A/B buffers here would race that flip. GLCDL0BADDR is latched at
+    // the next frame start (up to ~17ms out) while the two memsets run
+    // immediately, so the panel could scan a just-blanked buffer for a frame
+    // or two -- a visible black flash between the live video and the still.
+    // The A/B buffers are left holding the old frame; the next
+    // FLIR_StreamOn() overwrites them before they are ever shown again.
+    FLIR_VOSPI_Stop();
+
+    flirState = FLIR_STATE_READY;
+}
+
 void FLIR_PowerOff(void)
 {
     FLIR_HardOff();
