@@ -264,15 +264,15 @@
 /  Note that enabling exFAT discards ANSI C (C89) compatibility. */
 
 
-#define FF_FS_NORTC		1
+#define FF_FS_NORTC		0
 #define FF_NORTC_MON	1
 #define FF_NORTC_MDAY	1
 #define FF_NORTC_YEAR	2026
-/* Thermal_Camera: no timestamp source wired up yet -- every file gets this
-/  fixed date. This project's core/rtcc.c already has a working RTCC
-/  driver; wiring get_fattime() (sdhc/fatfs/diskio.c) to it and flipping
-/  this to 0 is a small, self-contained follow-up if real file timestamps
-/  become useful, not required for file I/O to work. */
+/* Thermal_Camera: 0, so every file and directory FatFs creates or modifies --
+/  on the SD card and on the SPI flash volume alike -- is stamped with the
+/  real time from the RTCC. get_fattime() in sdhc/fatfs/diskio.c reads
+/  core/rtcc.h's rtcc_shadow; the FF_NORTC_* values below are dead in this
+/  configuration and are left only so flipping this back to 1 still builds. */
 /* The option FF_FS_NORTC switches timestamp feature. If the system does not have
 /  an RTC or valid timestamp is not needed, set FF_FS_NORTC = 1 to disable the
 /  timestamp feature. Every object modified by FatFs will have a fixed timestamp

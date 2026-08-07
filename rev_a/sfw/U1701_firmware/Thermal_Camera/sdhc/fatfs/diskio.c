@@ -10,6 +10,9 @@
     header for why that boundary matters (it's the seam a future USB mass
     storage class driver plugs into instead of/alongside this file).
 
+    Also home to get_fattime(), the other half of FatFs's platform contract:
+    the clock every file and directory timestamp on both volumes comes from.
+
   Description:
     Not vendored from upstream FatFs -- diskio.h (the interface contract:
     DSTATUS/DRESULT/disk_* prototypes/ioctl command codes) is copied
@@ -19,6 +22,7 @@
 
 #include <string.h>
 
+#include "core/rtcc.h"
 #include "sdhc/fatfs/ff.h"
 #include "sdhc/fatfs/diskio.h"
 #include "sdhc/device_driver/sd_card.h"
@@ -184,11 +188,52 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 #if FF_FS_NORTC == 0
 DWORD get_fattime(void)
 {
-    // Only compiled in if ffconf.h's FF_FS_NORTC is flipped to 0 -- see
-    // the comment there. core/rtcc.c already has a working RTCC driver;
-    // wiring it up here (packing into FatFs's documented bitfield: bit31:25
-    // year-1980, bit24:21 month, bit20:16 day, bit15:11 hour, bit10:5
-    // minute, bit4:0 second/2) is the follow-up this stub is left for.
-    return ((DWORD)(2026 - 1980) << 25) | ((DWORD)1 << 21) | ((DWORD)1 << 16);
+    uint16_t year;
+    uint8_t month, day, hours, minutes, seconds;
+    uint32_t attempt;
+
+    // rtcc_shadow is refreshed field by field from the RTCC alarm ISR (once a
+    // second, IPL3), so a copy taken from main context can straddle an update
+    // and mix pre- and post-update fields. Most of the time that would cost a
+    // second; across midnight it would cost a whole day. Seconds is the last
+    // field the ISR writes, so bracketing the copy with it detects the case
+    // that matters -- a full ISR run landing inside the copy -- and a retry
+    // gets a consistent set. Bounded so a stalled RTCC cannot hang a file
+    // write; the worst a torn read survives is a sub-second skew, which FAT's
+    // two-second timestamp resolution mostly swallows anyway.
+    for (attempt = 0; attempt < 3u; attempt++)
+    {
+        seconds = rtcc_shadow.seconds;
+        minutes = rtcc_shadow.minutes;
+        hours   = rtcc_shadow.hours;
+        day     = rtcc_shadow.day;
+        month   = rtcc_shadow.month;
+        year    = rtcc_shadow.year;
+
+        if (seconds == rtcc_shadow.seconds) break;
+    }
+
+    // Clamp to what the FAT fields can hold. rtccClear() leaves the RTCC at
+    // 2000-01-01 00:00:00 on a cold boot, which is in range, but a shadow
+    // that was never filled (RTCC init failed, or a write somehow beats
+    // rtccInitialize()) reads as all zeros and would encode a negative year
+    // into bits 31:25. A wrong-but-legal date beats a corrupt directory
+    // entry -- and 1980-01-01 is recognisable as "clock was never set".
+    if (year < 1980u) year = 1980u;
+    else if (year > 2107u) year = 2107u;
+    if ((month < 1u) || (month > 12u)) month = 1u;
+    if ((day < 1u) || (day > 31u)) day = 1u;
+    if (hours > 23u) hours = 0u;
+    if (minutes > 59u) minutes = 0u;
+    if (seconds > 59u) seconds = 0u;
+
+    // FatFs's documented packing: bit31:25 year-1980, bit24:21 month,
+    // bit20:16 day, bit15:11 hour, bit10:5 minute, bit4:0 second/2
+    return ((DWORD)(year - 1980u) << 25)
+            | ((DWORD)month << 21)
+            | ((DWORD)day << 16)
+            | ((DWORD)hours << 11)
+            | ((DWORD)minutes << 5)
+            | ((DWORD)(seconds / 2u));
 }
 #endif
