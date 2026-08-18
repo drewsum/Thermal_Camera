@@ -65,8 +65,8 @@ typedef enum
     X(I2C_DEV_PWR_5, I2C_DEVICE_KIND_INA231A, 0x44, "POS1P2 PSU Power Monitor", "U1101") \
     X(I2C_DEV_PWR_6, I2C_DEVICE_KIND_INA231A, 0x45, "Backlight PSU Power Monitor", "U1301") \
     X(I2C_DEV_ETR_1, I2C_DEVICE_KIND_DS1683, 0x6B, "System Elapsed Time Recorder", "U2301") \
-    X(I2C_DEV_BATT_1, I2C_DEVICE_KIND_BQ27441, 0x55, "Li-Ion Fuel Gauge", "U1401")
-    //X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
+    X(I2C_DEV_BATT_1, I2C_DEVICE_KIND_BQ27441, 0x55, "Li-Ion Fuel Gauge", "U1401") \
+    X(I2C_DEV_CTP_1, I2C_DEVICE_KIND_GT911, GT911_ADDRESS, "LCD Touch Panel Controller", "N2101")
 
 #define I2C_DEVICE_ENUM(name, kind, address, label, refdes)  name,
 typedef enum
@@ -89,6 +89,20 @@ typedef struct
 // them did -- check I2CDevices_IsPresent() per-device to find out which
 // one(s) didn't.
 bool I2CDevices_Initialize(void);
+
+// Probes, records and configures a SINGLE device, exactly as
+// I2CDevices_Initialize() does for the whole list (it is this function in a
+// loop). Returns true if the device both verified and configured, and leaves
+// I2CDevices_IsPresent(id) valid for that device on its own.
+//
+// This exists for devices that have to be known-present EARLIER than the
+// full list probe can run: main.c gates the LCD backlight on the GT911 touch
+// controller from inside the splash-screen fast path, well before the
+// deferred I2CDevices_Initialize() call. Calling this and then
+// I2CDevices_Initialize() later is harmless -- the device is simply probed
+// twice (the GT911's probe re-runs its ~65ms reset/address-select sequence,
+// which is idempotent).
+bool I2CDevices_InitializeOne(I2C_DEVICE_ID id);
 
 // Returns whether `id` responded during the last Initialize() call.
 bool I2CDevices_IsPresent(I2C_DEVICE_ID id);

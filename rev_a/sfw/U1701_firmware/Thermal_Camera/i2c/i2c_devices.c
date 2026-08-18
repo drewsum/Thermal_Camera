@@ -290,6 +290,48 @@ static void I2CDevices_PrintOne(I2C_DEVICE_ID id)
     }
 }
 
+bool I2CDevices_InitializeOne(I2C_DEVICE_ID id)
+{
+    bool ok;
+
+    if (!I2CDevices_IdIsValid(id))
+    {
+        return false;
+    }
+
+    I2CDevices_ApplyBusTiming(id);
+
+    ok = I2CDevices_Verify(id);
+
+    i2cDevicePresent[id] = ok;
+
+    // Record failure against this specific device's own flags (generated
+    // from I2C_DEVICE_LIST -- see error_handler.h) rather than a single
+    // flag shared by every I2C device on the board. Like every other
+    // error_handler flag these only latch -- a device that inits fine
+    // here does NOT clear a flag some earlier runtime read may have set,
+    // since those flags are meant to survive warm resets.
+    //
+    // A verify failure and a configure failure go to DIFFERENT flags: a
+    // device that identified correctly but whose setup sequence failed is
+    // still fully reachable on the bus (and its telemetry reads will work
+    // fine), so reporting that as an I2C error sends you hunting for a
+    // wiring/bus problem that isn't there.
+    if (!ok)
+    {
+        I2CDevices_ReportI2CError(id);
+    }
+    // Only configure devices that are actually there -- e.g. writing an
+    // INA231A calibration register to an address nothing ACKed is pointless.
+    else if (!I2CDevices_ConfigureOne(id))
+    {
+        I2CDevices_ReportConfigError(id);
+        ok = false;
+    }
+
+    return ok;
+}
+
 bool I2CDevices_Initialize(void)
 {
     bool allPresent = true;
@@ -297,39 +339,7 @@ bool I2CDevices_Initialize(void)
 
     for (id = 0; id < I2C_DEVICE_COUNT; id++)
     {
-        bool ok;
-
-        I2CDevices_ApplyBusTiming((I2C_DEVICE_ID)id);
-
-        ok = I2CDevices_Verify((I2C_DEVICE_ID)id);
-
-        i2cDevicePresent[id] = ok;
-
-        // Record failure against this specific device's own flags (generated
-        // from I2C_DEVICE_LIST -- see error_handler.h) rather than a single
-        // flag shared by every I2C device on the board. Like every other
-        // error_handler flag these only latch -- a device that inits fine
-        // here does NOT clear a flag some earlier runtime read may have set,
-        // since those flags are meant to survive warm resets.
-        //
-        // A verify failure and a configure failure go to DIFFERENT flags: a
-        // device that identified correctly but whose setup sequence failed is
-        // still fully reachable on the bus (and its telemetry reads will work
-        // fine), so reporting that as an I2C error sends you hunting for a
-        // wiring/bus problem that isn't there.
-        if (!ok)
-        {
-            I2CDevices_ReportI2CError((I2C_DEVICE_ID)id);
-        }
-        // Only configure devices that are actually there -- e.g. writing an
-        // INA231A calibration register to an address nothing ACKed is pointless.
-        else if (!I2CDevices_ConfigureOne((I2C_DEVICE_ID)id))
-        {
-            I2CDevices_ReportConfigError((I2C_DEVICE_ID)id);
-            ok = false;
-        }
-
-        allPresent = allPresent && ok;
+        allPresent = I2CDevices_InitializeOne((I2C_DEVICE_ID)id) && allPresent;
     }
 
     return allPresent;

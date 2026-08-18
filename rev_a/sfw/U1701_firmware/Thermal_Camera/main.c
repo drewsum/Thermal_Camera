@@ -241,13 +241,18 @@ void main(void) {
     while(usbUartCheckIfBusy());
     
     // ---- Splash-screen fast path ------------------------------------------
-    // Everything from here to ImageLoader_DisplayPNG() below is exactly the
+    // Everything from here to the backlight enable below is exactly the
     // dependency chain the splash needs, and nothing else: DDR2 (frame
     // buffers + LVGL heap), the SPI flash and its FAT volume (where
-    // SPLASH.PNG lives), the GLCD and its Layer 2, the backlight, and LVGL
-    // (whose heap lodepng decodes into).
+    // SPLASH.PNG lives), the GLCD and its Layer 2, the backlight, LVGL
+    // (whose heap lodepng decodes into), and the I2C bus master -- the last
+    // of these only because lighting the backlight is now conditional on the
+    // GT911 touch controller answering, i.e. on the panel being populated.
+    // The bus master is register setup only; the one real cost is the GT911
+    // probe itself (~70ms of datasheet-mandated reset timing), which is
+    // documented at the call site.
     //
-    // The RTCC, ADC, I2C bus + device probe, SDHC controller and USB device
+    // The RTCC, ADC, I2C *device* probe, SDHC controller and USB device
     // stack all used to run in here; none of them is needed to put a picture
     // on the panel, and together with their console output they were pushing
     // the splash several hundred milliseconds later than necessary. They now
@@ -316,6 +321,19 @@ void main(void) {
             &error_handler.flags.backlight_pwm_init_error);
     while(usbUartCheckIfBusy());
 
+    // setup I2C -- still after FLIR_PowerOn() above, which is the constraint
+    // that actually matters (an unpowered Lepton clamps SDA/SCL low).
+    //
+    // This is on the splash fast path only because the backlight is now
+    // gated on the GT911 touch controller answering (see the CTP probe
+    // below): the bus master has to be up before that probe can run. It is
+    // just register setup -- no bus traffic, no measurable time -- so it
+    // costs the splash nothing. The 15-device probe it used to be paired
+    // with stays deferred, down in "deferred bring-up".
+    reportInit("I2C Bus Master", I2C_Initialize(),
+            &error_handler.flags.i2c_init_error);
+    while(usbUartCheckIfBusy());
+
     // Bring up LVGL on GLCD Layer 1: a transparent GUI overlay the
     // controller alpha-blends over the Layer 0 image. Must come after
     // GLCD_Initialize() (it enables a layer on the running controller) and
@@ -351,7 +369,39 @@ void main(void) {
     //
     // Everything below this line is therefore invisible to the user: the
     // splash is already up and covering Layer 0/1 while it runs.
-    BacklightPWM_SetBrightness(100);
+    //
+    // The backlight is gated on the panel's integrated GT911 capacitive
+    // touch controller answering on I2C: its ACK is a reliable proxy for
+    // "the LCD module is actually populated on this board", which the GLCD
+    // Controller itself cannot detect (it only configures MCU-internal
+    // registers, so it comes up perfectly happy driving nothing).
+    //
+    // The probe is the ONE thing allowed to delay the splash: it costs
+    // ~70ms, almost all of it the GT911's mandated power-up reset/
+    // address-select timing (10ms + 5ms + 50ms of pin toggling, see
+    // i2c/device_driver/gt911.h), which cannot be shortened. That buys the
+    // panel-presence check; the alternative was gating on the full 15-device
+    // probe several hundred milliseconds further down. The rest of that
+    // probe stays deferred -- only the CTP is pulled forward here, and
+    // I2CDevices_Initialize() below re-probes it harmlessly along with
+    // everything else.
+    //
+    // No error_handler flag is passed to reportInit(): like the "I2C Devices"
+    // probe below, I2CDevices_InitializeOne() has already latched this
+    // device's OWN flag (I2C_DEV_CTP_1_i2c_error or _config_error, generated
+    // from I2C_DEVICE_LIST -- see error_handler.h), which is more specific
+    // than any single aggregate flag would be.
+    if (reportInit("LCD Touch Controller (GT911)",
+            I2CDevices_InitializeOne(I2C_DEV_CTP_1), NULL)) {
+        BacklightPWM_SetBrightness(100);
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    LCD Backlight Enabled (touch controller present)\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("    LCD Backlight left OFF (touch controller not detected)\r\n");
+    }
+    terminalTextAttributesReset();
+    while(usbUartCheckIfBusy());
 
     // Non-blocking splash-screen dismiss timer, checked once per superloop
     // pass (see splash_screen_pending below) instead of a blocking
@@ -371,9 +421,10 @@ void main(void) {
     // ---- Deferred bring-up ------------------------------------------------
     // Everything the splash does NOT depend on, moved below it so none of it
     // sits between power-on and a lit panel. Ordering constraints that still
-    // apply within this block: I2C_Initialize() must precede the device
-    // probe and the battery read; the device probe must precede the battery
+    // apply within this block: the device probe must precede the battery
     // read; SDHC_Initialize() must precede the card mount further down.
+    // (I2C_Initialize() used to head this block; it moved up into the fast
+    // path when the backlight became conditional on the CTP probe.)
 
     bool rtcc_ok = rtccInitialize();
     // Deep_Sleep_Reset and VBAT_Wake keep the RTCC running across the event
@@ -388,12 +439,6 @@ void main(void) {
     // Enable ADC
     reportInit("Analog to Digital Converter", ADCInitialize(),
             &error_handler.flags.adc_init_error);
-    while(usbUartCheckIfBusy());
-
-    // setup I2C -- still after FLIR_PowerOn() above, which is the constraint
-    // that actually matters (an unpowered Lepton clamps SDA/SCL low)
-    reportInit("I2C Bus Master", I2C_Initialize(),
-            &error_handler.flags.i2c_init_error);
     while(usbUartCheckIfBusy());
 
     // setup HLVD
@@ -485,28 +530,11 @@ void main(void) {
     terminalTextAttributesReset();
     while(usbUartCheckIfBusy());
 
-    // NOTE: the backlight is turned on much earlier now -- immediately after
-    // the splash screen is decoded, see BacklightPWM_SetBrightness(100) up
-    // there. Re-enabling the touch-controller gate below means moving that
-    // call back down here, which would put the panel back to staying dark
-    // until the FLIR bring-up finishes.
-    #warning "CTP touch controller detection is disabled for now, so the LCD backlight will always be enabled. Re-enable it when the touch controller is working."
-//    // Enable the LCD backlight only if the panel's integrated GT911
-//    // capacitive touch controller responded during I2C bring-up above --
-//    // its I2C ACK is a reliable proxy for "the LCD module is actually
-//    // populated on this board" (the GLCD Controller itself has no way to
-//    // detect a physically-attached panel; it only configures MCU-internal
-//    // registers). Left off entirely if I2C_DEV_CTP_1 wasn't found.
-//    if (I2CDevices_IsPresent(I2C_DEV_CTP_1)) {
-//        BacklightPWM_SetBrightness(100);
-//        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
-//        printf("    LCD Backlight Enabled (touch controller present)\r\n");
-//    } else {
-//        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-//        printf("    LCD Backlight left OFF (touch controller not detected)\r\n");
-//    }
-//    terminalTextAttributesReset();
-//    while(usbUartCheckIfBusy());
+    // NOTE: the touch-controller-gated backlight enable used to live here.
+    // It now runs up in the splash fast path, immediately after the splash
+    // is decoded -- gating it down here would have put the panel back to
+    // staying dark until the FLIR bring-up finished. See the
+    // I2CDevices_InitializeOne(I2C_DEV_CTP_1) call up there.
 
     // Battery presence heuristic: the BQ27441's BAT_DET flag (Flags()
     // bit3) is forced to 1 on this board -- BIN's NTC + pull-up
