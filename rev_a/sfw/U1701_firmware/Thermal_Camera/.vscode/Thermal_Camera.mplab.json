@@ -440,7 +440,9 @@
                 "gui/lv_port_indev.h",
                 "gui/lv_port_indev.c",
                 "gui/screens/screen_menu.h",
-                "gui/screens/screen_menu.c"
+                "gui/screens/screen_menu.c",
+                "gui/screens/screen_palette.h",
+                "gui/screens/screen_palette.c"
             ]
         }
     ]

@@ -18,6 +18,7 @@
 #include "gui/lvgl/lvgl.h"
 #include "gui/screens/screen_home.h"
 #include "gui/screens/screen_menu.h"
+#include "gui/screens/screen_palette.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -63,9 +64,10 @@ typedef struct
 // at the wrong screen.
 static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
 {
-    [GUI_SCREEN_HOME]   = { ScreenHome_Create,   ScreenHome_Refresh,   NULL },
-    [GUI_SCREEN_MENU]   = { ScreenMenu_Create,   ScreenMenu_Refresh,   NULL },
-    [GUI_SCREEN_SYSTEM] = { SystemScreen_Create, SystemScreen_Refresh, NULL },
+    [GUI_SCREEN_HOME]    = { ScreenHome_Create,    ScreenHome_Refresh,    NULL },
+    [GUI_SCREEN_MENU]    = { ScreenMenu_Create,    ScreenMenu_Refresh,    NULL },
+    [GUI_SCREEN_SYSTEM]  = { SystemScreen_Create,  SystemScreen_Refresh,  NULL },
+    [GUI_SCREEN_PALETTE] = { ScreenPalette_Create, ScreenPalette_Refresh, NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
