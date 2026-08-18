@@ -109,6 +109,77 @@ bool Screen_CreateHeader(lv_obj_t *screen, const char *title, SCREEN_HEADER *hea
     return true;
 }
 
+lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, lv_event_cb_t cb, void *user_data)
+{
+    lv_obj_t *button = lv_obj_create(parent);
+    lv_obj_t *label;
+
+    if (button == NULL) return NULL;
+
+    if ((w > 0) && (h > 0)) lv_obj_set_size(button, w, h);
+    else lv_obj_set_size(button, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+
+    lv_obj_align(button, align, x_offset, y_offset);
+
+    // Slightly lighter than the bars it sits on, so a control reads as a
+    // control rather than as more furniture
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x303030), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(button, SCREEN_BAR_OPACITY, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(button, lv_color_hex(0xA0A0A0), LV_PART_MAIN);
+    lv_obj_set_style_border_opa(button, LV_OPA_50, LV_PART_MAIN);
+    lv_obj_set_style_radius(button, 4, LV_PART_MAIN);
+    lv_obj_set_style_pad_hor(button, 6, LV_PART_MAIN);
+    lv_obj_set_style_pad_ver(button, 2, LV_PART_MAIN);
+
+    // Touch feedback. Without this a tap gives no acknowledgement at all
+    // until the screen changes, which reads as a dropped press.
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x0060C0), LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(button, LV_OPA_80, LV_STATE_PRESSED);
+
+    lv_obj_remove_flag(button, LV_OBJ_FLAG_SCROLLABLE);
+
+    label = Screen_CreateLabel(button, &lv_font_montserrat_14,
+            LV_ALIGN_CENTER, 0, 0, text);
+
+    if (label == NULL) return NULL;
+
+    // The label would otherwise swallow the press before it reaches the
+    // chip -- children are hit-tested first, and labels are clickable in
+    // LVGL v9 like every other object.
+    lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
+
+    if (cb != NULL) lv_obj_add_event_cb(button, cb, LV_EVENT_CLICKED, user_data);
+
+    return button;
+}
+
+bool Screen_AddBackButton(SCREEN_HEADER *header, lv_event_cb_t cb, void *user_data)
+{
+    lv_obj_t *back;
+
+    if ((header->bar == NULL) || (header->title_label == NULL)) return false;
+
+    // Fills the bar's content height (the header trims its vertical padding
+    // to 1px for the date/time stack, so this is 34px -- above the touch
+    // target floor without spilling out of the bar).
+    back = Screen_CreateButton(header->bar, LV_ALIGN_LEFT_MID, 0, 0,
+            SCREEN_BACK_BUTTON_WIDTH_PX, SCREEN_BAR_HEIGHT_PX - 2,
+            LV_SYMBOL_LEFT, cb, user_data);
+
+    if (back == NULL) return false;
+
+    // Move the title clear of the button. Screen_CreateHeader() aligned it
+    // to LV_ALIGN_LEFT_MID with no offset, so this is the same alignment
+    // with the button's width plus a gap.
+    lv_obj_align(header->title_label, LV_ALIGN_LEFT_MID,
+            SCREEN_BACK_BUTTON_WIDTH_PX + SCREEN_BACK_BUTTON_GAP_PX, 0);
+
+    return true;
+}
+
 void Screen_RefreshHeader(SCREEN_HEADER *header)
 {
     char text[16];

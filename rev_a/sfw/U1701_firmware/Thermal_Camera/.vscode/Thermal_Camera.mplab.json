@@ -436,7 +436,11 @@
                 "application/still_capture.h",
                 "application/still_capture.c",
                 "gui/screens/screen_save_image.h",
-                "gui/screens/screen_save_image.c"
+                "gui/screens/screen_save_image.c",
+                "gui/lv_port_indev.h",
+                "gui/lv_port_indev.c",
+                "gui/screens/screen_menu.h",
+                "gui/screens/screen_menu.c"
             ]
         }
     ]

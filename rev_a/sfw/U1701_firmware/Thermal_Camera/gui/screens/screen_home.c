@@ -15,6 +15,7 @@
 #include "gui/screens/screen_home.h"
 #include "gui/screens/screen_common.h"
 
+#include "gui/gui.h"
 #include "gui/lvgl/lvgl.h"
 #include "application/main.h"
 #include "application/telemetry.h"
@@ -32,6 +33,10 @@
 #define SCREEN_HOME_BATTERY_WIDTH_PX   48
 #define SCREEN_HOME_BATTERY_HEIGHT_PX  12
 
+// Wide enough for "Menu" at 14pt plus the chip's padding, and clear of the
+// battery gauge on its left and the SD/USB chips on its right.
+#define SCREEN_HOME_MENU_BUTTON_WIDTH_PX  60
+
 // Palette scale geometry: a vertical strip in the middle band between the
 // two bars (y 40..200), with a min/max label chip just above and below it.
 #define SCREEN_HOME_SCALE_WIDTH_PX     16
@@ -48,7 +53,7 @@ static lv_obj_t *battery_bar     = NULL;
 static lv_obj_t *battery_label   = NULL;
 static lv_obj_t *sd_label        = NULL;
 static lv_obj_t *usb_label       = NULL;
-static lv_obj_t *menu_label      = NULL;
+static lv_obj_t *menu_button     = NULL;
 
 static lv_obj_t *scale_gradient   = NULL;
 static lv_obj_t *scale_max_label  = NULL;
@@ -135,6 +140,13 @@ static void ScreenHomeSetStatusLabelActive(lv_obj_t *label, bool active)
     }
 }
 
+static void ScreenHomeMenuClicked(lv_event_t *event)
+{
+    (void)event;
+
+    GUI_ShowScreen(GUI_SCREEN_MENU, GUI_NAV_FORWARD);
+}
+
 lv_obj_t *ScreenHome_Create(void)
 {
     lv_obj_t *screen = Screen_Create();
@@ -173,11 +185,14 @@ lv_obj_t *ScreenHome_Create(void)
 
     if ((usb_label == NULL) || (sd_label == NULL)) return NULL;
 
-    // Centered footer entry -- not wired to anything yet, just staking out
-    // the spot for it before touch input lands
-    menu_label = Screen_CreateLabel(bottom_bar, &lv_font_montserrat_14,
-            LV_ALIGN_CENTER, 0, 0, "Menu");
-    if (menu_label == NULL) return NULL;
+    // Centered footer button, opening the main menu. Deliberately taller
+    // than the bar's 20px content box (36px bar less its 8px padding): the
+    // padding governs layout, not clipping, so a full-height tap target
+    // still sits inside the bar's bounds instead of being sized to the text.
+    menu_button = Screen_CreateButton(bottom_bar, LV_ALIGN_CENTER, 0, 0,
+            SCREEN_HOME_MENU_BUTTON_WIDTH_PX, SCREEN_TOUCH_TARGET_MIN_PX,
+            "Menu", ScreenHomeMenuClicked, NULL);
+    if (menu_button == NULL) return NULL;
 
     // --- Left side: FLIR palette scale -------------------------------------
     scale_gradient = lv_obj_create(screen);

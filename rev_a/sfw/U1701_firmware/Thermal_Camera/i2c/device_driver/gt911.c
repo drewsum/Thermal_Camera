@@ -26,6 +26,16 @@
 #define GT911_REG_FIRMWARE_VERSION     0x8144u   // 2 bytes
 #define GT911_REG_COORD_STATUS         0x814Eu   // 1 byte, touch/buffer status
 
+// Touch point records start immediately after the status register and are 8
+// bytes each: track ID, X low, X high, Y low, Y high, size low, size high,
+// reserved. Only point 1 is read (see GT911_ReadTouch() in gt911.h), and
+// only its 4 coordinate bytes -- so this address is the point record base
+// PLUS the one-byte track ID. Same sourcing caveat as the registers above:
+// Goodix removed the map from the datasheet at Rev.07, so this is
+// cross-checked against STMicroelectronics' stm32-gt911 driver (gt911_reg.h)
+// rather than taken from a single unofficial source.
+#define GT911_REG_POINT1_COORDS        0x8150u   // 4 bytes: XL, XH, YL, YH
+
 // Coordinate status register (0x814E) bitfield. The controller sets
 // BUFFER_READY when a fresh touch report is available and the host clears
 // the register to acknowledge it; the low nibble is the number of active
@@ -60,6 +70,27 @@ static bool GT911_ReadRegister16(uint16_t address, uint16_t reg, uint8_t *data, 
     uint8_t regBytes[2] = { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFFu) };
 
     return I2C_WriteRead(address, regBytes, sizeof(regBytes), data, length);
+}
+
+// Companion to GT911_ReadRegister16 -- the address bytes and the payload go
+// out as ONE write (the GT911 has no repeated-start write path), so this
+// stages them into a single buffer. Only ever used to clear the one-byte
+// coordinate status register, hence the deliberately small staging buffer.
+#define GT911_WRITE_MAX_PAYLOAD   4u
+
+static bool GT911_WriteRegister16(uint16_t address, uint16_t reg, const uint8_t *data, size_t length)
+{
+    uint8_t buffer[2 + GT911_WRITE_MAX_PAYLOAD];
+    size_t i;
+
+    if (length > GT911_WRITE_MAX_PAYLOAD) return false;
+
+    buffer[0] = (uint8_t)(reg >> 8);
+    buffer[1] = (uint8_t)(reg & 0xFFu);
+
+    for (i = 0; i < length; i++) buffer[2 + i] = data[i];
+
+    return I2C_Write(address, buffer, 2 + length);
 }
 
 // GT911 I2C address-select sequence, from the GT911 datasheet (Goodix,
@@ -119,6 +150,63 @@ bool GT911_Verify(uint16_t address)
     }
 
     return (memcmp(productId, GT911_EXPECTED_PRODUCT_ID, sizeof(productId)) == 0);
+}
+
+GT911_TOUCH_RESULT GT911_ReadTouch(uint16_t address, GT911_TOUCH *touch)
+{
+    uint8_t status;
+    uint8_t coords[4];
+    uint8_t clear = 0;
+    GT911_TOUCH_RESULT result;
+
+    if (!GT911_ReadRegister16(address, GT911_REG_COORD_STATUS, &status, 1))
+    {
+        return GT911_TOUCH_ERROR;
+    }
+
+    // No report pending. This is by far the common case -- the controller
+    // only raises BUFFER_READY when something changed -- so it costs exactly
+    // the one status byte read above and no write.
+    if ((status & GT911_STATUS_BUFFER_READY) == 0u)
+    {
+        return GT911_TOUCH_NO_NEW_DATA;
+    }
+
+    if ((status & GT911_STATUS_POINT_COUNT_MASK) != 0u)
+    {
+        if (GT911_ReadRegister16(address, GT911_REG_POINT1_COORDS, coords, sizeof(coords)))
+        {
+            // Little-endian pairs, unlike the big-endian REGISTER addressing
+            // this same device uses -- see the file header in gt911.h.
+            touch->x = (uint16_t)coords[0] | ((uint16_t)coords[1] << 8);
+            touch->y = (uint16_t)coords[2] | ((uint16_t)coords[3] << 8);
+            touch->pressed = true;
+            result = GT911_TOUCH_UPDATED;
+        }
+        else
+        {
+            result = GT911_TOUCH_ERROR;
+        }
+    }
+    else
+    {
+        // A report with zero points IS the release event -- the coordinates
+        // are stale at this point, so only the flag is updated and the last
+        // position is left in place (LVGL wants the release to land at the
+        // point the finger lifted from, not at 0,0).
+        touch->pressed = false;
+        result = GT911_TOUCH_UPDATED;
+    }
+
+    // Acknowledge the report unconditionally, including on the read failure
+    // above: leaving the status register set means the controller never
+    // posts another report and touch dies silently until the next reset.
+    if (!GT911_WriteRegister16(address, GT911_REG_COORD_STATUS, &clear, 1))
+    {
+        result = GT911_TOUCH_ERROR;
+    }
+
+    return result;
 }
 
 void GT911_PrintStatus(uint16_t address)

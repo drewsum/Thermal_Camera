@@ -14,8 +14,10 @@
 
 #include "gui/gui.h"
 #include "gui/lv_port_disp.h"
+#include "gui/lv_port_indev.h"
 #include "gui/lvgl/lvgl.h"
 #include "gui/screens/screen_home.h"
+#include "gui/screens/screen_menu.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -55,10 +57,15 @@ typedef struct
     lv_obj_t *screen;
 } GUI_SCREEN;
 
-static GUI_SCREEN gui_screens[] =
+// Designated initializers keep this locked to GUI_SCREEN_ID (gui.h), which
+// is what GUI_ShowScreen() and the menu's rows navigate by -- reordering the
+// enum reorders the table with it instead of silently pointing every caller
+// at the wrong screen.
+static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
 {
-    { ScreenHome_Create,   ScreenHome_Refresh,   NULL },
-    { SystemScreen_Create, SystemScreen_Refresh, NULL },
+    [GUI_SCREEN_HOME]   = { ScreenHome_Create,   ScreenHome_Refresh,   NULL },
+    [GUI_SCREEN_MENU]   = { ScreenMenu_Create,   ScreenMenu_Refresh,   NULL },
+    [GUI_SCREEN_SYSTEM] = { SystemScreen_Create, SystemScreen_Refresh, NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
@@ -171,6 +178,12 @@ bool GUI_Initialize(void)
 
     if (!lv_port_disp_init()) return false;
 
+    // Touch input. Created unconditionally, even though main.c has not yet
+    // probed the CTP at this point in boot -- the read callback checks for
+    // the controller itself on every poll, so a board with no panel just
+    // never reports a press (see gui/lv_port_indev.h).
+    if (!lv_port_indev_init()) return false;
+
     // Enable the hardware layer last of the three: the overlay buffers must
     // already be LVGL's (they are cleared to transparent in here) and the
     // display object must exist before the panel starts compositing Layer 1.
@@ -204,22 +217,39 @@ bool GUI_Initialize(void)
     return true;
 }
 
-void GUI_NextScreen(void)
+// The one place a cycled screen is actually loaded. Safe to call from an
+// LVGL event callback (i.e. from a button on the outgoing screen): auto_del
+// is false, so nothing the event is still walking gets deleted underneath
+// it.
+static void GUILoadScreen(uint32_t index, GUI_NAV_DIRECTION direction)
 {
-    if (!gui_ready) return;
-
     gui_on_demand_refresh = NULL;
-    gui_active_screen = (gui_active_screen + 1u) % GUI_SCREEN_COUNT;
+    gui_active_screen = index;
 
-    // auto_del = false: the outgoing screen is kept, since these are built
-    // once and cycled through
-    lv_screen_load_anim(gui_screens[gui_active_screen].screen,
-            LV_SCR_LOAD_ANIM_MOVE_LEFT, GUI_SCREEN_SWITCH_ANIM_MS, 0, false);
+    lv_screen_load_anim(gui_screens[index].screen,
+            (direction == GUI_NAV_BACK) ? LV_SCR_LOAD_ANIM_MOVE_RIGHT
+                                        : LV_SCR_LOAD_ANIM_MOVE_LEFT,
+            GUI_SCREEN_SWITCH_ANIM_MS, 0, false);
 
     // Show current values immediately rather than whatever was on this
     // screen when it last went out of view (up to 500ms stale, and much
     // more if it has been off-screen a while)
-    gui_screens[gui_active_screen].refresh();
+    gui_screens[index].refresh();
+}
+
+void GUI_ShowScreen(GUI_SCREEN_ID id, GUI_NAV_DIRECTION direction)
+{
+    if (!gui_ready) return;
+    if ((uint32_t)id >= GUI_SCREEN_COUNT) return;
+
+    GUILoadScreen((uint32_t)id, direction);
+}
+
+void GUI_NextScreen(void)
+{
+    if (!gui_ready) return;
+
+    GUILoadScreen((gui_active_screen + 1u) % GUI_SCREEN_COUNT, GUI_NAV_FORWARD);
 }
 
 void GUI_ShowFlirErrorScreen(void)

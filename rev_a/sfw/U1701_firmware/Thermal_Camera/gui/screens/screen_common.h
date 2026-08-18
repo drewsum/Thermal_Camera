@@ -76,6 +76,34 @@ bool Screen_CreateHeader(lv_obj_t *screen, const char *title, SCREEN_HEADER *hea
 // call on a header whose creation failed.
 void Screen_RefreshHeader(SCREEN_HEADER *header);
 
+// Minimum touch target. Fingertips are ~9mm and this panel is ~0.22mm/px, so
+// anything much under this is a target the user has to aim at. Applied as a
+// floor on button height, not a fixed size.
+#define SCREEN_TOUCH_TARGET_MIN_PX   28
+
+// Width of the header back button, and the gap between it and the title that
+// Screen_AddBackButton() shifts the title by.
+#define SCREEN_BACK_BUTTON_WIDTH_PX  32
+#define SCREEN_BACK_BUTTON_GAP_PX    8
+
+// Creates a tappable chip on `parent`: a translucent rounded panel with a
+// centered white label, wired to call `cb` with `user_data` on
+// LV_EVENT_CLICKED. Pass w/h of 0 to size to the text plus padding.
+//
+// Built from a base object rather than lv_button because gui/lv_conf.h
+// leaves LV_USE_BUTTON off to save flash -- base objects are clickable in
+// LVGL v9 anyway, and this only wants the visual states, which styles give.
+// Returns NULL on failure.
+lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, lv_event_cb_t cb, void *user_data);
+
+// Adds a back button ("<") to the left of `header`'s bar and shifts the
+// title right to make room, so a screen reached from the menu can return to
+// it. `cb` is called on LV_EVENT_CLICKED with `user_data`. Call after
+// Screen_CreateHeader(). Returns false on failure.
+bool Screen_AddBackButton(SCREEN_HEADER *header, lv_event_cb_t cb, void *user_data);
+
 #ifdef __cplusplus
 }
 #endif

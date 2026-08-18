@@ -73,6 +73,13 @@ static uint32_t SystemScreen_CountLatchedErrors(void)
     return count;
 }
 
+static void SystemScreenBackClicked(lv_event_t *event)
+{
+    (void)event;
+
+    GUI_ShowScreen(GUI_SCREEN_MENU, GUI_NAV_BACK);
+}
+
 lv_obj_t *SystemScreen_Create(void)
 {
     lv_obj_t *screen = Screen_Create();
@@ -82,6 +89,9 @@ lv_obj_t *SystemScreen_Create(void)
     if (screen == NULL) return NULL;
 
     if (!Screen_CreateHeader(screen, "System Status", &header)) return NULL;
+
+    // Reached from the main menu, so back returns there rather than to home
+    if (!Screen_AddBackButton(&header, SystemScreenBackClicked, NULL)) return NULL;
 
     // --- Body panel -------------------------------------------------------
     panel = lv_obj_create(screen);

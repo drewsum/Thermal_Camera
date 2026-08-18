@@ -41,6 +41,7 @@
 #include "usb/device_driver/usb_msd.h"
 #include "glcd/glcd.h"
 #include "gui/gui.h"
+#include "gui/lv_port_indev.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
 #include "application/flir/flir.h"
@@ -248,6 +249,7 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
         "       USB\r\n"
         "       GLCD\r\n"
         "       GUI\r\n"
+        "       Touch\r\n"
         "       FLIR SPI\r\n"
         "       Backlight PWM\r\n"
         "       RTCC\r\n"
@@ -318,6 +320,9 @@ USB_UART_COMMAND(peripheralStatusCommand, "Peripheral Status?",
     }
     else if (strcmp(rx_peripheral_name, "GUI") == 0) {
         GUI_PrintStatus();
+    }
+    else if (strcmp(rx_peripheral_name, "Touch") == 0) {
+        lv_port_indev_PrintStatus();
     }
     else if (strcmp(rx_peripheral_name, "FLIR SPI") == 0) {
         FLIR_VOSPI_PrintStatus();

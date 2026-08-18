@@ -78,6 +78,40 @@ bool GT911_Verify(uint16_t address);
 // last reset) already established.
 void GT911_PrintStatus(uint16_t address);
 
+// A single touch point, in the controller's own coordinate space (which is
+// whatever its config registers were programmed with -- see the mapping note
+// in gui/lv_port_indev.h, which is what turns these into panel pixels).
+typedef struct
+{
+    bool pressed;       // false = the new report says every finger is up
+    uint16_t x;
+    uint16_t y;
+} GT911_TOUCH;
+
+typedef enum
+{
+    GT911_TOUCH_NO_NEW_DATA = 0,   // controller has nothing new; keep last state
+    GT911_TOUCH_UPDATED,           // `touch` was filled in from a fresh report
+    GT911_TOUCH_ERROR              // I2C read/write failed
+} GT911_TOUCH_RESULT;
+
+// Polls the coordinate registers for a new touch report, returning only the
+// first touch point -- this driver is deliberately single-touch, since every
+// GUI interaction in this firmware is a tap (see gui/lv_port_indev.c).
+//
+// The GT911 raises a BUFFER_READY flag when a report is ready and expects
+// the host to clear the status register to acknowledge it; this function
+// does both, so it must be the only caller polling that register. Between
+// reports it returns GT911_TOUCH_NO_NEW_DATA and leaves `touch` untouched
+// -- a held finger produces reports continuously, so "no new data" means
+// "nothing changed", NOT "released".
+//
+// Polling rather than using the INT line is deliberate: the panel's INT pin
+// is shared with the address-select sequence (GT911_Verify() drives it as a
+// GPIO and leaves it floating), and a ~30ms poll from the LVGL input timer
+// is well inside human tap timing.
+GT911_TOUCH_RESULT GT911_ReadTouch(uint16_t address, GT911_TOUCH *touch);
+
 #ifdef __cplusplus
 }
 #endif

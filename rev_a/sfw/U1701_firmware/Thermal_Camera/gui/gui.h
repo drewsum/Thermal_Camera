@@ -121,9 +121,38 @@ bool GUI_Initialize(void);
 // to redraw. Does nothing if GUI_Initialize() didn't succeed.
 void GUI_Tasks(void);
 
+// The screens that make up the navigable hierarchy: home is the boot screen
+// shown over the live thermal video, its "Menu" button opens the main menu,
+// and the menu's rows open the screens below it. These ARE the indices into
+// gui.c's screen table (it is initialized with designated initializers, so
+// the two cannot drift).
+typedef enum
+{
+    GUI_SCREEN_HOME = 0,
+    GUI_SCREEN_MENU,
+    GUI_SCREEN_SYSTEM,
+    GUI_SCREEN_ID_COUNT
+} GUI_SCREEN_ID;
+
+// Which way the slide animation runs. Purely cosmetic, but it is what makes
+// the hierarchy legible: going deeper slides the new screen in from the
+// right, backing out reverses it.
+typedef enum
+{
+    GUI_NAV_FORWARD = 0,   // home -> menu -> system
+    GUI_NAV_BACK           // the back buttons
+} GUI_NAV_DIRECTION;
+
+// Loads `id` with a slide animation in `direction`, and refreshes it so it
+// shows current values rather than whatever was on it when it last went out
+// of view. This is what the on-screen Menu and back buttons call. Also
+// leaves the FLIR error screen or the save-image prompt if one was showing.
+// No-op until GUI_Initialize() has succeeded.
+void GUI_ShowScreen(GUI_SCREEN_ID id, GUI_NAV_DIRECTION direction);
+
 // Switches to the next screen, wrapping around, with a slide animation.
-// Nothing currently calls this; exposed for a future UART command or menu.
-// Also leaves the FLIR error screen if it was showing (see
+// Nothing currently calls this; exposed for a future UART command. Also
+// leaves the FLIR error screen if it was showing (see
 // GUI_ShowFlirErrorScreen() below). No-op until GUI_Initialize() has
 // succeeded.
 void GUI_NextScreen(void);
