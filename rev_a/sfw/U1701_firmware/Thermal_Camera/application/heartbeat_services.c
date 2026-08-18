@@ -17,7 +17,25 @@ void heartbeatServices(void) {
     // get new battery fuel gauge data every 200ms
     if ((heartbeat_systick + 20) % 20 == 0) battery_data_request = 1;
 
-    if (live_telemetry_enable) {
+    // Sampling is driven by whether ANYTHING is currently displaying these
+    // values, not by the UART page alone: the GUI's system status screen
+    // shows the same temperatures, rail voltages/currents/powers and ADC
+    // channels, and it is on the panel independently of the terminal.
+    //
+    // Before this, everything below was gated on live_telemetry_enable only,
+    // so the GUI's rail and die-temperature rows sat frozen at their
+    // power-on values -- reading a plausible-looking 0.000 V -- unless the
+    // operator happened to have "Live Telemetry" running in the terminal.
+    //
+    // Gating on visibility rather than sampling unconditionally keeps the
+    // idle case exactly as it was: no extra I2C traffic or ADC scans while
+    // neither consumer is looking. The battery is deliberately NOT in here
+    // -- it is sampled every 200ms regardless (above), because the home
+    // screen's gauge and the charge/USB-current logic need it all the time.
+    bool telemetry_consumers_active =
+            live_telemetry_enable || GUI_IsScreenActive(GUI_SCREEN_SYSTEM);
+
+    if (telemetry_consumers_active) {
 
         // get new temperature telemetry data every 200ms
         if ((heartbeat_systick + 5) % 20 == 0) temp_sense_data_request = 1;
@@ -27,6 +45,10 @@ void heartbeatServices(void) {
 
         /* Trigger an ADC conversion scan */
         if ((heartbeat_systick + 15) % 20 == 0) ADCCON3bits.GSWTRG = 1;
+
+    }
+
+    if (live_telemetry_enable) {
 
         // print new telemetry to terminal every second
         if (heartbeat_systick % 100 == 0) live_telemetry_print_request = 1;

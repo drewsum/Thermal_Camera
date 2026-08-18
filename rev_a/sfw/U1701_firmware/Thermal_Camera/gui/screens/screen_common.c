@@ -123,10 +123,12 @@ lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
 
     lv_obj_align(button, align, x_offset, y_offset);
 
-    // Slightly lighter than the bars it sits on, so a control reads as a
-    // control rather than as more furniture
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x303030), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(button, SCREEN_BAR_OPACITY, LV_PART_MAIN);
+    // Unpressed: no fill at all, so the control is just its outline and the
+    // Layer 0 image (thermal video, or whatever the screen sits over) shows
+    // through it untouched. The border below is what makes it read as a
+    // control -- it is the ONLY thing defining the button at rest, so it
+    // can't be dropped without the button becoming invisible.
+    lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
     lv_obj_set_style_border_color(button, lv_color_hex(0xA0A0A0), LV_PART_MAIN);
     lv_obj_set_style_border_opa(button, LV_OPA_50, LV_PART_MAIN);
@@ -134,10 +136,16 @@ lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
     lv_obj_set_style_pad_hor(button, 6, LV_PART_MAIN);
     lv_obj_set_style_pad_ver(button, 2, LV_PART_MAIN);
 
-    // Touch feedback. Without this a tap gives no acknowledgement at all
-    // until the screen changes, which reads as a dropped press.
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x0060C0), LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(button, LV_OPA_80, LV_STATE_PRESSED);
+    // Touch feedback: the fill appears only while held. Without it a tap
+    // gives no acknowledgement at all until the screen changes, which reads
+    // as a dropped press.
+    //
+    // LV_OPA_COVER, not the translucent SCREEN_BAR_OPACITY the rest of the
+    // furniture uses: at anything less the fill blends with whatever Layer 0
+    // is showing underneath, so the pressed color would only actually BE
+    // 0x303030 over a black scene and would wash out over a hot one.
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x303030), LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(button, LV_OPA_COVER, LV_STATE_PRESSED);
 
     lv_obj_remove_flag(button, LV_OBJ_FLAG_SCROLLABLE);
 

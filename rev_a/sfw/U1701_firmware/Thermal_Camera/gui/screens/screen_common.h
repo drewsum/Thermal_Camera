@@ -86,9 +86,13 @@ void Screen_RefreshHeader(SCREEN_HEADER *header);
 #define SCREEN_BACK_BUTTON_WIDTH_PX  32
 #define SCREEN_BACK_BUTTON_GAP_PX    8
 
-// Creates a tappable chip on `parent`: a translucent rounded panel with a
-// centered white label, wired to call `cb` with `user_data` on
-// LV_EVENT_CLICKED. Pass w/h of 0 to size to the text plus padding.
+// Creates a tappable chip on `parent`: a rounded outline with a centered
+// white label, wired to call `cb` with `user_data` on LV_EVENT_CLICKED.
+// Pass w/h of 0 to size to the text plus padding.
+//
+// Unfilled at rest -- only the border and label are drawn, so the Layer 0
+// image shows through -- and filled solid while held, which is the whole of
+// the press feedback.
 //
 // Built from a base object rather than lv_button because gui/lv_conf.h
 // leaves LV_USE_BUTTON off to save flash -- base objects are clickable in

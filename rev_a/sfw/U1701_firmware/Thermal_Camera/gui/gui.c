@@ -245,6 +245,17 @@ void GUI_ShowScreen(GUI_SCREEN_ID id, GUI_NAV_DIRECTION direction)
     GUILoadScreen((uint32_t)id, direction);
 }
 
+bool GUI_IsScreenActive(GUI_SCREEN_ID id)
+{
+    if (!gui_ready) return false;
+
+    // An on-demand screen is covering the cycled one, so nothing in
+    // gui_screens[] is on the panel right now
+    if (gui_on_demand_refresh != NULL) return false;
+
+    return (gui_active_screen == (uint32_t)id);
+}
+
 void GUI_NextScreen(void)
 {
     if (!gui_ready) return;

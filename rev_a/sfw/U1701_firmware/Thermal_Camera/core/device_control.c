@@ -552,11 +552,15 @@ void PMDLock(void) {
 char * getStringSerialNumber(void) {
  
     static char return_string[20];
-    
-    sprintf(return_string, "0x%X%X",
+
+    // %08X, not %X, on BOTH halves: the serial is one 64-bit number split
+    // across two words, so an unpadded low word silently drops its leading
+    // zeros and shifts the digits (serial 0x1234567800001234 would print as
+    // "0x123456781234"). 2 + 16 + NUL is exactly the buffer above.
+    sprintf(return_string, "0x%08X%08X",
         *((uint32_t *)(0xBFC54024)),
         *((uint32_t *)(0xBFC54020)));
-    
+
     return return_string;
     
 }
@@ -764,7 +768,20 @@ char * getDeviceIDString(uint32_t device_ID) {
         case 0x724F053:
             return "PIC32MZ2048EFM144";
             break;
-            
+
+        // The part this board actually uses. Every case above it is from the
+        // EF family, so before this was added the DA part on this board fell
+        // through to "Undefined" -- which is what the GUI's System Status
+        // screen surfaced when it started showing the device ID.
+        //
+        // Value taken from the DFP, which is the authoritative source for
+        // these (DEVID_DEVID in
+        // ~/.mchp_packs/Microchip/PIC32MZ-DA_DFP/<ver>/atdf/<part>.atdf).
+        // The other 71 DA variants are in there too if one is ever needed.
+        case 0x8ABA053:
+            return "PIC32MZ2064DAR176";
+            break;
+
         default:
             return "Undefined";
             break;
@@ -775,9 +792,16 @@ char * getDeviceIDString(uint32_t device_ID) {
 
 // This function returns an 8 bit revision ID
 uint8_t getRevisionID(void) {
- 
-    return *((uint32_t *)(0xBF800020)) & 0xF0000000 >> 28;
-    
+
+    // DEVID<31:28> is VER, the silicon revision. The parentheses are load
+    // bearing: >> binds tighter than &, so the original
+    // "value & 0xF0000000 >> 28" evaluated as "value & (0xF0000000 >> 28)",
+    // i.e. value & 0xF -- the low nibble of the PART number rather than the
+    // revision. It returned a plausible-looking value (and the right one
+    // whenever those two nibbles happened to match), which is why it went
+    // unnoticed.
+    return (uint8_t)((*((uint32_t *)(0xBF800020)) & 0xF0000000) >> 28);
+
 }
 
 // This function returns a string with the revision ID

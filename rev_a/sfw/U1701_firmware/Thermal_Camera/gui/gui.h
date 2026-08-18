@@ -150,6 +150,22 @@ typedef enum
 // No-op until GUI_Initialize() has succeeded.
 void GUI_ShowScreen(GUI_SCREEN_ID id, GUI_NAV_DIRECTION direction);
 
+// Returns whether `id` is the screen currently on the panel. False while an
+// on-demand screen (the FLIR error screen, the save-image prompt) is up,
+// since neither of those is one of the screens above, and false before
+// GUI_Initialize() has succeeded.
+//
+// This exists so a subsystem can do work only while the screen that consumes
+// it is actually visible: heartbeatServices() uses it to sample the sensors
+// feeding the system status screen, which would otherwise only be read when
+// the UART live telemetry page is enabled.
+//
+// Safe to call from interrupt context (heartbeatServices() runs in the
+// Timer1 ISR): it only reads word-sized statics that main-loop code writes,
+// touches no LVGL state, and prints nothing -- see the no-printf-in-ISR rule
+// this codebase follows.
+bool GUI_IsScreenActive(GUI_SCREEN_ID id);
+
 // Switches to the next screen, wrapping around, with a slide animation.
 // Nothing currently calls this; exposed for a future UART command. Also
 // leaves the FLIR error screen if it was showing (see
