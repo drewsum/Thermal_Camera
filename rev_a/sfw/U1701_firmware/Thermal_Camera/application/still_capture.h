@@ -30,19 +30,26 @@
          FLIR_StreamOff() leaves the video layer alone) so nothing overwrites
          the frozen image, and show the save-image screen.
 
-      4. Encode the frozen image to a PNG on the SD card, if one is mounted.
+      4. Wait, holding the frozen frame, for the user to choose on the
+         save-image screen: "Save to SD" (StillCapture_ConfirmSave()) or
+         "Cancel"/back (StillCapture_Resume()).
 
-    Step 4 is deliberately deferred a few main-loop passes past step 3: the
+      5. On Save only, encode the frozen image to a PNG on the SD card.
+
+    Step 5 is deliberately deferred a few main-loop passes past the tap: the
     encode-and-write blocks for the better part of a second, and running it
-    inline would mean the screen the user is being prompted with does not
-    appear until after the operation it is prompting about has finished.
+    inline would mean the "Saving to SD card..." status the user is waiting on
+    does not appear until after the write it describes has finished.
 
-    *** The save is unconditional today. *** The screen's "Save to SD" /
-    "Cancel" footer is drawn but not wired -- the panel's GT911 touch
-    controller is not up yet -- so the image is saved and the board then stays
-    on the save screen indefinitely. Once touch lands, the intended shape is:
-    step 4 runs only on "Save to SD", and "Cancel" calls
-    StillCapture_Resume().
+    Nothing is written unless the user asks for it. Cancel (either the footer
+    button or the header's back button) discards the still and returns to live
+    video without touching the card.
+
+    NOTE: a held still waits indefinitely for that choice -- video stays
+    frozen and VoSPI stays stopped until one of the two buttons is pressed.
+    That is deliberate (the operator may be lining up a decision about the
+    shot), but it does mean an unattended board sits frozen; a timeout that
+    auto-cancels would go in StillCapture_Tasks() if that ever matters.
  */
 /* ************************************************************************** */
 
@@ -77,7 +84,8 @@ extern "C" {
 typedef enum
 {
     STILL_CAPTURE_IDLE = 0,    // live video, no still held
-    STILL_CAPTURE_SAVING,      // still held, PNG write pending or in progress
+    STILL_CAPTURE_PROMPTING,   // still held, waiting for the user's choice
+    STILL_CAPTURE_SAVING,      // choice was Save; PNG write pending or running
     STILL_CAPTURE_SAVED,       // written to the card
     STILL_CAPTURE_FAILED       // nothing written (no card, or the write failed)
 } STILL_CAPTURE_STATE;
@@ -92,10 +100,19 @@ bool StillCapture_Trigger(void);
 // single state compare when no capture is in flight.
 void StillCapture_Tasks(void);
 
-// Discards the still, returns Layer 0 to the live video buffers and restarts
-// VoSPI capture. Nothing calls this yet -- it is what the save screen's
-// "Cancel" will do once the touch controller is wired up. No-op if no still
-// is being held.
+// Accepts the prompt: commits to writing the held frame to the SD card. The
+// encode itself runs a few main-loop passes later (see the file header), so
+// this returns immediately. No-op unless a still is actually waiting on the
+// user's choice, which makes a double-tap harmless.
+void StillCapture_ConfirmSave(void);
+
+// Declines the prompt: discards the still, returns Layer 0 to the live video
+// buffers and restarts VoSPI capture. Called by the save screen's "Cancel"
+// and by the back button in its header; also what dismisses the screen once
+// a save has finished. No-op if no still is being held.
+//
+// Does NOT change which GUI screen is showing -- the save screen owns its own
+// dismissal, since it is the only thing that knows where to go back to.
 void StillCapture_Resume(void);
 
 // Current state, and the name of the file written (empty until a save

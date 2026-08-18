@@ -102,6 +102,12 @@ lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
         int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
         const char *text, lv_event_cb_t cb, void *user_data);
 
+// Rewrites the text of a button made by Screen_CreateButton(), for the case
+// where a control's meaning changes with state (the save-image screen's
+// "Cancel" becoming "Done" once the write has finished). No-op on NULL or on
+// an object that isn't one of those buttons.
+void Screen_SetButtonText(lv_obj_t *button, const char *text);
+
 // Adds a back button ("<") to the left of `header`'s bar and shifts the
 // title right to make room, so a screen reached from the menu can return to
 // it. `cb` is called on LV_EVENT_CLICKED with `user_data`. Call after

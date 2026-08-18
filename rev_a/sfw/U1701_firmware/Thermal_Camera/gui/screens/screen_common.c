@@ -164,6 +164,20 @@ lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
     return button;
 }
 
+void Screen_SetButtonText(lv_obj_t *button, const char *text)
+{
+    lv_obj_t *label;
+
+    if (button == NULL) return;
+
+    // Screen_CreateButton() creates the label first, so it is always child 0
+    label = lv_obj_get_child(button, 0);
+
+    if (label == NULL) return;
+
+    lv_label_set_text(label, text);
+}
+
 bool Screen_AddBackButton(SCREEN_HEADER *header, lv_event_cb_t cb, void *user_data)
 {
     lv_obj_t *back;

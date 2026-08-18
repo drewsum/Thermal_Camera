@@ -15,22 +15,29 @@
     FLIR error screen):
 
       +--------------------------------------------------+
-      | Save Image                          <date/time>  |  shared header
+      | < | Save Image                      <date/time>  |  header + back
       +--------------------------------------------------+
       |                                                  |
       |            [ Save this image? ]                  |  centered prompt
       |            [   <status line>  ]                  |  chip labels
       |                                                  |
       +--------------------------------------------------+
-      | Save to SD                              Cancel   |  footer bar
+      | [Save to SD]                          [ Cancel ] |  footer buttons
       +--------------------------------------------------+
 
-    The two footer entries are LABELS, not buttons: gui/lv_conf.h has
-    LV_USE_BUTTON = 0 (the enabled widget set is base object, label and bar),
-    and there is no input device to press them with anyway -- the panel's
-    GT911 touch controller is not wired up. They stake out the hit targets and
-    name the choices; still_capture.c saves unconditionally until touch lands.
-    See still_capture.h for how the two are meant to be joined up.
+    The footer entries are tappable: Save commits the write
+    (StillCapture_ConfirmSave()), Cancel discards the still and returns to
+    live video (StillCapture_Resume()). The back button in the header is a
+    second route to Cancel -- identical action.
+
+    They are built by Screen_CreateButton() from base objects rather than
+    lv_button, because gui/lv_conf.h leaves LV_USE_BUTTON = 0 to save flash;
+    base objects are clickable in LVGL v9 regardless.
+
+    The controls follow the capture state (see ScreenSaveImage_Refresh()):
+    both choices while the prompt is live, neither while the encode runs, and
+    a single "Done" once the outcome is known -- "Cancel" after a completed
+    write would imply an undo that does not exist.
 
     Built at init alongside every other screen but shown on demand, like
     gui/screens/flir_error_screen.c -- it is not part of the GUI_NextScreen()

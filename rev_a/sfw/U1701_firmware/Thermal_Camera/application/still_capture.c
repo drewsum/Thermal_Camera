@@ -24,16 +24,19 @@
 #include "gui/screens/screen_save_image.h"
 #include "usb_uart/terminal_control.h"
 
-// How long to let the save-image screen get itself on the panel before
+// How long to let the "Saving to SD card..." status reach the panel before
 // starting the encode. LVGL redraws on its own timer (LV_DEF_REFR_PERIOD is
-// 33ms in gui/lv_conf.h) and the overlay is double buffered, so "the screen
-// has been loaded" and "the screen is visible" are a few frames apart -- and
-// the encode blocks straight through them. Four refresh periods is enough for
-// the prompt to be up before the board goes quiet.
+// 33ms in gui/lv_conf.h) and the overlay is double buffered, so "the label
+// has been set" and "the label is visible" are a few frames apart -- and the
+// encode blocks straight through them. Four refresh periods is enough for the
+// status to be up before the board goes quiet.
+//
+// It also doubles as a cancel window: Cancel during it returns the state to
+// IDLE and StillCapture_Tasks() then never runs the write.
 #define STILL_CAPTURE_SAVE_DELAY_MS   150u
 
 static STILL_CAPTURE_STATE captureState = STILL_CAPTURE_IDLE;
-static uint32_t captureShownTickMs = 0;
+static uint32_t captureSaveTickMs = 0;
 static char savedName[IMAGE_SAVER_NAME_MAX] = "";
 
 // Copies the live VoSPI frame out from under the capture path. The frame
@@ -95,8 +98,9 @@ bool StillCapture_Trigger(void)
     FLIR_StreamOffKeepImage();
 
     savedName[0] = '\0';
-    captureState = STILL_CAPTURE_SAVING;
-    captureShownTickMs = GUI_GetTickMs();
+
+    // Held, but nothing is written until the user picks Save on the prompt
+    captureState = STILL_CAPTURE_PROMPTING;
 
     terminalTextAttributes(MAGENTA_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("Shutter: thermal frame captured and held\r\n");
@@ -107,6 +111,20 @@ bool StillCapture_Trigger(void)
     return true;
 }
 
+void StillCapture_ConfirmSave(void)
+{
+    // Guarded on PROMPTING, so a second tap on "Save to SD" while the first
+    // is still pending cannot restart the timer or queue a second write
+    if (captureState != STILL_CAPTURE_PROMPTING) return;
+
+    captureState = STILL_CAPTURE_SAVING;
+    captureSaveTickMs = GUI_GetTickMs();
+
+    // Put "Saving to SD card..." up now; the encode below starts a few
+    // main-loop passes from here and then blocks straight through the redraw
+    ScreenSaveImage_Refresh();
+}
+
 void StillCapture_Tasks(void)
 {
     bool saved;
@@ -115,10 +133,11 @@ void StillCapture_Tasks(void)
 
     // Wrap-safe unsigned subtraction, same reasoning as GUI_GetTickMs()'s own
     // comment
-    if ((GUI_GetTickMs() - captureShownTickMs) < STILL_CAPTURE_SAVE_DELAY_MS) return;
+    if ((GUI_GetTickMs() - captureSaveTickMs) < STILL_CAPTURE_SAVE_DELAY_MS) return;
 
-    // Unconditional for now -- see the note in still_capture.h about where
-    // the screen's "Save to SD" / "Cancel" choice will hook in.
+    // Reached only via StillCapture_ConfirmSave(), i.e. only because the user
+    // pressed "Save to SD". Cancelling inside the delay window above puts the
+    // state back to IDLE, so this never runs for a declined capture.
     saved = ImageSaver_SaveRGB888ToSD((const void *)STILL_CAPTURE_RGB_ADDRESS,
             GLCD_FRAMEBUFFER_WIDTH_PX, GLCD_FRAMEBUFFER_HEIGHT_PX,
             savedName, sizeof(savedName));

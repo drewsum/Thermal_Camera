@@ -185,9 +185,10 @@ void GUI_ShowFlirErrorScreen(void);
 
 // Loads the save-image prompt (gui/screens/screen_save_image.c) over the
 // frozen thermal frame the shutter just captured. application/still_capture.c
-// calls this; like the FLIR error screen it is outside the GUI_NextScreen()
-// cycle, and GUI_NextScreen() is what leaves it. No-op until GUI_Initialize()
-// has succeeded.
+// calls this; like the FLIR error screen it is outside the navigable screen
+// list above. It leaves itself: its Cancel/Done and back buttons call
+// GUI_ShowScreen(GUI_SCREEN_HOME, ...) once the capture is resolved. No-op
+// until GUI_Initialize() has succeeded.
 void GUI_ShowSaveImageScreen(void);
 
 // Milliseconds since boot, derived from CP0 Count. LVGL's tick source; also
