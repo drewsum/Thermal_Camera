@@ -19,6 +19,7 @@
 #include "gui/screens/screen_home.h"
 #include "gui/screens/screen_menu.h"
 #include "gui/screens/screen_palette.h"
+#include "gui/screens/screen_brightness.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -33,6 +34,46 @@
 // drifting apart at build time rather than reporting a fictional number.
 #if (GUI_LVGL_HEAP_BASE_ADDRESS != LV_MEM_ADR) || (GUI_LVGL_HEAP_SIZE_BYTES != LV_MEM_SIZE)
     #error "GUI_LVGL_HEAP_* in gui/gui.h no longer matches LV_MEM_ADR/LV_MEM_SIZE in gui/lv_conf.h"
+#endif
+
+// The DDR2 partition map in gui.h is by convention -- core/ddr2.h has no
+// allocator, so nothing at run time stops two reservations from claiming the
+// same bytes. The LVGL heap is the one reservation that is likely to be
+// resized (it grows whenever a screen or a decoder needs more), and it is
+// bracketed by GLCD buffers the display controller's DMA scans out
+// continuously. Growing it past either neighbour would not fail an
+// allocation; it would hand LVGL memory the GLCD is already reading, and the
+// first symptom is corrupted video followed by a CPU exception somewhere
+// unrelated. So the neighbours are checked here, in physical offsets from
+// the base of DDR2 (the reservations are quoted through different cache
+// aliases -- the heap through KSEG0, the GLCD buffers through KSEG1 -- so
+// their raw addresses are not comparable).
+// Sizes are spelled out from their pixel geometry rather than reused from
+// glcd.h's *_SIZE_BYTES macros: those carry a (uint32_t) cast, and a cast is
+// not something #if can evaluate.
+#define GUI_LVGL_HEAP_OFFSET_BYTES   (GUI_LVGL_HEAP_BASE_ADDRESS - DDR2_KSEG0_BASE_ADDRESS)
+#define GUI_LVGL_HEAP_END_OFFSET     (GUI_LVGL_HEAP_OFFSET_BYTES + GUI_LVGL_HEAP_SIZE_BYTES)
+
+// Below the heap: GLCD Layer 1 overlay buffer B, which LVGL renders into
+#define GUI_OVERLAY_B_END_OFFSET                                        \
+        ((GLCD_OVERLAY_BUFFER_B_ADDRESS - DDR2_KSEG1_BASE_ADDRESS)      \
+                + (GLCD_OVERLAY_WIDTH_PX * GLCD_OVERLAY_HEIGHT_PX       \
+                        * GLCD_OVERLAY_BYTES_PER_PIXEL))
+
+// Above the heap: the GLCD Layer 2 still-image buffer
+#define GUI_LAYER2_OFFSET_BYTES \
+        (GLCD_LAYER2_BASE_ADDRESS - DDR2_KSEG1_BASE_ADDRESS)
+
+#if GUI_LVGL_HEAP_OFFSET_BYTES < GUI_OVERLAY_B_END_OFFSET
+    #error "The LVGL heap (LV_MEM_ADR, gui/lv_conf.h) starts inside GLCD Layer 1 overlay buffer B"
+#endif
+
+#if GUI_LVGL_HEAP_END_OFFSET > GUI_LAYER2_OFFSET_BYTES
+    #error "The LVGL heap (LV_MEM_SIZE, gui/lv_conf.h) runs into the GLCD Layer 2 image buffer -- move Layer 2 up into the unreserved space above DDR2 +10MB before growing it"
+#endif
+
+#if GUI_LVGL_HEAP_END_OFFSET > DDR2_SIZE_BYTES
+    #error "The LVGL heap (gui/lv_conf.h) runs off the end of DDR2"
 #endif
 
 // Set once GUI_Initialize() has fully succeeded. GUI_Tasks() is called
@@ -64,10 +105,11 @@ typedef struct
 // at the wrong screen.
 static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
 {
-    [GUI_SCREEN_HOME]    = { ScreenHome_Create,    ScreenHome_Refresh,    NULL },
-    [GUI_SCREEN_MENU]    = { ScreenMenu_Create,    ScreenMenu_Refresh,    NULL },
-    [GUI_SCREEN_SYSTEM]  = { SystemScreen_Create,  SystemScreen_Refresh,  NULL },
-    [GUI_SCREEN_PALETTE] = { ScreenPalette_Create, ScreenPalette_Refresh, NULL },
+    [GUI_SCREEN_HOME]       = { ScreenHome_Create,       ScreenHome_Refresh,       NULL },
+    [GUI_SCREEN_MENU]       = { ScreenMenu_Create,       ScreenMenu_Refresh,       NULL },
+    [GUI_SCREEN_SYSTEM]     = { SystemScreen_Create,     SystemScreen_Refresh,     NULL },
+    [GUI_SCREEN_PALETTE]    = { ScreenPalette_Create,    ScreenPalette_Refresh,    NULL },
+    [GUI_SCREEN_BRIGHTNESS] = { ScreenBrightness_Create, ScreenBrightness_Refresh, NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
@@ -197,6 +239,22 @@ bool GUI_Initialize(void)
 
         for (index = 0; index < GUI_SCREEN_COUNT; index++)
         {
+            // A GUI_SCREEN_ID added to the enum in gui.h without its row
+            // here leaves this entry zeroed, and calling through it is a
+            // jump to address 0 -- a CPU general exception several frames
+            // away from the one-line omission that caused it. Fail the GUI
+            // init instead, which main() reports as gui_init_error and the
+            // rest of the instrument survives.
+            if ((gui_screens[index].create == NULL) ||
+                (gui_screens[index].refresh == NULL))
+            {
+                terminalTextAttributes(RED_COLOR, BLACK_COLOR, BOLD_FONT);
+                printf("GUI screen %lu has no entry in gui_screens[] (gui.c)\r\n",
+                        (unsigned long)index);
+                terminalTextAttributesReset();
+                return false;
+            }
+
             gui_screens[index].screen = gui_screens[index].create();
 
             if (gui_screens[index].screen == NULL) return false;

@@ -37,6 +37,7 @@ static const SCREEN_MENU_ENTRY menu_entries[] =
 {
     { "System Status",   GUI_SCREEN_SYSTEM },
     { "Thermal Palette", GUI_SCREEN_PALETTE },
+    { "LCD Brightness",  GUI_SCREEN_BRIGHTNESS },
 };
 
 #define SCREEN_MENU_ENTRY_COUNT  (sizeof(menu_entries) / sizeof(menu_entries[0]))

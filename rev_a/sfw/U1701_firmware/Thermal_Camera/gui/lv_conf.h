@@ -31,13 +31,15 @@
  *                                  telemetry and USB MSC are.
  *   LV_USE_LODEPNG        1        The project's ONLY PNG decoder.
  *   LV_FONT_MONTSERRAT_20 1        Clock/readout font (14 stays the default).
- *   widgets               trimmed  Only label, bar and image are enabled;
- *                                  every other widget, the simple/mono
- *                                  themes, grid layout and the observer are
- *                                  off. Program flash is 2MB and the rest of
- *                                  the firmware already uses ~550KB, so
- *                                  nothing is enabled "just in case" --
- *                                  turn a widget on when a screen needs it.
+ *   widgets               trimmed  Only label, bar, slider and image are
+ *                                  enabled; every other widget, the
+ *                                  simple/mono themes, grid layout and the
+ *                                  observer are off. Program flash is 2MB and
+ *                                  nothing is enabled "just in case" -- turn
+ *                                  a widget on when a screen needs it.
+ *   LV_USE_SLIDER         1        The LCD brightness screen. It subclasses
+ *                                  lv_bar, which was already on, so it costs
+ *                                  only lv_slider.c, ~8.5KB of flash.
  */
 
 /* clang-format off */
@@ -813,7 +815,7 @@
 
 #define LV_USE_SCALE      0
 
-#define LV_USE_SLIDER     0   /**< Requires: lv_bar */
+#define LV_USE_SLIDER     1   /**< Requires: lv_bar -- gui/screens/screen_brightness.c */
 
 #define LV_USE_SPAN       0
 #if LV_USE_SPAN

@@ -442,7 +442,9 @@
                 "gui/screens/screen_menu.h",
                 "gui/screens/screen_menu.c",
                 "gui/screens/screen_palette.h",
-                "gui/screens/screen_palette.c"
+                "gui/screens/screen_palette.c",
+                "gui/screens/screen_brightness.h",
+                "gui/screens/screen_brightness.c"
             ]
         }
     ]
