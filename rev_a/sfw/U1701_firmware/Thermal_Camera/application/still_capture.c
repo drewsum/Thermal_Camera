@@ -18,6 +18,7 @@
 #include "application/flir/flir.h"
 #include "application/flir/flir_process.h"
 #include "application/flir/flir_vospi.h"
+#include "application/image_legend.h"
 #include "application/image_saver.h"
 #include "glcd/glcd.h"
 #include "gui/gui.h"
@@ -39,6 +40,12 @@ static STILL_CAPTURE_STATE captureState = STILL_CAPTURE_IDLE;
 static uint32_t captureSaveTickMs = 0;
 static char savedName[IMAGE_SAVER_NAME_MAX] = "";
 
+// Whether the palette legend gets baked into the frozen image. Reset to true
+// on every capture (see StillCapture_Trigger()), so the save prompt always
+// opens with its checkbox ticked rather than carrying a previous shot's
+// choice forward into one the user has not looked at yet.
+static bool saveLegend = true;
+
 // Copies the live VoSPI frame out from under the capture path. The frame
 // buffers are double buffered, so the copy is racing capture only if a frame
 // completes mid-memcpy -- and even then it would take TWO more completions to
@@ -56,18 +63,61 @@ static bool StillCaptureSnapshotRaw(void)
     return true;
 }
 
-// Copies the Layer 0 buffer being scanned out into this module's own, then
-// points the controller at the copy. Both are uncached, so the memcpy moves
-// words straight through to DDR2 with no cache maintenance -- and the panel
-// keeps scanning the ORIGINAL buffer until the flip below is latched at the
-// next frame start, so it never sees the copy half-written.
+// Copies the Layer 0 buffer being scanned out into this module's own, draws
+// the legend into the copy if it is wanted, then points the controller at
+// it. Both buffers are uncached, so the memcpy moves words straight through
+// to DDR2 with no cache maintenance -- and the panel keeps scanning the
+// ORIGINAL buffer until the flip below is latched at the next frame start,
+// so it never sees the copy half-written or half-decorated.
 static void StillCaptureFreezeDisplay(void)
 {
     memcpy((void *)STILL_CAPTURE_RGB_ADDRESS,
            FLIRProcess_GetDisplayedLayer0Buffer(),
            STILL_CAPTURE_RGB_SIZE);
 
+    if (saveLegend)
+    {
+        ImageLegend_DrawRGB888((void *)STILL_CAPTURE_RGB_ADDRESS,
+                GLCD_FRAMEBUFFER_WIDTH_PX, GLCD_FRAMEBUFFER_HEIGHT_PX);
+    }
+
     GLCD_SetLayer0BaseAddress((const void *)STILL_CAPTURE_RGB_ADDRESS);
+}
+
+// Repaints just the legend's bounding box in the held image, after
+// saveLegend has changed.
+//
+// The clean copy it restores from is the video buffer the still was taken
+// off: VoSPI is stopped for as long as a still is held, so flir_process.c
+// cannot render over it, and it still holds the undecorated frame. That is
+// what makes an unticked legend genuinely removable rather than needing a
+// second full-frame copy kept around for the purpose.
+//
+// The panel IS scanning this buffer by now (unlike the freeze above), so a
+// toggle can tear for a frame. The box is ~72x160, which is well under a
+// panel frame's worth of pixels, and the alternative -- waiting out a
+// vertical blank on a control the user is tapping -- costs more than the
+// one-frame seam it would avoid.
+static void StillCaptureRedrawLegend(void)
+{
+    const uint8_t *clean = (const uint8_t *)FLIRProcess_GetDisplayedLayer0Buffer();
+    uint8_t *held = (uint8_t *)STILL_CAPTURE_RGB_ADDRESS;
+    uint32_t row;
+
+    for (row = 0; row < IMAGE_LEGEND_BOX_HEIGHT_PX; row++)
+    {
+        uint32_t offset = (((uint32_t)IMAGE_LEGEND_BOX_Y_PX + row) * GLCD_FRAMEBUFFER_STRIDE_BYTES) +
+                          ((uint32_t)IMAGE_LEGEND_BOX_X_PX * GLCD_FRAMEBUFFER_BYTES_PER_PIXEL);
+
+        memcpy(held + offset, clean + offset,
+                IMAGE_LEGEND_BOX_WIDTH_PX * GLCD_FRAMEBUFFER_BYTES_PER_PIXEL);
+    }
+
+    if (saveLegend)
+    {
+        ImageLegend_DrawRGB888((void *)STILL_CAPTURE_RGB_ADDRESS,
+                GLCD_FRAMEBUFFER_WIDTH_PX, GLCD_FRAMEBUFFER_HEIGHT_PX);
+    }
 }
 
 bool StillCapture_Trigger(void)
@@ -89,6 +139,10 @@ bool StillCapture_Trigger(void)
         terminalTextAttributesReset();
         return false;
     }
+
+    // Every capture starts with the legend on -- the checkbox on the save
+    // screen reads this back, so it opens ticked
+    saveLegend = true;
 
     StillCaptureFreezeDisplay();
 
@@ -123,6 +177,28 @@ void StillCapture_ConfirmSave(void)
     // Put "Saving to SD card..." up now; the encode below starts a few
     // main-loop passes from here and then blocks straight through the redraw
     ScreenSaveImage_Refresh();
+}
+
+void StillCapture_SetSaveLegend(bool include)
+{
+    // Guarded on PROMPTING for the same reason ConfirmSave() is: the frozen
+    // image is only this module's to redraw while the user is still being
+    // asked about it. Once the encode has started, the image is what was
+    // saved and a late toggle must not rewrite it.
+    if (captureState != STILL_CAPTURE_PROMPTING) return;
+
+    if (saveLegend == include) return;
+
+    saveLegend = include;
+
+    // The panel is showing the held image, so this is also the preview: what
+    // the user sees after the tap is what the PNG will contain
+    StillCaptureRedrawLegend();
+}
+
+bool StillCapture_GetSaveLegend(void)
+{
+    return saveLegend;
 }
 
 void StillCapture_Tasks(void)

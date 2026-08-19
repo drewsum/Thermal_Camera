@@ -452,7 +452,9 @@
                 "application/image_catalog.h",
                 "application/image_catalog.c",
                 "gui/screens/screen_saved_images.h",
-                "gui/screens/screen_saved_images.c"
+                "gui/screens/screen_saved_images.c",
+                "application/image_legend.c",
+                "application/image_legend.h"
             ]
         }
     ]

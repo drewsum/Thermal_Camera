@@ -132,6 +132,7 @@ bool ImageSaver_SaveRGB888ToSD(const void *rgb888, uint32_t width, uint32_t heig
     FRESULT result;
     UINT written = 0;
     uint32_t encodeStartTicks;
+    bool watchdogWasOn;
 
     if ((rgb888 == NULL) || (width == 0) || (height == 0)) return false;
 
@@ -184,10 +185,28 @@ bool ImageSaver_SaveRGB888ToSD(const void *rgb888, uint32_t width, uint32_t heig
     // LCT_RGB/8 describes the INPUT. What lands in the file is chosen by the
     // encoder's auto_convert, which palettizes a <=256-color image -- see
     // image_saver.h.
+    //
+    // The dog is held OFF for the duration rather than only kicked around
+    // it, because a kick on each side is only safe while the encode itself
+    // fits inside one window. It stopped being guaranteed to when the legend
+    // (application/image_legend.h) started being drawn into the frame: the
+    // blended pixels take the image past 256 colors, auto_convert then emits
+    // RGB instead of a palette, and there is roughly three times the pixel
+    // data to filter and deflate. lodepng offers no progress hook to kick
+    // from, and a reset half way through a save the user asked for is worse
+    // than a bounded blind window in a purely CPU-bound call that cannot
+    // block on anything. Restored to whatever it was on every exit below --
+    // read rather than assumed, so a board whose watchdog never started
+    // (watchdogTimerInitialize() failed) does not get one started here.
+    watchdogWasOn = (WDTCONbits.ON != 0);
+    if (watchdogWasOn) stopWatchdogTimer();
+
     kickTheDog();
     encodeStartTicks = _CP0_GET_COUNT();
     encodeError = lodepng_encode_memory(&png, &pngSize, (const unsigned char *)rgb888,
             (unsigned int)width, (unsigned int)height, LCT_RGB, 8);
+
+    if (watchdogWasOn) startWatchdogTimer();
     kickTheDog();
 
     if (encodeError != 0)

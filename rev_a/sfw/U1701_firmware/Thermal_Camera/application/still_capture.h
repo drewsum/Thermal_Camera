@@ -36,6 +36,17 @@
 
       5. On Save only, encode the frozen image to a PNG on the SD card.
 
+    The palette legend is drawn INTO that frozen image at step 2, because
+    the legend the user sees lives on the GUI overlay layer and so was never
+    in a saved file. It is on by default and the save screen's "Include
+    legend" checkbox turns it off again (StillCapture_SetSaveLegend()),
+    which repaints the held image -- so the panel is always showing what the
+    PNG would contain. See application/image_legend.h for how the legend is
+    reproduced and what it costs the encoder.
+
+    Note that the RAW frame kept at step 1 is untouched by any of that: the
+    radiometric record stays a clean 160x120 of sensor counts.
+
     Step 5 is deliberately deferred a few main-loop passes past the tap: the
     encode-and-write blocks for the better part of a second, and running it
     inline would mean the "Saving to SD card..." status the user is waiting on
@@ -114,6 +125,17 @@ void StillCapture_ConfirmSave(void);
 // Does NOT change which GUI screen is showing -- the save screen owns its own
 // dismissal, since it is the only thing that knows where to go back to.
 void StillCapture_Resume(void);
+
+// Whether the palette legend is baked into the held image, and so into the
+// PNG if it is saved. Set is a no-op unless a still is actually waiting on
+// the user's choice, and repaints the held image when it changes anything --
+// the panel is showing that image, so the change is visible immediately.
+//
+// Reset to true by every StillCapture_Trigger(), which is what makes the
+// save screen's checkbox open ticked on each new capture rather than
+// remembering the last one.
+void StillCapture_SetSaveLegend(bool include);
+bool StillCapture_GetSaveLegend(void);
 
 // Current state, and the name of the file written (empty until a save
 // succeeds). The save-image screen reads both.

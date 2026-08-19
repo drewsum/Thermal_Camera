@@ -24,6 +24,13 @@
 #define SCREEN_SAVE_IMAGE_PROMPT_Y_PX   -22
 #define SCREEN_SAVE_IMAGE_STATUS_Y_PX    12
 
+// The legend checkbox sits under the status line, in the clear band above
+// the footer bar. Its left edge is well right of the legend itself (which
+// the frozen image now carries at x 0..72), so the control never covers the
+// thing it is about.
+#define SCREEN_SAVE_IMAGE_LEGEND_Y_PX    48
+#define SCREEN_SAVE_IMAGE_LEGEND_W_PX    170
+
 // Green once the file is on the card, amber while nothing has been written
 // yet, red when the write was attempted and failed.
 #define SCREEN_SAVE_IMAGE_OK_COLOR      0x30C030
@@ -40,6 +47,7 @@ static lv_obj_t *prompt_label = NULL;
 static lv_obj_t *status_label = NULL;
 static lv_obj_t *save_button = NULL;
 static lv_obj_t *cancel_button = NULL;
+static lv_obj_t *legend_checkbox = NULL;
 
 // A label with its own translucent backing chip, so text stays readable over
 // an arbitrary thermal scene. Same treatment (and the same reason) as the
@@ -62,6 +70,19 @@ static lv_obj_t *ScreenSaveImageCreateChipLabel(lv_obj_t *parent, const lv_font_
     lv_obj_align(label, LV_ALIGN_CENTER, 0, y_offset);
 
     return label;
+}
+
+// Turns the baked-in palette legend on or off. still_capture.c repaints the
+// held image, so the panel behind this screen updates under the user's
+// finger and the prompt stays a true preview of the file.
+//
+// Screen_CreateCheckbox() has already flipped the state by the time this
+// runs, so the widget is the source of truth here rather than the module.
+static void ScreenSaveImageLegendToggled(lv_event_t *event)
+{
+    (void)event;
+
+    StillCapture_SetSaveLegend(Screen_IsCheckboxChecked(legend_checkbox));
 }
 
 // Commits the held frame to the card. The encode runs a few main-loop passes
@@ -110,6 +131,12 @@ lv_obj_t *ScreenSaveImage_Create(void)
     status_label = ScreenSaveImageCreateChipLabel(screen, &lv_font_montserrat_14,
             SCREEN_SAVE_IMAGE_STATUS_Y_PX, "--");
     if (status_label == NULL) return NULL;
+
+    legend_checkbox = Screen_CreateCheckbox(screen, LV_ALIGN_CENTER, 0,
+            SCREEN_SAVE_IMAGE_LEGEND_Y_PX, SCREEN_SAVE_IMAGE_LEGEND_W_PX,
+            SCREEN_TOUCH_TARGET_MIN_PX, "Include legend",
+            StillCapture_GetSaveLegend(), ScreenSaveImageLegendToggled, NULL);
+    if (legend_checkbox == NULL) return NULL;
 
     // --- Footer: the two choices -------------------------------------------
     bottom_bar = Screen_CreateBar(screen, LV_ALIGN_BOTTOM_MID);
@@ -163,6 +190,13 @@ void ScreenSaveImage_Refresh(void)
     ScreenSaveImageSetVisible(prompt_label, state == STILL_CAPTURE_PROMPTING);
     ScreenSaveImageSetVisible(save_button,  state == STILL_CAPTURE_PROMPTING);
     ScreenSaveImageSetVisible(cancel_button, state != STILL_CAPTURE_SAVING);
+
+    // Same rule as the Save button: the legend is only still a choice while
+    // the question is open. Its state is pulled from still_capture.c rather
+    // than left as the user last set it -- every capture resets that to
+    // "included", and this is where the checkbox picks the reset up.
+    ScreenSaveImageSetVisible(legend_checkbox, state == STILL_CAPTURE_PROMPTING);
+    Screen_SetCheckboxChecked(legend_checkbox, StillCapture_GetSaveLegend());
 
     Screen_SetButtonText(cancel_button,
             (state == STILL_CAPTURE_PROMPTING) ? "Cancel" : "Done");

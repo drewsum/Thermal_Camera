@@ -19,6 +19,7 @@
 #include "gui/lvgl/lvgl.h"
 #include "application/main.h"
 #include "application/telemetry.h"
+#include "application/image_legend.h"
 #include "application/flir/flir_process.h"
 #include "usb/device_driver/usb_msd.h"
 #include "sdhc/sd_fileio.h"
@@ -39,11 +40,15 @@
 
 // Palette scale geometry: a vertical strip in the middle band between the
 // two bars (y 40..200), with a min/max label chip just above and below it.
-#define SCREEN_HOME_SCALE_WIDTH_PX     16
-#define SCREEN_HOME_SCALE_X_PX         10
-#define SCREEN_HOME_SCALE_TOP_Y_PX     (SCREEN_BAR_HEIGHT_PX + 24)
-#define SCREEN_HOME_SCALE_HEIGHT_PX    112
-#define SCREEN_HOME_SCALE_LABEL_GAP_PX 2
+// Defined in application/image_legend.h rather than here because the SAME
+// legend is drawn a second way -- straight into the pixels of a saved image,
+// which the GUI overlay never reaches. Aliased to local names so the layout
+// code below still reads as this screen's own.
+#define SCREEN_HOME_SCALE_WIDTH_PX     IMAGE_LEGEND_SCALE_WIDTH_PX
+#define SCREEN_HOME_SCALE_X_PX         IMAGE_LEGEND_SCALE_X_PX
+#define SCREEN_HOME_SCALE_TOP_Y_PX     IMAGE_LEGEND_SCALE_TOP_Y_PX
+#define SCREEN_HOME_SCALE_HEIGHT_PX    IMAGE_LEGEND_SCALE_HEIGHT_PX
+#define SCREEN_HOME_SCALE_LABEL_GAP_PX IMAGE_LEGEND_LABEL_GAP_PX
 
 // Widgets whose contents change; everything else is built once and left
 // alone. NULL until ScreenHome_Create() succeeds, which is what makes
@@ -109,13 +114,13 @@ static lv_obj_t *ScreenHomeCreateChipLabel(lv_obj_t *parent, const char *text)
 
     if (label == NULL) return NULL;
 
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_14, LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, IMAGE_LEGEND_FONT, LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_obj_set_style_bg_color(label, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(label, SCREEN_BAR_OPACITY, LV_PART_MAIN);
     lv_obj_set_style_radius(label, 0, LV_PART_MAIN);
-    lv_obj_set_style_pad_hor(label, 3, LV_PART_MAIN);
-    lv_obj_set_style_pad_ver(label, 1, LV_PART_MAIN);
+    lv_obj_set_style_pad_hor(label, IMAGE_LEGEND_LABEL_PAD_HOR_PX, LV_PART_MAIN);
+    lv_obj_set_style_pad_ver(label, IMAGE_LEGEND_LABEL_PAD_VER_PX, LV_PART_MAIN);
     lv_label_set_text(label, text);
 
     return label;
@@ -138,6 +143,41 @@ static void ScreenHomeSetStatusLabelActive(lv_obj_t *label, bool active)
         lv_obj_set_style_text_color(label, lv_color_hex(0x808080), LV_PART_MAIN);
         lv_obj_set_style_text_opa(label, LV_OPA_50, LV_PART_MAIN);
     }
+}
+
+// Positions one of the two temperature chips against the scale strip:
+// centered on it and clamped to the panel by ImageLegend_ChipX(), then just
+// above (`above`) or just below it.
+//
+// Called again on every refresh, not just at creation, because the chips are
+// LV_SIZE_CONTENT and their text changes width as the temperature does.
+// lv_obj_align_to() -- what this replaces -- is a ONE-SHOT that stores a
+// fixed top-left, so a chip placed once stayed centered on the "--.- C"
+// placeholder and grew rightwards from there forever after. The baked-in
+// legend (application/image_legend.c) has no such history to inherit, and
+// centering it on the real text put it visibly left of this one and off the
+// edge of the frame. Both now compute the same position from the same text.
+static void ScreenHomeAlignScaleLabel(lv_obj_t *label, bool above)
+{
+    int32_t width;
+    int32_t height;
+    int32_t y;
+
+    // LV_SIZE_CONTENT is resolved by the layout pass, not by
+    // lv_label_set_text(), so the width read below is last refresh's until
+    // this call brings it up to date
+    lv_obj_update_layout(label);
+
+    width = lv_obj_get_width(label);
+    height = lv_obj_get_height(label);
+
+    y = above ? (SCREEN_HOME_SCALE_TOP_Y_PX - SCREEN_HOME_SCALE_LABEL_GAP_PX - height)
+              : (SCREEN_HOME_SCALE_TOP_Y_PX + SCREEN_HOME_SCALE_HEIGHT_PX +
+                 SCREEN_HOME_SCALE_LABEL_GAP_PX);
+
+    // Absolute panel coordinates: the chips' parent is the screen, which
+    // Screen_Create() leaves with no padding
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, ImageLegend_ChipX(width), y);
 }
 
 static void ScreenHomeMenuClicked(lv_event_t *event)
@@ -216,8 +256,8 @@ lv_obj_t *ScreenHome_Create(void)
     scale_min_label = ScreenHomeCreateChipLabel(screen, "--.- C");
     if ((scale_max_label == NULL) || (scale_min_label == NULL)) return NULL;
 
-    lv_obj_align_to(scale_max_label, scale_gradient, LV_ALIGN_OUT_TOP_MID, 0, -SCREEN_HOME_SCALE_LABEL_GAP_PX);
-    lv_obj_align_to(scale_min_label, scale_gradient, LV_ALIGN_OUT_BOTTOM_MID, 0, SCREEN_HOME_SCALE_LABEL_GAP_PX);
+    ScreenHomeAlignScaleLabel(scale_max_label, true);
+    ScreenHomeAlignScaleLabel(scale_min_label, false);
 
     ScreenHome_Refresh();
 
@@ -284,5 +324,9 @@ void ScreenHome_Refresh(void)
 
         snprintf(text, sizeof(text), "%.1f C", minCelsius);
         lv_label_set_text(scale_min_label, text);
+
+        // The text just changed width, so the chips have to be placed again
+        ScreenHomeAlignScaleLabel(scale_max_label, true);
+        ScreenHomeAlignScaleLabel(scale_min_label, false);
     }
 }

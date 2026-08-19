@@ -28,6 +28,13 @@
     encoder emits an 8-bit palettized PNG -- a third of the pixel data of
     RGB888, and correspondingly less to deflate.
 
+    That holds only for a bare thermal frame. A frame with the legend drawn
+    into it (application/image_legend.h, which the save prompt offers and
+    defaults to) carries blended pixels that are not palette entries, so
+    auto_convert falls back to RGB888 and both the file and the encode grow
+    by roughly the three times above. Deliberate: the legend is worth more
+    than the bytes, and the checkbox is there for anyone who disagrees.
+
     Files are named FLIRnnnn.PNG in a FLIR/ directory at the root of the
     card, both created on demand. FatFs is built with FF_USE_LFN = 0
     (sdhc/fatfs/ffconf.h), so those names are 8.3 and uppercase on disk --
@@ -84,7 +91,9 @@ extern "C" {
 // images already in the directory.
 //
 // Blocking, and not quick: a full-screen encode plus the card write runs into
-// hundreds of milliseconds. The watchdog is kicked across the slow parts.
+// hundreds of milliseconds. The watchdog is kicked across the slow parts and
+// held off entirely across the encode, which lodepng gives no way to kick
+// from -- see the comment on that call.
 bool ImageSaver_SaveRGB888ToSD(const void *rgb888, uint32_t width, uint32_t height,
         char *nameOut, size_t nameOutSize);
 

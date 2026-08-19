@@ -112,6 +112,19 @@ bool FLIRProcess_GetAGCWindowCelsius(float *minCelsius, float *maxCelsius);
 // untouched for an out-of-range palette.
 uint32_t FLIRProcess_GetPalettePoints(FLIR_PALETTE palette, const FLIR_PaletteControlPoint **points);
 
+// The ACTIVE palette's fully interpolated lookup table: 256 entries of
+// {R, G, B}, index 0 cold to index 255 hot -- literally the array
+// FLIRProcess_RenderToLayer0() colorizes through, owned by flir_process.c
+// and rebuilt in place by FLIRProcess_SetPalette().
+//
+// FLIRProcess_GetPalettePoints() above is the right call for anything that
+// interpolates its own gradient (the GUI's scale widget hands the control
+// points straight to LVGL). This one is for a caller that has to produce the
+// SAME pixels the video was colorized with -- application/image_legend.c
+// paints the legend it bakes into a saved PNG one row per LUT entry, so it
+// samples the table rather than re-deriving it.
+const uint8_t (*FLIRProcess_GetPaletteLUT(void))[3];
+
 #ifdef __cplusplus
 }
 #endif

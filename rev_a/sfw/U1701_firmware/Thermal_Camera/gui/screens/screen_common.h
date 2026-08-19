@@ -108,6 +108,38 @@ lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
 // an object that isn't one of those buttons.
 void Screen_SetButtonText(lv_obj_t *button, const char *text);
 
+// Size of the box a checkbox draws its tick in, and the gap between that box
+// and the label beside it.
+#define SCREEN_CHECKBOX_BOX_PX       18
+#define SCREEN_CHECKBOX_GAP_PX       8
+
+// Creates a checkbox on `parent`: a translucent chip holding a square box
+// and a label, the whole of it one tap target. `cb` is called on
+// LV_EVENT_CLICKED with `user_data`, AFTER the check state has been
+// toggled -- so a handler can just read Screen_IsCheckboxChecked() rather
+// than tracking the state itself.
+//
+// Built from a base object and labels for the same reason as
+// Screen_CreateButton(): gui/lv_conf.h leaves LV_USE_CHECKBOX off, and the
+// only things lv_checkbox would add here are a theme style and a bullet it
+// draws itself. The tick is LV_SYMBOL_OK out of the same font as the text.
+//
+// Chip-backed rather than outline-only (the button's treatment) because this
+// one sits over the middle of a thermal image rather than inside a bar, and
+// an unfilled tick box over a hot scene is not readable.
+//
+// Returns NULL on failure.
+lv_obj_t *Screen_CreateCheckbox(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, bool checked, lv_event_cb_t cb, void *user_data);
+
+// Reads and writes the check state of a Screen_CreateCheckbox() object.
+// Setting it does NOT run the object's event callback -- it is for pushing a
+// state the caller already owns back into the widget. Get returns false on
+// NULL or on an object that isn't one of those checkboxes.
+bool Screen_IsCheckboxChecked(lv_obj_t *checkbox);
+void Screen_SetCheckboxChecked(lv_obj_t *checkbox, bool checked);
+
 // Adds a back button ("<") to the left of `header`'s bar and shifts the
 // title right to make room, so a screen reached from the menu can return to
 // it. `cb` is called on LV_EVENT_CLICKED with `user_data`. Call after

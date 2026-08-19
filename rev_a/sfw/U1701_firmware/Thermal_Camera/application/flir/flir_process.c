@@ -386,3 +386,8 @@ const void *FLIRProcess_GetDisplayedLayer0Buffer(void)
     return (const void *)(displayingBufferB ? GLCD_FRAMEBUFFER_B_ADDRESS
                                             : GLCD_FRAMEBUFFER_BASE_ADDRESS);
 }
+
+const uint8_t (*FLIRProcess_GetPaletteLUT(void))[3]
+{
+    return (const uint8_t (*)[3])paletteLUT;
+}

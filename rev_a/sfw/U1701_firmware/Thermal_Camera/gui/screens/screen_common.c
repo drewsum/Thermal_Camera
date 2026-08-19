@@ -178,6 +178,127 @@ void Screen_SetButtonText(lv_obj_t *button, const char *text)
     lv_label_set_text(label, text);
 }
 
+// The tick lives inside the box, which is the checkbox's first child --
+// fixed by the construction order in Screen_CreateCheckbox(), the same way
+// Screen_SetButtonText() relies on the label being child 0 of a button.
+static lv_obj_t *ScreenCheckboxTick(lv_obj_t *checkbox)
+{
+    lv_obj_t *box;
+
+    if (checkbox == NULL) return NULL;
+
+    box = lv_obj_get_child(checkbox, 0);
+    if (box == NULL) return NULL;
+
+    return lv_obj_get_child(box, 0);
+}
+
+// Added before the caller's own handler, so by the time theirs runs the
+// state has already flipped and Screen_IsCheckboxChecked() reads true for
+// "the user just ticked it".
+static void ScreenCheckboxClicked(lv_event_t *event)
+{
+    lv_obj_t *checkbox = lv_event_get_current_target_obj(event);
+
+    Screen_SetCheckboxChecked(checkbox, !Screen_IsCheckboxChecked(checkbox));
+}
+
+lv_obj_t *Screen_CreateCheckbox(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, bool checked, lv_event_cb_t cb, void *user_data)
+{
+    lv_obj_t *chip = lv_obj_create(parent);
+    lv_obj_t *box;
+    lv_obj_t *tick;
+    lv_obj_t *label;
+
+    if (chip == NULL) return NULL;
+
+    if ((w > 0) && (h > 0)) lv_obj_set_size(chip, w, h);
+    else lv_obj_set_size(chip, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+
+    lv_obj_align(chip, align, x_offset, y_offset);
+
+    lv_obj_set_style_bg_color(chip, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(chip, SCREEN_BAR_OPACITY, LV_PART_MAIN);
+    lv_obj_set_style_border_width(chip, 0, LV_PART_MAIN);
+    lv_obj_set_style_radius(chip, 4, LV_PART_MAIN);
+    lv_obj_set_style_pad_hor(chip, 6, LV_PART_MAIN);
+    lv_obj_set_style_pad_ver(chip, 2, LV_PART_MAIN);
+
+    // Same press feedback as Screen_CreateButton(), and opaque for the same
+    // reason: at less than full cover the "pressed" fill would only look
+    // pressed over a dark scene
+    lv_obj_set_style_bg_color(chip, lv_color_hex(0x303030), LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(chip, LV_OPA_COVER, LV_STATE_PRESSED);
+
+    lv_obj_remove_flag(chip, LV_OBJ_FLAG_SCROLLABLE);
+
+    box = lv_obj_create(chip);
+    if (box == NULL) return NULL;
+
+    lv_obj_set_size(box, SCREEN_CHECKBOX_BOX_PX, SCREEN_CHECKBOX_BOX_PX);
+    lv_obj_align(box, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_border_width(box, 2, LV_PART_MAIN);
+    lv_obj_set_style_border_color(box, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_border_opa(box, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_radius(box, 2, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(box, 0, LV_PART_MAIN);
+    lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+
+    // Children would otherwise take the press themselves -- they are
+    // hit-tested before their parent, and every LVGL v9 object is clickable
+    lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);
+
+    tick = Screen_CreateLabel(box, &lv_font_montserrat_14,
+            LV_ALIGN_CENTER, 0, 0, LV_SYMBOL_OK);
+    if (tick == NULL) return NULL;
+
+    lv_obj_remove_flag(tick, LV_OBJ_FLAG_CLICKABLE);
+
+    label = Screen_CreateLabel(chip, &lv_font_montserrat_14, LV_ALIGN_LEFT_MID,
+            SCREEN_CHECKBOX_BOX_PX + SCREEN_CHECKBOX_GAP_PX, 0, text);
+    if (label == NULL) return NULL;
+
+    lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
+
+    // Sets LV_STATE_CHECKED and the tick's visibility together, so the two
+    // can't start out disagreeing
+    Screen_SetCheckboxChecked(chip, checked);
+
+    lv_obj_add_event_cb(chip, ScreenCheckboxClicked, LV_EVENT_CLICKED, NULL);
+
+    if (cb != NULL) lv_obj_add_event_cb(chip, cb, LV_EVENT_CLICKED, user_data);
+
+    return chip;
+}
+
+bool Screen_IsCheckboxChecked(lv_obj_t *checkbox)
+{
+    if (checkbox == NULL) return false;
+
+    return lv_obj_has_state(checkbox, LV_STATE_CHECKED);
+}
+
+void Screen_SetCheckboxChecked(lv_obj_t *checkbox, bool checked)
+{
+    lv_obj_t *tick = ScreenCheckboxTick(checkbox);
+
+    if (tick == NULL) return;
+
+    if (checked)
+    {
+        lv_obj_add_state(checkbox, LV_STATE_CHECKED);
+        lv_obj_remove_flag(tick, LV_OBJ_FLAG_HIDDEN);
+    }
+    else
+    {
+        lv_obj_remove_state(checkbox, LV_STATE_CHECKED);
+        lv_obj_add_flag(tick, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 bool Screen_AddBackButton(SCREEN_HEADER *header, lv_event_cb_t cb, void *user_data)
 {
     lv_obj_t *back;
