@@ -23,6 +23,10 @@
 #define SCREEN_MENU_ROW_HEIGHT_PX    SCREEN_TOUCH_TARGET_MIN_PX
 #define SCREEN_MENU_ROW_GAP_PX       4
 
+// Right-hand lane kept clear for the scrollbar the default theme draws
+// inside the panel's right edge -- see system_screen.c, same reasoning.
+#define SCREEN_MENU_SCROLLBAR_LANE_PX 14
+
 // One row of the menu. `screen` is what tapping it opens.
 //
 // This is the table to edit when adding a menu option -- everything below
@@ -38,6 +42,8 @@ static const SCREEN_MENU_ENTRY menu_entries[] =
     { "System Status",   GUI_SCREEN_SYSTEM },
     { "Thermal Palette", GUI_SCREEN_PALETTE },
     { "LCD Brightness",  GUI_SCREEN_BRIGHTNESS },
+    { "SD Card Info",    GUI_SCREEN_SD_CARD },
+    { "Saved Images",    GUI_SCREEN_SAVED_IMAGES },
 };
 
 #define SCREEN_MENU_ENTRY_COUNT  (sizeof(menu_entries) / sizeof(menu_entries[0]))
@@ -93,20 +99,31 @@ lv_obj_t *ScreenMenu_Create(void)
     lv_obj_set_style_bg_opa(panel, SCREEN_BAR_OPACITY, LV_PART_MAIN);
     lv_obj_set_style_border_width(panel, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(panel, SCREEN_MENU_PANEL_PAD_PX, LV_PART_MAIN);
-    lv_obj_remove_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_right(panel, SCREEN_MENU_SCROLLBAR_LANE_PX, LV_PART_MAIN);
+
+    // The panel's 144px of content height holds four rows at this pitch, and
+    // the table has outgrown that -- so it scrolls, like the palette and SD
+    // card screens. Vertical only, so a slightly-off drag along a row cannot
+    // skew the list sideways.
+    lv_obj_set_scroll_dir(panel, LV_DIR_VER);
+
+    // ON rather than AUTO: AUTO only shows the bar while a scroll is in
+    // progress, which leaves no hint that there is anything below the fold.
+    lv_obj_set_scrollbar_mode(panel, LV_SCROLLBAR_MODE_ON);
 
     // --- Rows -------------------------------------------------------------
     // Explicit y-offsets rather than a layout engine, matching
     // system_screen.c: the row count is known at build time and this keeps
-    // flex out of the flash budget.
-    //
-    // Once the table grows past what fits (the panel holds 5 rows at this
-    // height), this is where a scrollable panel or a second page goes --
-    // right now the rows would simply run off the bottom.
+    // flex out of the flash budget. Rows past the fold are reached by
+    // scrolling the panel (see above), so the table can grow freely.
     for (index = 0; index < SCREEN_MENU_ENTRY_COUNT; index++)
     {
         int32_t y = (int32_t)(index * (SCREEN_MENU_ROW_HEIGHT_PX + SCREEN_MENU_ROW_GAP_PX));
-        int32_t row_width = panel_width - (2 * SCREEN_MENU_PANEL_PAD_PX);
+
+        // The panel's content box: its width less the left padding and the
+        // wider right padding that keeps the scrollbar lane clear
+        int32_t row_width = panel_width - SCREEN_MENU_PANEL_PAD_PX
+                - SCREEN_MENU_SCROLLBAR_LANE_PX;
         lv_obj_t *row;
         lv_obj_t *chevron;
 

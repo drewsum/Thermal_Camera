@@ -53,18 +53,28 @@ static const char *ImageLoader_DescribeFRESULT(FRESULT result)
     }
 }
 
-bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
+// Builds the volume-qualified path the FatFs calls below take. `filename`
+// carries no volume of its own -- see image_loader.h.
+static void ImageLoaderBuildPath(IMAGE_MEDIA media, const char *filename,
+        char *path, size_t size)
 {
-    char path[80];
+    snprintf(path, size, "%s%s",
+            (media == IMAGE_MEDIA_SPI_FLASH) ? "1:" : "0:", filename);
+}
+
+// Reads all of `path` into a fresh LVGL-heap buffer and returns it, with its
+// length in *sizeOut. The caller owns the buffer and releases it with
+// lv_free(). NULL on any failure, having printed the reason.
+//
+// The whole compressed file is read in one go because that is what lodepng's
+// memory decoder takes (it does not stream), and it lands in the LVGL heap in
+// DDR2 rather than the device's internal-RAM heap because a PNG of this
+// panel's size would not fit in the latter -- see image_loader.h.
+static uint8_t *ImageLoaderReadFile(const char *path, UINT *sizeOut)
+{
     FRESULT open_result;
     UINT file_bytes, bytes_read;
     uint8_t *file_buffer;
-    lv_draw_buf_t *decoded = NULL;   // NOT a pixel pointer -- see the decode call below
-    unsigned int decode_error, width, height;
-    uint32_t decode_start_ticks;
-
-    snprintf(path, sizeof(path), "%s%s",
-            (media == IMAGE_MEDIA_SPI_FLASH) ? "1:" : "0:", filename);
 
     open_result = f_open(&image_file, path, FA_READ);
     if (open_result != FR_OK)
@@ -73,7 +83,7 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
         printf("Could not open %s: FRESULT %d (%s)\r\n",
                 path, (int)open_result, ImageLoader_DescribeFRESULT(open_result));
         terminalTextAttributesReset();
-        return false;
+        return NULL;
     }
 
     file_bytes = (UINT)f_size(&image_file);
@@ -84,13 +94,11 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
         printf("%s is %lu bytes -- not a plausible PNG for this display (max %lu)\r\n",
                 path, (unsigned long)file_bytes, (unsigned long)IMAGE_LOADER_MAX_FILE_BYTES);
         terminalTextAttributesReset();
-        return false;
+        return NULL;
     }
 
-    // The whole compressed file is read into memory in one go (lodepng
-    // decodes from a buffer, not a stream). lv_malloc() draws on the LVGL
-    // heap in DDR2 -- see image_loader.h -- and can genuinely fail here if
-    // the GUI has the heap busy, so it is checked.
+    // lv_malloc() draws on the LVGL heap, which the GUI shares -- this can
+    // genuinely fail, so it is checked
     file_buffer = lv_malloc(file_bytes);
     if (file_buffer == NULL)
     {
@@ -99,7 +107,7 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
         printf("Not enough room in the LVGL heap for %s (%lu bytes) -- see 'Peripheral Status? GUI'\r\n",
                 path, (unsigned long)file_bytes);
         terminalTextAttributesReset();
-        return false;
+        return NULL;
     }
 
     if ((f_read(&image_file, file_buffer, file_bytes, &bytes_read) != FR_OK) ||
@@ -110,9 +118,29 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("Failed reading %s from the filesystem\r\n", path);
         terminalTextAttributesReset();
-        return false;
+        return NULL;
     }
+
     f_close(&image_file);
+
+    *sizeOut = file_bytes;
+
+    return file_buffer;
+}
+
+bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
+{
+    char path[80];
+    UINT file_bytes;
+    uint8_t *file_buffer;
+    lv_draw_buf_t *decoded = NULL;   // NOT a pixel pointer -- see the decode call below
+    unsigned int decode_error, width, height;
+    uint32_t decode_start_ticks;
+
+    ImageLoaderBuildPath(media, filename, path, sizeof(path));
+
+    file_buffer = ImageLoaderReadFile(path, &file_bytes);
+    if (file_buffer == NULL) return false;
 
     // Full inflate pass over the image -- kick the watchdog on both sides
     // rather than assuming the decode fits in the remaining WDT window
@@ -212,6 +240,120 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename)
             path, width, height, (unsigned long)file_bytes,
             (unsigned long)(((uint64_t)(_CP0_GET_COUNT() - decode_start_ticks) * 2000u) / SYSCLK_INT));
     terminalTextAttributesReset();
+
+    return true;
+}
+
+bool ImageLoader_DecodeThumbnail(IMAGE_MEDIA media, const char *filename,
+        uint8_t *destination, uint32_t width, uint32_t height)
+{
+    char path[80];
+    UINT file_bytes;
+    uint8_t *file_buffer;
+    lv_draw_buf_t *decoded = NULL;   // a descriptor, not pixels -- see below
+    unsigned int decode_error, source_width, source_height;
+
+    if ((destination == NULL) || (width == 0) || (height == 0)) return false;
+
+    ImageLoaderBuildPath(media, filename, path, sizeof(path));
+
+    file_buffer = ImageLoaderReadFile(path, &file_bytes);
+    if (file_buffer == NULL) return false;
+
+    // Same patched-lodepng contract as ImageLoader_DisplayPNG() above: *out
+    // comes back as an lv_draw_buf_t descriptor with the pixels hanging off
+    // its ->data, always 4-byte ARGB8888 whatever color type is asked for,
+    // and it is released with lv_draw_buf_destroy(). Read the long comment
+    // on the decode in DisplayPNG() before touching any of this.
+    kickTheDog();
+    decode_error = lodepng_decode_memory((unsigned char **)&decoded,
+            &source_width, &source_height, file_buffer, file_bytes, LCT_RGBA, 8);
+    kickTheDog();
+
+    lv_free(file_buffer);
+
+    if (decode_error != 0)
+    {
+        if (decoded != NULL) lv_draw_buf_destroy(decoded);
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("PNG decode of %s failed: %s (lodepng error %u)\r\n",
+                path, lodepng_error_text(decode_error), decode_error);
+        terminalTextAttributesReset();
+        return false;
+    }
+
+    // Downscaling only -- see image_loader.h. An upscale would need a
+    // resampler this has no reason to carry.
+    if ((source_width < width) || (source_height < height))
+    {
+        lv_draw_buf_destroy(decoded);
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("%s is %ux%u -- too small for a %lux%lu thumbnail\r\n",
+                path, source_width, source_height,
+                (unsigned long)width, (unsigned long)height);
+        terminalTextAttributesReset();
+        return false;
+    }
+
+    // Box average: each output pixel is the mean of the source rectangle it
+    // covers. Nearest-neighbour would be cheaper, but it drops 63 of every
+    // 64 pixels at this reduction and turns the smooth gradients a thermal
+    // palette produces into visible blocking -- and the averaging is a
+    // rounding error next to the inflate that just ran.
+    //
+    // The rectangle edges are computed from the output coordinate rather
+    // than from a fixed step, so a source whose size is not a multiple of
+    // the thumbnail's still tiles it exactly with no gaps or overlap.
+    {
+        const uint8_t *source = decoded->data;
+        uint32_t x, y;
+
+        for (y = 0; y < height; y++)
+        {
+            uint32_t y0 = (y * source_height) / height;
+            uint32_t y1 = (((y + 1u) * source_height) + height - 1u) / height;
+
+            if (y1 <= y0) y1 = y0 + 1u;
+
+            for (x = 0; x < width; x++)
+            {
+                uint32_t x0 = (x * source_width) / width;
+                uint32_t x1 = (((x + 1u) * source_width) + width - 1u) / width;
+                uint32_t red = 0, green = 0, blue = 0, pixels;
+                uint32_t sx, sy;
+
+                if (x1 <= x0) x1 = x0 + 1u;
+
+                for (sy = y0; sy < y1; sy++)
+                {
+                    const uint8_t *row = &source[(uint32_t)sy * source_width * 4u];
+
+                    for (sx = x0; sx < x1; sx++)
+                    {
+                        red   += row[(sx * 4u) + 0u];
+                        green += row[(sx * 4u) + 1u];
+                        blue  += row[(sx * 4u) + 2u];
+                        // row[(sx * 4) + 3] is alpha, which the opaque
+                        // RGB888 output has no channel for
+                    }
+                }
+
+                pixels = (x1 - x0) * (y1 - y0);
+
+                // B,G,R, NOT R,G,B: this buffer is consumed by LVGL as
+                // LV_COLOR_FORMAT_RGB888, whose in-memory order is the
+                // reverse of the GLCD layers' -- see image_loader.h.
+                destination[0] = (uint8_t)(blue / pixels);
+                destination[1] = (uint8_t)(green / pixels);
+                destination[2] = (uint8_t)(red / pixels);
+                destination += 3;
+            }
+        }
+    }
+
+    lv_draw_buf_destroy(decoded);
+
+    kickTheDog();
 
     return true;
 }

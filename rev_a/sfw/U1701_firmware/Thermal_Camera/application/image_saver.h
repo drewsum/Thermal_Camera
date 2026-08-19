@@ -51,6 +51,24 @@ extern "C" {
 // Longest name this module produces, "FLIR9999.PNG" plus its terminator.
 #define IMAGE_SAVER_NAME_MAX  13u
 
+// Where the images go, and how their names are built. Public rather than
+// private to image_saver.c because application/image_catalog.c reads back the
+// very directory this module writes -- the two agreeing about the path and
+// the naming scheme is the whole basis of that, so they share one definition
+// instead of each carrying a copy that can drift.
+//
+// IMAGE_SAVER_DIRECTORY carries the volume prefix, for the FatFs calls;
+// IMAGE_SAVER_DIRECTORY_PATH is the same directory without it, for the
+// callers that add their own (application/image_loader.c prefixes the volume
+// itself). The name is short enough to be a valid 8.3 name on its own, since
+// FatFs is built here with FF_USE_LFN = 0.
+#define IMAGE_SAVER_VOLUME        "0:"
+#define IMAGE_SAVER_DIRECTORY_PATH "/FLIR"
+#define IMAGE_SAVER_DIRECTORY     IMAGE_SAVER_VOLUME IMAGE_SAVER_DIRECTORY_PATH
+#define IMAGE_SAVER_NAME_PREFIX   "FLIR"
+#define IMAGE_SAVER_NAME_DIGITS   4u
+#define IMAGE_SAVER_MAX_INDEX     9999u
+
 // Encodes `width` x `height` packed RGB888 pixels starting at `rgb888` as a
 // PNG and writes it to the SD card as /FLIR/FLIRnnnn.PNG, creating the
 // directory and choosing nnnn as described in the file header.

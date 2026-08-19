@@ -83,6 +83,32 @@ bool ImageLoader_DisplayPNG(IMAGE_MEDIA media, const char *filename);
 // video (Layer 0) and GUI (Layer 1) again. Safe to call when nothing is shown.
 void ImageLoader_Clear(void);
 
+// Reads and decodes `filename` from `media` exactly as above, but instead of
+// going to the image layer it box-averages the picture down to
+// `width` x `height` and writes it into `destination` -- which the caller
+// owns and which must hold width * height * 3 bytes with no row padding.
+// This is what puts a preview next to each row of the GUI's Saved Images
+// list (gui/screens/screen_saved_images.c).
+//
+// Any source dimensions are accepted, since nothing here has to line up with
+// a hardware layer; a thumbnail larger than its source is refused, because
+// box-averaging cannot invent pixels and a caller asking for one has a bug.
+//
+// BYTE ORDER: the output is LVGL's LV_COLOR_FORMAT_RGB888, whose memory
+// order is B,G,R -- the REVERSE of the R,G,B the GLCD layers use (see
+// lv_color_t in gui/lvgl/src/misc/lv_color.h). A thumbnail that comes out
+// with red and blue swapped is this, not the panel.
+//
+// Quiet on success and one line on failure, unlike the loader above: this
+// runs once per file in a directory listing, where the per-image chatter
+// that suits a UART command would bury the console.
+//
+// Blocking: a full inflate pass over the source image, the same cost as a
+// display load. Thread/command context only, and the watchdog is kicked
+// around the decode.
+bool ImageLoader_DecodeThumbnail(IMAGE_MEDIA media, const char *filename,
+        uint8_t *destination, uint32_t width, uint32_t height);
+
 #ifdef __cplusplus
 }
 #endif

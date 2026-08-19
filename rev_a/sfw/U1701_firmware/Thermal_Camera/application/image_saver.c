@@ -21,13 +21,6 @@
 #include "sdhc/sd_fileio.h"
 #include "usb_uart/terminal_control.h"
 
-// Where the images go, and how their names are built. The directory name is
-// short enough to be a valid 8.3 name on its own (FatFs has no LFN here).
-#define IMAGE_SAVER_DIRECTORY     "0:/FLIR"
-#define IMAGE_SAVER_NAME_PREFIX   "FLIR"
-#define IMAGE_SAVER_NAME_DIGITS   4u
-#define IMAGE_SAVER_MAX_INDEX     9999u
-
 // FatFs keeps a 512-byte sector window inside FIL, and DIR is not small
 // either -- static rather than on the caller's stack, same as the FIL in
 // image_loader.c and sd_fileio.c.

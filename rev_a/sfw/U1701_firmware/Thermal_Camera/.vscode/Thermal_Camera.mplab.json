@@ -444,7 +444,15 @@
                 "gui/screens/screen_palette.h",
                 "gui/screens/screen_palette.c",
                 "gui/screens/screen_brightness.h",
-                "gui/screens/screen_brightness.c"
+                "gui/screens/screen_brightness.c",
+                "gui/screens/screen_sd_card.h",
+                "gui/screens/screen_sd_card.c",
+                "gui/screens/screen_sd_card.h",
+                "gui/screens/screen_sd_card.c",
+                "application/image_catalog.h",
+                "application/image_catalog.c",
+                "gui/screens/screen_saved_images.h",
+                "gui/screens/screen_saved_images.c"
             ]
         }
     ]

@@ -58,6 +58,8 @@
       +2MB      307,200 B  KSEG1  GLCD Layer 1 overlay buf B (glcd.h)
       +3MB      4MB        KSEG0  LVGL heap                  (lv_conf.h)
       +7MB      230,400 B  KSEG1  GLCD Layer 2 still-image buffer (glcd.h)
+                                    -- also what the Saved Images screen
+                                       shows a picked image through
       +8MB      2x 38,400 B KSEG0 FLIR VoSPI raw frame buffers A/B (flir_vospi.h)
                                     -- cached: CPU-only, no DMA touches them
       +9MB       38,400 B  KSEG0  still capture, raw 14-bit frame (still_capture.h)
@@ -133,6 +135,8 @@ typedef enum
     GUI_SCREEN_SYSTEM,
     GUI_SCREEN_PALETTE,
     GUI_SCREEN_BRIGHTNESS,
+    GUI_SCREEN_SD_CARD,
+    GUI_SCREEN_SAVED_IMAGES,
     GUI_SCREEN_ID_COUNT
 } GUI_SCREEN_ID;
 

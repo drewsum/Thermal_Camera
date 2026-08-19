@@ -20,6 +20,8 @@
 #include "gui/screens/screen_menu.h"
 #include "gui/screens/screen_palette.h"
 #include "gui/screens/screen_brightness.h"
+#include "gui/screens/screen_sd_card.h"
+#include "gui/screens/screen_saved_images.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -110,6 +112,8 @@ static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
     [GUI_SCREEN_SYSTEM]     = { SystemScreen_Create,     SystemScreen_Refresh,     NULL },
     [GUI_SCREEN_PALETTE]    = { ScreenPalette_Create,    ScreenPalette_Refresh,    NULL },
     [GUI_SCREEN_BRIGHTNESS] = { ScreenBrightness_Create, ScreenBrightness_Refresh, NULL },
+    [GUI_SCREEN_SD_CARD]    = { ScreenSDCard_Create,     ScreenSDCard_Refresh,     NULL },
+    [GUI_SCREEN_SAVED_IMAGES] = { ScreenSavedImages_Create, ScreenSavedImages_Refresh, NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
@@ -277,12 +281,25 @@ bool GUI_Initialize(void)
     return true;
 }
 
+// The Saved Images screen can leave a picked image up on GLCD Layer 2, which
+// is a HARDWARE layer above the GUI -- it covers whatever screen is loaded,
+// not just the one that put it there. Every path that changes screens comes
+// through here first so that image comes down with the screen it belongs to;
+// without it, a shutter press while a saved image is being viewed would put
+// the save prompt underneath a picture the user cannot dismiss.
+static void GUIDismissImageViewer(void)
+{
+    ScreenSavedImages_DismissViewer();
+}
+
 // The one place a cycled screen is actually loaded. Safe to call from an
 // LVGL event callback (i.e. from a button on the outgoing screen): auto_del
 // is false, so nothing the event is still walking gets deleted underneath
 // it.
 static void GUILoadScreen(uint32_t index, GUI_NAV_DIRECTION direction)
 {
+    GUIDismissImageViewer();
+
     gui_on_demand_refresh = NULL;
     gui_active_screen = index;
 
@@ -327,6 +344,8 @@ void GUI_ShowFlirErrorScreen(void)
 {
     if (!gui_ready) return;
 
+    GUIDismissImageViewer();
+
     gui_on_demand_refresh = FlirErrorScreen_Refresh;
 
     // Instant swap, no slide: this can fire during boot (main() calls it
@@ -340,6 +359,8 @@ void GUI_ShowFlirErrorScreen(void)
 void GUI_ShowSaveImageScreen(void)
 {
     if (!gui_ready) return;
+
+    GUIDismissImageViewer();
 
     gui_on_demand_refresh = ScreenSaveImage_Refresh;
 
