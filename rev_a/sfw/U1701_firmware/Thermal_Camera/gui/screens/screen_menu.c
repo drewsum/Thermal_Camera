@@ -39,11 +39,12 @@ typedef struct
 
 static const SCREEN_MENU_ENTRY menu_entries[] =
 {
-    { "System Status",   GUI_SCREEN_SYSTEM },
-    { "Thermal Palette", GUI_SCREEN_PALETTE },
-    { "LCD Brightness",  GUI_SCREEN_BRIGHTNESS },
-    { "SD Card Info",    GUI_SCREEN_SD_CARD },
-    { "Saved Images",    GUI_SCREEN_SAVED_IMAGES },
+    { "Saved Images",      GUI_SCREEN_SAVED_IMAGES },
+    { "System Status",     GUI_SCREEN_SYSTEM },
+    { "Thermal Palette",   GUI_SCREEN_PALETTE },
+    { "LCD Brightness",    GUI_SCREEN_BRIGHTNESS },
+    { "SD Card Info",      GUI_SCREEN_SD_CARD },
+    { "Set Date and Time", GUI_SCREEN_SET_TIME },
 };
 
 #define SCREEN_MENU_ENTRY_COUNT  (sizeof(menu_entries) / sizeof(menu_entries[0]))

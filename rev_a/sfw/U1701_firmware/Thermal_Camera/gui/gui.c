@@ -22,6 +22,7 @@
 #include "gui/screens/screen_brightness.h"
 #include "gui/screens/screen_sd_card.h"
 #include "gui/screens/screen_saved_images.h"
+#include "gui/screens/screen_set_time.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -114,6 +115,7 @@ static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
     [GUI_SCREEN_BRIGHTNESS] = { ScreenBrightness_Create, ScreenBrightness_Refresh, NULL },
     [GUI_SCREEN_SD_CARD]    = { ScreenSDCard_Create,     ScreenSDCard_Refresh,     NULL },
     [GUI_SCREEN_SAVED_IMAGES] = { ScreenSavedImages_Create, ScreenSavedImages_Refresh, NULL },
+    [GUI_SCREEN_SET_TIME]   = { ScreenSetTime_Create,    ScreenSetTime_Refresh,    NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
@@ -299,6 +301,13 @@ static void GUIDismissImageViewer(void)
 static void GUILoadScreen(uint32_t index, GUI_NAV_DIRECTION direction)
 {
     GUIDismissImageViewer();
+
+    // Same reasoning one level down: the Set Date and Time screen holds a
+    // half-finished edit that only makes sense while it is being looked at.
+    // Dropping it here means arriving on that screen always shows the live
+    // clock, however the screen was last left -- the back button, or the
+    // shutter button navigating away from underneath it.
+    ScreenSetTime_DiscardEdits();
 
     gui_on_demand_refresh = NULL;
     gui_active_screen = index;

@@ -454,7 +454,9 @@
                 "gui/screens/screen_saved_images.h",
                 "gui/screens/screen_saved_images.c",
                 "application/image_legend.c",
-                "application/image_legend.h"
+                "application/image_legend.h",
+                "gui/screens/screen_set_time.h",
+                "gui/screens/screen_set_time.c"
             ]
         }
     ]
