@@ -918,12 +918,25 @@ void USB_BulkReset(void)
     }
 }
 
-void USB_PrintStatus(void)
+const char *USB_GetStateString(void)
 {
+    // Indexed by usb_device_state_t. Exposed rather than left as a local
+    // table so the console and the GUI cannot drift apart on what a bus
+    // state is called -- same reason FLIR_StateString() is public.
     static const char *state_names[] = {
         "DETACHED", "ATTACHED", "DEFAULT", "ADDRESSED", "CONFIGURED"
     };
 
+    if ((uint32_t)usb_device_state >= (sizeof(state_names) / sizeof(state_names[0])))
+    {
+        return "?";
+    }
+
+    return state_names[usb_device_state];
+}
+
+void USB_PrintStatus(void)
+{
     terminalTextAttributesReset();
 
     // One latching snapshot -- USBCSR0's IF field is clear-on-read, so
@@ -936,7 +949,7 @@ void USB_PrintStatus(void)
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Device State:                             %s\n\r",
-            state_names[usb_device_state]);
+            USB_GetStateString());
     printf("    Soft Connect:                             %s\n\r",
             (csr0 & USB_CSR0_SOFTCONN) ? "T" : "F");
     printf("    Negotiated Speed:                         %s\n\r",

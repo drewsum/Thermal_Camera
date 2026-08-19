@@ -103,6 +103,12 @@ void FLIR_Tasks(void);
 // Current state of the driver.
 FLIR_STATE FLIR_GetState(void);
 
+// Human-readable name for a state, e.g. "STREAMING". Exposed (rather than
+// each caller keeping its own switch) so the console and the GUI cannot
+// drift apart on what a state is called -- same reason
+// FLIRProcess_PaletteName() exists. Returns "?" for a value outside the enum.
+const char *FLIR_StateString(FLIR_STATE state);
+
 // Selects the thermal color palette used for rendering (thin wrapper over
 // flir_process.c so the UART command doesn't need that header).
 void FLIR_SetPalette(FLIR_PALETTE palette);

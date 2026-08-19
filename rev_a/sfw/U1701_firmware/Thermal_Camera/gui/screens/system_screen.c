@@ -18,10 +18,15 @@
 #include "gui/gui.h"
 #include "gui/lvgl/lvgl.h"
 #include "application/error_handler.h"
+#include "application/flir/flir.h"
+#include "application/flir/flir_cci.h"
+#include "application/flir/flir_process.h"
+#include "application/flir/flir_vospi.h"
 #include "application/heartbeat_services.h"
 #include "application/main.h"
 #include "application/telemetry.h"
 #include "core/device_control.h"
+#include "gpio/pin_macros.h"
 #include "i2c/i2c_devices.h"
 
 // Body panel geometry: fills the gap the two bars leave, inset slightly so
@@ -45,6 +50,19 @@
 // Longest value string this screen formats, plus room to grow. The battery
 // status row (a comma-separated flag list) is the one that sets it.
 #define SYSTEM_SCREEN_VALUE_MAX_CHARS  48
+
+// The three states a value row can be in. Green and red are what the
+// "Errors" row has always used; gray is for a row whose value is not
+// knowable right now (a rail's PGOOD before the rail is up, the sensor
+// temperature while the Lepton is not booted) -- distinct from red, which
+// means the firmware looked and found something wrong.
+#define SYSTEM_SCREEN_OK_COLOR         0x30C030
+#define SYSTEM_SCREEN_FAULT_COLOR      0xE04040
+#define SYSTEM_SCREEN_UNKNOWN_COLOR    0x808080
+
+// Screen_CreateLabel()'s own color, for putting a row back to an ordinary
+// reading after it has been gray or red
+#define SYSTEM_SCREEN_VALUE_COLOR      0xFFFFFF
 
 // *****************************************************************************
 // Section: Row list
@@ -78,6 +96,15 @@
     VALUE(MCU_VBAT,         "VBAT Backup Cell")                    \
     VALUE(ADC_VREF,         "ADC Reference")                       \
     VALUE(AMBIENT_TEMP,     "Ambient Temperature")                 \
+    SECTION("FLIR Lepton")                                         \
+    VALUE(FLIR_STATE,       "State")                               \
+    VALUE(FLIR_CAPTURE,     "Capture")                             \
+    VALUE(FLIR_PALETTE,     "Palette")                             \
+    VALUE(FLIR_SCENE,       "Scene Range")                         \
+    VALUE(FLIR_FPA,         "Sensor Temperature")                  \
+    VALUE(FLIR_FRAMES,      "Frames Captured")                     \
+    VALUE(FLIR_LAST_PACKET, "Last Packet")                         \
+    VALUE(FLIR_FRAMING,     "Framing Faults")                      \
     SECTION("+12V Input Gate")                                     \
     VALUE(POS12_V,          "Voltage")                             \
     VALUE(POS12_I,          "Current")                             \
@@ -108,6 +135,13 @@
     VALUE(BACKLIGHT_I,      "Current")                             \
     VALUE(BACKLIGHT_P,      "Power")                               \
     VALUE(BACKLIGHT_T,      "Temperature")                         \
+    SECTION("Power Good")                                          \
+    VALUE(PGOOD_12V,        "+12V")                                \
+    VALUE(PGOOD_3P3_USB,    "+3.3V USB")                           \
+    VALUE(PGOOD_3P0,        "+3.0V")                               \
+    VALUE(PGOOD_2P8,        "+2.8V")                               \
+    VALUE(PGOOD_1P8,        "+1.8V")                               \
+    VALUE(PGOOD_1P2,        "+1.2V")                               \
     SECTION("Battery")                                             \
     VALUE(BATT_PRESENT,     "Installed")                           \
     VALUE(BATT_V,           "Voltage")                             \
@@ -117,7 +151,15 @@
     VALUE(BATT_SOH,         "State of Health")                     \
     VALUE(BATT_REMCAP,      "Remaining Capacity")                  \
     VALUE(BATT_FULLCAP,     "Full Charge Capacity")                \
-    VALUE(BATT_STATUS,      "Status")
+    VALUE(BATT_STATUS,      "Status")                              \
+    SECTION("Charger (MAX8903)")                                   \
+    VALUE(CHG_FAULT,        "Fault")                               \
+    VALUE(CHG_DC_INPUT,     "DC Input")                            \
+    VALUE(CHG_USB_INPUT,    "USB Input")                           \
+    VALUE(CHG_CHARGING,     "Charging")                            \
+    VALUE(CHG_ENABLE,       "Charge Enable")                       \
+    VALUE(CHG_USB_CURRENT,  "USB Current Limit")                   \
+    VALUE(CHG_GAUGE_GPOUT,  "Gauge Low-Battery Pin")
 
 // The value rows only -- this is what indexes value_labels[] below
 #define SYSTEM_ROW_ENUM_SECTION(label)
@@ -227,6 +269,31 @@ static void SystemScreenSetValueFmt(SYSTEM_SCREEN_ROW row, const char *format, .
     SystemScreenSetValue(row, text);
 }
 
+// Writes a row's value and colors it. Used by the rows whose value is a
+// verdict rather than a number -- the PGOOD lines, the charger pins, the
+// FLIR state -- where the color is doing as much work as the text.
+//
+// The color is set unconditionally while the text is not: lv_obj_set_style_*
+// only invalidates when the value actually changes, so a repeated write of
+// the same color is already free, whereas lv_label_set_text() is not (see
+// SystemScreenSetValue()).
+static void SystemScreenSetVerdict(SYSTEM_SCREEN_ROW row, const char *text, uint32_t color)
+{
+    if (value_labels[row] == NULL) return;
+
+    SystemScreenSetValue(row, text);
+    lv_obj_set_style_text_color(value_labels[row], lv_color_hex(color), LV_PART_MAIN);
+}
+
+// The common case of the above: a two-state signal shown as one of two
+// words, green when `ok` and red otherwise.
+static void SystemScreenSetOkBad(SYSTEM_SCREEN_ROW row, bool ok,
+        const char *ok_text, const char *bad_text)
+{
+    SystemScreenSetVerdict(row, ok ? ok_text : bad_text,
+            ok ? SYSTEM_SCREEN_OK_COLOR : SYSTEM_SCREEN_FAULT_COLOR);
+}
+
 // Appends `name` to a comma-separated list in `buffer` when `set` is true.
 static void SystemScreenAppendFlag(char *buffer, size_t size, bool set, const char *name)
 {
@@ -316,6 +383,222 @@ static void SystemScreenRefreshElapsedTime(void)
     {
         SystemScreenSetValue(SYSTEM_ROW_ETC_CYCLES, "read failed");
     }
+}
+
+// FLIR Lepton: the module-level view of "FLIR Status?" -- state machine,
+// capture health and image-processing settings. Everything except the sensor
+// temperature is a cached read (a state variable, the VoSPI statistics block,
+// the palette and the last render's AGC window), so it costs nothing.
+//
+// The sensor temperature is the exception: FLIR_CCI_ReadTemperatures() is a
+// blocking I2C1 transaction to the camera, so it gets the same treatment as
+// the DS1683 above -- throttled well below the refresh rate. The interval is
+// longer than the elapsed-time counter's because an FPA temperature moves
+// slowly and this bus is shared with the whole telemetry set.
+//
+// This is the ONLY new periodic hardware access this screen's FLIR section
+// added, and the only one that touches the bus the Lepton itself is on while
+// VoSPI is streaming. Set the switch to 0 if the video feed ever proves
+// sensitive to it: the row then reads "--" and every other FLIR row keeps
+// working, since the rest are cached reads.
+#define SYSTEM_SCREEN_READ_FPA_TEMPERATURE  1
+#define SYSTEM_SCREEN_FPA_READ_INTERVAL_MS  2000u
+
+static bool fpa_ever_read = false;
+static uint32_t fpa_last_read_ms = 0;
+
+static void SystemScreenRefreshFlirTemperature(FLIR_STATE state)
+{
+#if !SYSTEM_SCREEN_READ_FPA_TEMPERATURE
+
+    (void)state;
+
+    SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FPA, "--", SYSTEM_SCREEN_UNKNOWN_COLOR);
+
+#else
+
+    uint32_t now = GUI_GetTickMs();
+    float fpa_celsius = 0.0f;
+    float aux_celsius = 0.0f;
+
+    // The CCI only answers once the camera has booted and been configured.
+    // Asking earlier (or in FAULT, where the bring-up did not finish) would
+    // latch an I2C error against a device that is simply not listening yet.
+    if ((state != FLIR_STATE_READY) && (state != FLIR_STATE_STREAMING))
+    {
+        SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FPA, "--", SYSTEM_SCREEN_UNKNOWN_COLOR);
+
+        // Re-read as soon as it does come up, rather than waiting out an
+        // interval that started while it was unreachable
+        fpa_ever_read = false;
+        return;
+    }
+
+    if (fpa_ever_read && ((now - fpa_last_read_ms) < SYSTEM_SCREEN_FPA_READ_INTERVAL_MS))
+    {
+        return;
+    }
+
+    fpa_ever_read = true;
+    fpa_last_read_ms = now;
+
+    if (FLIR_CCI_ReadTemperatures(&fpa_celsius, &aux_celsius))
+    {
+        // The FPA (the detector array itself) is the one that matters: it is
+        // what the radiometry is referenced to, and a climbing FPA
+        // temperature is what precedes a flat-field correction.
+        char text[SYSTEM_SCREEN_VALUE_MAX_CHARS];
+
+        snprintf(text, sizeof(text), "%.1f C FPA / %.1f C aux",
+                fpa_celsius, aux_celsius);
+
+        SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FPA, text, SYSTEM_SCREEN_VALUE_COLOR);
+    }
+    else
+    {
+        SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FPA, "read failed",
+                SYSTEM_SCREEN_FAULT_COLOR);
+    }
+
+#endif  /* SYSTEM_SCREEN_READ_FPA_TEMPERATURE */
+}
+
+static void SystemScreenRefreshFlir(void)
+{
+    FLIR_STATE state = FLIR_GetState();
+    FLIR_VOSPI_STATS stats;
+    float scene_min = 0.0f;
+    float scene_max = 0.0f;
+    uint32_t framing_faults;
+
+    // FAULT is the only state that is wrong in itself; the rest are stages
+    // of a working sequence, and STREAMING is the one that means video is
+    // actually arriving.
+    SystemScreenSetVerdict(SYSTEM_ROW_FLIR_STATE, FLIR_StateString(state),
+            (state == FLIR_STATE_FAULT)     ? SYSTEM_SCREEN_FAULT_COLOR :
+            (state == FLIR_STATE_STREAMING) ? SYSTEM_SCREEN_OK_COLOR :
+                                              SYSTEM_SCREEN_UNKNOWN_COLOR);
+
+    SystemScreenSetValue(SYSTEM_ROW_FLIR_CAPTURE, FLIR_VOSPI_GetCaptureStateString());
+    SystemScreenSetValue(SYSTEM_ROW_FLIR_PALETTE,
+            FLIRProcess_PaletteName(FLIRProcess_GetPalette()));
+
+    // The AGC window doubles as the scene's temperature span, since the
+    // pixels are TLinear centi-Kelvin -- so this row is a live sanity check
+    // on the data behind the image.
+    if (FLIRProcess_GetAGCWindowCelsius(&scene_min, &scene_max))
+    {
+        SystemScreenSetValueFmt(SYSTEM_ROW_FLIR_SCENE, "%.1f .. %.1f C",
+                scene_min, scene_max);
+    }
+    else
+    {
+        SystemScreenSetValue(SYSTEM_ROW_FLIR_SCENE, "--");
+    }
+
+    FLIR_VOSPI_GetStats(&stats);
+
+    SystemScreenSetValueFmt(SYSTEM_ROW_FLIR_FRAMES, "%lu",
+            (unsigned long)stats.framesCaptured);
+
+    // Time since the last packet is what separates "not streaming" from
+    // "streaming but the link has died" -- the frame counter alone looks the
+    // same in both cases once it stops moving.
+    if (state == FLIR_STATE_STREAMING)
+    {
+        SystemScreenSetValueFmt(SYSTEM_ROW_FLIR_LAST_PACKET, "%lu ms ago",
+                (unsigned long)FLIR_VOSPI_MsSinceLastPacket());
+    }
+    else
+    {
+        SystemScreenSetValue(SYSTEM_ROW_FLIR_LAST_PACKET, "--");
+    }
+
+    // The three counters that mean the VoSPI stream is not healthy, summed
+    // into one row: individually they are a driver author's breakdown (that
+    // is what "FLIR Status?" is for), but any of them climbing is the same
+    // message to someone looking at this screen.
+    //
+    // These are exactly the three the fault string below names. Do not add a
+    // counter to this sum without adding it there too, or the row can say
+    // there are faults while showing three zeros.
+    framing_faults = stats.desyncCount + stats.segmentErrors + stats.rxOverflows;
+
+    if (framing_faults == 0)
+    {
+        SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FRAMING, "none", SYSTEM_SCREEN_OK_COLOR);
+    }
+    else
+    {
+        char text[SYSTEM_SCREEN_VALUE_MAX_CHARS];
+
+        snprintf(text, sizeof(text), "%lu desync / %lu seg / %lu ovf",
+                (unsigned long)stats.desyncCount,
+                (unsigned long)stats.segmentErrors,
+                (unsigned long)stats.rxOverflows);
+
+        SystemScreenSetVerdict(SYSTEM_ROW_FLIR_FRAMING, text, SYSTEM_SCREEN_FAULT_COLOR);
+    }
+
+    // Throttled, blocking I2C -- kept last so the cheap rows are already
+    // written whatever the bus does
+    SystemScreenRefreshFlirTemperature(state);
+}
+
+// Power Good: the six discrete PGOOD inputs printPGOODStatus() prints, all
+// of them plain GPIO reads. These sit alongside the measured rail voltages
+// above deliberately -- a rail can read a plausible voltage on the INA231A
+// while its regulator has dropped PGOOD, and the pair is what tells those
+// apart.
+static void SystemScreenRefreshPGOOD(void)
+{
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_12V,     POS12_PGOOD_PIN,     "good", "FAULT");
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_3P3_USB, POS3P3_USB_PGOOD_PIN, "good", "FAULT");
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_3P0,     POS3P0_PGOOD_PIN,    "good", "FAULT");
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_2P8,     POS2P8_PGOOD_PIN,    "good", "FAULT");
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_1P8,     POS1P8_PGOOD_PIN,    "good", "FAULT");
+    SystemScreenSetOkBad(SYSTEM_ROW_PGOOD_1P2,     POS1P2_PGOOD_PIN,    "good", "FAULT");
+}
+
+// MAX8903G charger pins, the same block printBatteryControlPins() prints.
+// Every one of these is ACTIVE LOW (the leading 'n' in the pin macro), so
+// the sense is inverted here -- getting that backwards would report a
+// faulted charger as healthy, which is the one direction that matters.
+static void SystemScreenRefreshCharger(void)
+{
+    // Fault is the only genuinely bad one; the input/charging lines are
+    // states, not faults, so they are shown in neutral gray rather than
+    // colored as if "not charging" were a problem.
+    SystemScreenSetOkBad(SYSTEM_ROW_CHG_FAULT, nBATT_FLT_PIN, "none", "FAULTED");
+
+    SystemScreenSetVerdict(SYSTEM_ROW_CHG_DC_INPUT,
+            nBATT_DOK_PIN ? "not present" : "stable",
+            nBATT_DOK_PIN ? SYSTEM_SCREEN_UNKNOWN_COLOR : SYSTEM_SCREEN_OK_COLOR);
+
+    SystemScreenSetVerdict(SYSTEM_ROW_CHG_USB_INPUT,
+            nBATT_UOK_PIN ? "not present" : "stable",
+            nBATT_UOK_PIN ? SYSTEM_SCREEN_UNKNOWN_COLOR : SYSTEM_SCREEN_OK_COLOR);
+
+    SystemScreenSetVerdict(SYSTEM_ROW_CHG_CHARGING,
+            nBATT_CHG_PIN ? "no" : "yes",
+            nBATT_CHG_PIN ? SYSTEM_SCREEN_UNKNOWN_COLOR : SYSTEM_SCREEN_OK_COLOR);
+
+    // CEN and IUSB are LAT reads, not PORT: they are outputs this firmware
+    // drives, so this row reports what the MCU is asking the charger to do
+    SystemScreenSetVerdict(SYSTEM_ROW_CHG_ENABLE,
+            nBATT_CEN_PIN ? "disabled" : "enabled",
+            nBATT_CEN_PIN ? SYSTEM_SCREEN_UNKNOWN_COLOR : SYSTEM_SCREEN_OK_COLOR);
+
+    SystemScreenSetValue(SYSTEM_ROW_CHG_USB_CURRENT, BATT_IUSB_PIN ? "500 mA" : "100 mA");
+
+    // NOT a MAX8903 signal despite sitting in the same pin block: this is
+    // the BQ27441 fuel gauge's GPOUT, configured to mirror the gauge's SOC1
+    // low-charge threshold with GPIOPOL=0, so it reads LOW when the battery
+    // is low. It can legitimately disagree with the "Low" entry in the
+    // battery Status row above, which is polled over I2C against the
+    // different SOCF threshold -- see i2c/device_driver/bq27441.c.
+    SystemScreenSetOkBad(SYSTEM_ROW_CHG_GAUGE_GPOUT, BATT_LOWBATT_PIN,
+            "battery ok", "battery LOW");
 }
 
 static void SystemScreenBackClicked(lv_event_t *event)
@@ -463,17 +746,20 @@ void SystemScreen_Refresh(void)
 
     errors = SystemScreen_CountLatchedErrors();
 
+    // The Diagnostics screen (gui/screens/screen_errors.c) is where this
+    // count is broken out into which flags they are, and where they can be
+    // cleared
     if (errors == 0)
     {
-        SystemScreenSetValue(SYSTEM_ROW_ERRORS, "none");
-        lv_obj_set_style_text_color(value_labels[SYSTEM_ROW_ERRORS],
-                lv_color_hex(0x30C030), LV_PART_MAIN);
+        SystemScreenSetVerdict(SYSTEM_ROW_ERRORS, "none", SYSTEM_SCREEN_OK_COLOR);
     }
     else
     {
-        SystemScreenSetValueFmt(SYSTEM_ROW_ERRORS, "%lu latched", (unsigned long)errors);
-        lv_obj_set_style_text_color(value_labels[SYSTEM_ROW_ERRORS],
-                lv_color_hex(0xE04040), LV_PART_MAIN);
+        char text[SYSTEM_SCREEN_VALUE_MAX_CHARS];
+
+        snprintf(text, sizeof(text), "%lu latched", (unsigned long)errors);
+
+        SystemScreenSetVerdict(SYSTEM_ROW_ERRORS, text, SYSTEM_SCREEN_FAULT_COLOR);
     }
 
     // Heap: the same DDR2 pool "Peripheral Status? GUI" reports, and the one
@@ -497,6 +783,9 @@ void SystemScreen_Refresh(void)
     SystemScreenSetValueFmt(SYSTEM_ROW_ADC_VREF,     "%.3f V", telemetry.adc_vref_voltage);
     SystemScreenSetValueFmt(SYSTEM_ROW_AMBIENT_TEMP, "%.1f C", telemetry.ambient_temperature);
 
+    // --- FLIR Lepton (cached, plus one throttled blocking CCI read) --------
+    SystemScreenRefreshFlir();
+
     // --- Rails ------------------------------------------------------------
     for (index = 0; index < SYSTEM_SCREEN_RAIL_COUNT; index++)
     {
@@ -507,6 +796,9 @@ void SystemScreen_Refresh(void)
         SystemScreenSetValueFmt(rail->power_row,       "%.3f W",  rail->source->power);
         SystemScreenSetValueFmt(rail->temperature_row, "%.1f C",  rail->source->temperature);
     }
+
+    // --- Power Good (plain GPIO reads) ------------------------------------
+    SystemScreenRefreshPGOOD();
 
     // --- Battery ----------------------------------------------------------
     // `present` is latched once at boot from a voltage heuristic (the fuel
@@ -540,4 +832,7 @@ void SystemScreen_Refresh(void)
 
         SystemScreenSetValue(SYSTEM_ROW_BATT_STATUS, (status[0] == '\0') ? "idle" : status);
     }
+
+    // --- Charger (plain GPIO reads) ---------------------------------------
+    SystemScreenRefreshCharger();
 }

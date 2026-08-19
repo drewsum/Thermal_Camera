@@ -44,7 +44,9 @@ static const SCREEN_MENU_ENTRY menu_entries[] =
     { "Thermal Palette",   GUI_SCREEN_PALETTE },
     { "LCD Brightness",    GUI_SCREEN_BRIGHTNESS },
     { "SD Card Info",      GUI_SCREEN_SD_CARD },
+    { "USB",               GUI_SCREEN_USB },
     { "Set Date and Time", GUI_SCREEN_SET_TIME },
+    { "Diagnostics",       GUI_SCREEN_ERRORS },
 };
 
 #define SCREEN_MENU_ENTRY_COUNT  (sizeof(menu_entries) / sizeof(menu_entries[0]))

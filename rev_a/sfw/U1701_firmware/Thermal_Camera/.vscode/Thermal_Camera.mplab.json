@@ -456,7 +456,11 @@
                 "application/image_legend.c",
                 "application/image_legend.h",
                 "gui/screens/screen_set_time.h",
-                "gui/screens/screen_set_time.c"
+                "gui/screens/screen_set_time.c",
+                "gui/screens/screen_errors.h",
+                "gui/screens/screen_errors.c",
+                "gui/screens/screen_usb.h",
+                "gui/screens/screen_usb.c"
             ]
         }
     ]

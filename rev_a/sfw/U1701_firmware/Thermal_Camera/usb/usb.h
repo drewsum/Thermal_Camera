@@ -129,6 +129,11 @@ void USB_Detach(void);
 // True once the host has selected configuration 1 (bulk endpoints live).
 bool USB_IsConfigured(void);
 
+// Human-readable name for the current bus state, e.g. "CONFIGURED". Reads
+// usb_device_state only -- no register access, so it is safe from anywhere
+// in task context. Returns "?" for a value outside usb_device_state_t.
+const char *USB_GetStateString(void);
+
 // True if the current connection negotiated Hi-Speed (USBCSR0.HSMODE).
 bool USB_IsHighSpeed(void);
 

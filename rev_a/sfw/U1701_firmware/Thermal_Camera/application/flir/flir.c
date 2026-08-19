@@ -343,7 +343,7 @@ void FLIR_SetPalette(FLIR_PALETTE palette)
     FLIRProcess_SetPalette(palette);
 }
 
-static const char *FLIR_StateString(FLIR_STATE state)
+const char *FLIR_StateString(FLIR_STATE state)
 {
     switch (state)
     {

@@ -23,6 +23,8 @@
 #include "gui/screens/screen_sd_card.h"
 #include "gui/screens/screen_saved_images.h"
 #include "gui/screens/screen_set_time.h"
+#include "gui/screens/screen_usb.h"
+#include "gui/screens/screen_errors.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
 #include "gui/screens/screen_save_image.h"
@@ -116,6 +118,8 @@ static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
     [GUI_SCREEN_SD_CARD]    = { ScreenSDCard_Create,     ScreenSDCard_Refresh,     NULL },
     [GUI_SCREEN_SAVED_IMAGES] = { ScreenSavedImages_Create, ScreenSavedImages_Refresh, NULL },
     [GUI_SCREEN_SET_TIME]   = { ScreenSetTime_Create,    ScreenSetTime_Refresh,    NULL },
+    [GUI_SCREEN_USB]        = { ScreenUSB_Create,        ScreenUSB_Refresh,        NULL },
+    [GUI_SCREEN_ERRORS]     = { ScreenErrors_Create,     ScreenErrors_Refresh,     NULL },
 };
 
 #define GUI_SCREEN_COUNT  (sizeof(gui_screens) / sizeof(gui_screens[0]))
@@ -308,6 +312,11 @@ static void GUILoadScreen(uint32_t index, GUI_NAV_DIRECTION direction)
     // clock, however the screen was last left -- the back button, or the
     // shutter button navigating away from underneath it.
     ScreenSetTime_DiscardEdits();
+
+    // And the "clear all faults?" prompt, for the same reason: a question
+    // left on screen is not one the user still means to answer next time
+    // they open the screen.
+    ScreenErrors_DismissPrompt();
 
     gui_on_demand_refresh = NULL;
     gui_active_screen = index;
