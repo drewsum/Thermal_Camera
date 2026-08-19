@@ -118,6 +118,19 @@ uint16_t I2CDevices_GetAddress(I2C_DEVICE_ID id);
 // TODO on I2C_DEVICE_LIST.
 const char* I2CDevices_GetRefdes(I2C_DEVICE_ID id);
 
+// Returns the part number for `id`'s device kind, e.g. "MCP9804". Returns
+// "?" for an invalid id.
+const char* I2CDevices_GetKindName(I2C_DEVICE_ID id);
+
+// Returns which part `id` is. Most callers want the typed Read* functions
+// below instead -- they already dispatch on the kind and refuse a mismatched
+// device. This is for the diagnostics path, where the caller has to pick the
+// right *_ReadDiagnostics() and the right decode for the registers it
+// returns, neither of which can be made kind-agnostic. Returns
+// I2C_DEVICE_KIND_MCP9804 for an invalid id, which no valid caller can
+// reach (guard with I2CDevices_IdIsValid()-equivalent presence checks).
+I2C_DEVICE_KIND I2CDevices_GetKind(I2C_DEVICE_ID id);
+
 // Latches `id`'s error_handler.flags.<I2C_DEV_...>_i2c_error flag (see
 // error_handler.h) -- i.e. "this device did not respond correctly on the
 // bus". Called internally by I2CDevices_Initialize() when a device fails to

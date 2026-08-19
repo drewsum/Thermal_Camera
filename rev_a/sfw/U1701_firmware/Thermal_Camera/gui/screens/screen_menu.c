@@ -45,6 +45,8 @@ static const SCREEN_MENU_ENTRY menu_entries[] =
     { "LCD Brightness",    GUI_SCREEN_BRIGHTNESS },
     { "SD Card Info",      GUI_SCREEN_SD_CARD },
     { "USB",               GUI_SCREEN_USB },
+    { "I2C Slave Status",  GUI_SCREEN_I2C },
+    { "Storage Usage",     GUI_SCREEN_STORAGE },
     { "Set Date and Time", GUI_SCREEN_SET_TIME },
     { "Diagnostics",       GUI_SCREEN_ERRORS },
 };

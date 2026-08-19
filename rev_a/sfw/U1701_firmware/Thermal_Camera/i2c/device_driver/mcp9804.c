@@ -14,6 +14,7 @@
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
+#include <string.h>
 
 // *****************************************************************************
 // Section: Register Map
@@ -238,9 +239,10 @@ bool MCP9804_SetShutdown(uint16_t address, bool shutdown)
     return MCP9804_WriteReg16(address, MCP9804_REG_CONFIG, config);
 }
 
-// Names for the two multi-bit fields the status print decodes, kept next to
-// the print rather than exported -- nothing else in the driver needs them.
-static const char* MCP9804_HysteresisName(uint16_t config)
+// Names for the two multi-bit fields the status print decodes. Public (see
+// mcp9804.h) so the GUI's I2C status screen decodes them identically rather
+// than growing its own copy of the same tables.
+const char* MCP9804_HysteresisName(uint16_t config)
 {
     switch (config & MCP9804_CONFIG_THYST_MASK)
     {
@@ -251,7 +253,7 @@ static const char* MCP9804_HysteresisName(uint16_t config)
     }
 }
 
-static const char* MCP9804_ResolutionName(uint16_t resolution)
+const char* MCP9804_ResolutionName(uint16_t resolution)
 {
     switch (resolution & MCP9804_RESOLUTION_MASK)
     {
@@ -262,22 +264,55 @@ static const char* MCP9804_ResolutionName(uint16_t resolution)
     }
 }
 
+bool MCP9804_ReadDiagnostics(uint16_t address, MCP9804_DIAGNOSTICS *out)
+{
+    uint16_t deviceId;
+
+    if (out == NULL) return false;
+
+    // Cleared first so every *Valid flag starts false: a register the reads
+    // below never reach then reports "not read" rather than a stale value
+    memset(out, 0, sizeof(*out));
+
+    if (!MCP9804_ReadReg16(address, MCP9804_REG_MANUFACTURER, &out->manufacturerId) ||
+        !MCP9804_ReadReg16(address, MCP9804_REG_DEVICE_ID, &deviceId))
+    {
+        return false;
+    }
+
+    out->identityValid = true;
+    out->deviceId = deviceId;
+    out->identified = (out->manufacturerId == MCP9804_MANUFACTURER_ID) &&
+                      ((deviceId >> 8) == MCP9804_DEVICE_ID);
+
+    out->configValid = MCP9804_ReadReg16(address, MCP9804_REG_CONFIG, &out->config);
+    out->resolutionValid = MCP9804_ReadReg16(address, MCP9804_REG_RESOLUTION, &out->resolution);
+
+    out->upperValid = MCP9804_ReadTempReg(address, MCP9804_REG_T_UPPER, &out->upperLimit);
+    out->lowerValid = MCP9804_ReadTempReg(address, MCP9804_REG_T_LOWER, &out->lowerLimit);
+    out->criticalValid = MCP9804_ReadTempReg(address, MCP9804_REG_T_CRIT, &out->criticalLimit);
+
+    out->temperatureValid =
+            MCP9804_ReadTemperatureAndStatus(address, &out->celsius, &out->alerts);
+
+    return true;
+}
+
 void MCP9804_PrintStatus(uint16_t address)
 {
-    uint16_t manufacturerId;
-    uint16_t deviceId;
+    MCP9804_DIAGNOSTICS diag;
     uint16_t config;
     uint16_t resolution;
     float celsius;
-    float limit;
     MCP9804_ALERT_STATUS status;
     bool identified;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- MCP9804 (address 0x%02X) ---\n\r", address);
 
-    if (!MCP9804_ReadReg16(address, MCP9804_REG_MANUFACTURER, &manufacturerId) ||
-        !MCP9804_ReadReg16(address, MCP9804_REG_DEVICE_ID, &deviceId))
+    // One pass over the registers, shared with the GUI's I2C status screen,
+    // so the two cannot disagree about what this part is reporting
+    if (!MCP9804_ReadDiagnostics(address, &diag))
     {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    No response from device (I2C error: %d)\n\r", (int)I2C_ErrorGet());
@@ -285,14 +320,18 @@ void MCP9804_PrintStatus(uint16_t address)
         return;
     }
 
-    identified = (manufacturerId == MCP9804_MANUFACTURER_ID) && ((deviceId >> 8) == MCP9804_DEVICE_ID);
+    identified = diag.identified;
+    config = diag.config;
+    resolution = diag.resolution;
+    celsius = diag.celsius;
+    status = diag.alerts;
 
     terminalTextAttributes(identified ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Manufacturer ID: 0x%04X, Device ID: 0x%02X, Revision: 0x%02X (%s)\n\r",
-           manufacturerId, (deviceId >> 8) & 0xFFu, deviceId & 0xFFu,
+           diag.manufacturerId, (diag.deviceId >> 8) & 0xFFu, diag.deviceId & 0xFFu,
            identified ? "recognized" : "unrecognized");
 
-    if (MCP9804_ReadReg16(address, MCP9804_REG_CONFIG, &config))
+    if (diag.configValid)
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Configuration register: 0x%04X (%s%s%s%s%s%s%s%s)\n\r", config,
@@ -309,26 +348,26 @@ void MCP9804_PrintStatus(uint16_t address)
                MCP9804_HysteresisName(config));
     }
 
-    if (MCP9804_ReadReg16(address, MCP9804_REG_RESOLUTION, &resolution))
+    if (diag.resolutionValid)
     {
         printf("    Resolution register: 0x%04X (%s)\n\r", resolution,
                MCP9804_ResolutionName(resolution));
     }
 
-    if (MCP9804_ReadTempReg(address, MCP9804_REG_T_UPPER, &limit))
+    if (diag.upperValid)
     {
-        printf("    T_UPPER limit: %.4f C\n\r", limit);
+        printf("    T_UPPER limit: %.4f C\n\r", diag.upperLimit);
     }
-    if (MCP9804_ReadTempReg(address, MCP9804_REG_T_LOWER, &limit))
+    if (diag.lowerValid)
     {
-        printf("    T_LOWER limit: %.4f C\n\r", limit);
+        printf("    T_LOWER limit: %.4f C\n\r", diag.lowerLimit);
     }
-    if (MCP9804_ReadTempReg(address, MCP9804_REG_T_CRIT, &limit))
+    if (diag.criticalValid)
     {
-        printf("    T_CRIT limit:  %.4f C\n\r", limit);
+        printf("    T_CRIT limit:  %.4f C\n\r", diag.criticalLimit);
     }
 
-    if (MCP9804_ReadTemperatureAndStatus(address, &celsius, &status))
+    if (diag.temperatureValid)
     {
         bool anyAlert = status.aboveCritical || status.aboveUpper || status.belowLower;
 

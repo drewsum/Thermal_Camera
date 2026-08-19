@@ -24,6 +24,8 @@
 #include "gui/screens/screen_saved_images.h"
 #include "gui/screens/screen_set_time.h"
 #include "gui/screens/screen_usb.h"
+#include "gui/screens/screen_i2c.h"
+#include "gui/screens/screen_storage.h"
 #include "gui/screens/screen_errors.h"
 #include "gui/screens/system_screen.h"
 #include "gui/screens/flir_error_screen.h"
@@ -119,6 +121,8 @@ static GUI_SCREEN gui_screens[GUI_SCREEN_ID_COUNT] =
     [GUI_SCREEN_SAVED_IMAGES] = { ScreenSavedImages_Create, ScreenSavedImages_Refresh, NULL },
     [GUI_SCREEN_SET_TIME]   = { ScreenSetTime_Create,    ScreenSetTime_Refresh,    NULL },
     [GUI_SCREEN_USB]        = { ScreenUSB_Create,        ScreenUSB_Refresh,        NULL },
+    [GUI_SCREEN_I2C]        = { ScreenI2C_Create,        ScreenI2C_Refresh,        NULL },
+    [GUI_SCREEN_STORAGE]    = { ScreenStorage_Create,    ScreenStorage_Refresh,    NULL },
     [GUI_SCREEN_ERRORS]     = { ScreenErrors_Create,     ScreenErrors_Refresh,     NULL },
 };
 

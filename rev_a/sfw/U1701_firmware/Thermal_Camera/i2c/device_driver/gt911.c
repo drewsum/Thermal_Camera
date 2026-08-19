@@ -209,24 +209,65 @@ GT911_TOUCH_RESULT GT911_ReadTouch(uint16_t address, GT911_TOUCH *touch)
     return result;
 }
 
+bool GT911_ReadDiagnostics(uint16_t address, GT911_DIAGNOSTICS *out)
+{
+    if (out == NULL) return false;
+
+    // Cleared first so every *Valid flag starts false: a register the reads
+    // below never reach then reports "not read" rather than a stale value
+    memset(out, 0, sizeof(*out));
+
+    if (!GT911_ReadRegister16(address, GT911_REG_PRODUCT_ID, out->productId,
+            sizeof(out->productId)))
+    {
+        return false;
+    }
+
+    out->productIdValid = true;
+    out->identified = (memcmp(out->productId, GT911_EXPECTED_PRODUCT_ID,
+            sizeof(out->productId)) == 0);
+
+    out->configVersionValid = GT911_ReadRegister16(address, GT911_REG_CONFIG_VERSION,
+            &out->configVersion, 1);
+    out->firmwareVersionValid = GT911_ReadRegister16(address, GT911_REG_FIRMWARE_VERSION,
+            out->firmwareVersion, sizeof(out->firmwareVersion));
+
+    // Read, never written back. Writing zero here is how a report is
+    // acknowledged, and that is GT911_ReadTouch()'s job alone -- see the
+    // note on GT911_DIAGNOSTICS.
+    out->coordStatusValid = GT911_ReadRegister16(address, GT911_REG_COORD_STATUS,
+            &out->coordStatus, 1);
+
+    return true;
+}
+
 void GT911_PrintStatus(uint16_t address)
 {
-    uint8_t productId[4];
+    GT911_DIAGNOSTICS diag;
+    uint8_t *productId;
     uint8_t configVersion;
-    uint8_t firmwareVersion[2];
+    uint8_t *firmwareVersion;
     uint8_t coordStatus;
     bool gotProductId, gotConfigVersion, gotFirmwareVersion;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- GT911 (address 0x%02X) ---\n\r", address);
 
-    gotProductId = GT911_ReadRegister16(address, GT911_REG_PRODUCT_ID, productId, sizeof(productId));
-    gotConfigVersion = GT911_ReadRegister16(address, GT911_REG_CONFIG_VERSION, &configVersion, 1);
-    gotFirmwareVersion = GT911_ReadRegister16(address, GT911_REG_FIRMWARE_VERSION, firmwareVersion, sizeof(firmwareVersion));
+    // One pass over the registers, shared with the GUI's I2C status screen,
+    // so the two cannot disagree about what this part is reporting
+    (void)GT911_ReadDiagnostics(address, &diag);
+
+    productId = diag.productId;
+    configVersion = diag.configVersion;
+    firmwareVersion = diag.firmwareVersion;
+    coordStatus = diag.coordStatus;
+    gotProductId = diag.productIdValid;
+    gotConfigVersion = diag.configVersionValid;
+    gotFirmwareVersion = diag.firmwareVersionValid;
 
     if (gotProductId)
     {
-        bool identified = (memcmp(productId, GT911_EXPECTED_PRODUCT_ID, sizeof(productId)) == 0);
+        bool identified = diag.identified;
         terminalTextAttributes(identified ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Product ID: %c%c%c (0x%02X 0x%02X 0x%02X 0x%02X) %s\n\r",
                 productId[0], productId[1], productId[2],
@@ -248,7 +289,7 @@ void GT911_PrintStatus(uint16_t address)
     if (gotFirmwareVersion) printf("    Firmware Version: 0x%02X%02X\n\r", firmwareVersion[0], firmwareVersion[1]);
     else printf("    Firmware Version: read failed\n\r");
 
-    if (GT911_ReadRegister16(address, GT911_REG_COORD_STATUS, &coordStatus, 1))
+    if (diag.coordStatusValid)
     {
         printf("    Coordinate Status: 0x%02X (%s%s%s%u point%s)\n\r", coordStatus,
                (coordStatus & GT911_STATUS_BUFFER_READY) ? "BUFFER_READY " : "",

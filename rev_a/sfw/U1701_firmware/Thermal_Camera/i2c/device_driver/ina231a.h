@@ -110,6 +110,48 @@ float INA231A_DecodePowerRaw(const uint8_t raw[2], float currentLSB);
 // I2CDevices_EnterLowPower().
 bool INA231A_SetPowerDown(uint16_t address, bool powerDown);
 
+// Everything INA231A_PrintStatus() shows, as data: the three configuration
+// registers and the raw measurement registers behind them. Exists so the
+// GUI's I2C status screen can show the same diagnostics the console does
+// without either one re-deriving the register map -- INA231A_PrintStatus()
+// is written on top of this.
+//
+// A field is only meaningful when its `*Valid` companion is true. The
+// Configuration register read is the gate for the whole struct: this part
+// has no identity register (see INA231A_Verify()), so "it answered at all"
+// is as strong a presence check as exists.
+typedef struct
+{
+    bool configValid;        // false = no response; nothing else is filled in
+    uint16_t config;
+    bool porDefault;         // config still reads the power-on-reset value
+
+    bool maskEnableValid;
+    uint16_t maskEnable;
+    bool mathOverflow;       // Mask/Enable OVF: Current and Power are invalid
+
+    bool calibrationValid;
+    uint16_t calibration;    // 0 = uncalibrated, Current/Power read as 0
+
+    bool busVoltageValid, shuntVoltageValid;
+    float busVoltage, shuntVoltage;   // volts
+
+    bool rawCurrentValid, rawPowerValid;
+    int16_t rawCurrent;      // raw codes -- converting needs the current LSB
+    uint16_t rawPower;       // that INA231A_Configure() computed
+} INA231A_DIAGNOSTICS;
+
+// Fills `out` with the above. Returns configValid, i.e. whether the device
+// answered at all. Read-only: touches no configuration.
+bool INA231A_ReadDiagnostics(uint16_t address, INA231A_DIAGNOSTICS *out);
+
+// Names for the multi-bit fields in the Configuration register. Pure
+// functions of the register value -- no bus access. `field` for the
+// conversion-time helper is the already-shifted 3-bit VBUSCT or VSHCT value.
+const char* INA231A_ModeName(uint16_t config);
+const char* INA231A_AveragingName(uint16_t config);
+const char* INA231A_ConversionTimeName(uint16_t field);
+
 void INA231A_PrintStatus(uint16_t address);
 
 #ifdef __cplusplus

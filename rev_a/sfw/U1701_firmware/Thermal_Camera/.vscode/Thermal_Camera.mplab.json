@@ -460,7 +460,11 @@
                 "gui/screens/screen_errors.h",
                 "gui/screens/screen_errors.c",
                 "gui/screens/screen_usb.h",
-                "gui/screens/screen_usb.c"
+                "gui/screens/screen_usb.c",
+                "gui/screens/screen_i2c.h",
+                "gui/screens/screen_i2c.c",
+                "gui/screens/screen_storage.h",
+                "gui/screens/screen_storage.c"
             ]
         }
     ]

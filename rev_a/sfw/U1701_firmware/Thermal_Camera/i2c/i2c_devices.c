@@ -385,6 +385,34 @@ const char* I2CDevices_GetRefdes(I2C_DEVICE_ID id)
     return i2cDeviceRefdes[id];
 }
 
+I2C_DEVICE_KIND I2CDevices_GetKind(I2C_DEVICE_ID id)
+{
+    if (!I2CDevices_IdIsValid(id))
+    {
+        return I2C_DEVICE_KIND_MCP9804;
+    }
+
+    return i2cDeviceKinds[id];
+}
+
+const char* I2CDevices_GetKindName(I2C_DEVICE_ID id)
+{
+    if (!I2CDevices_IdIsValid(id))
+    {
+        return "?";
+    }
+
+    switch (i2cDeviceKinds[id])
+    {
+        case I2C_DEVICE_KIND_MCP9804: return "MCP9804";
+        case I2C_DEVICE_KIND_INA231A: return "INA231A";
+        case I2C_DEVICE_KIND_DS1683:  return "DS1683";
+        case I2C_DEVICE_KIND_GT911:   return "GT911";
+        case I2C_DEVICE_KIND_BQ27441: return "BQ27441";
+        default:                      return "?";
+    }
+}
+
 void I2CDevices_PrintStatus(void)
 {
     uint8_t id;

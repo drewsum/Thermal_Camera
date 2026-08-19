@@ -59,6 +59,46 @@ bool MCP9804_ReadTemperature(uint16_t address, float *celsius);
 // Reads ambient temperature and the three limit-comparison alert flags together.
 bool MCP9804_ReadTemperatureAndStatus(uint16_t address, float *celsius, MCP9804_ALERT_STATUS *status);
 
+// Everything MCP9804_PrintStatus() shows, as data: the identity registers,
+// the configuration and resolution words, the three temperature limits, and
+// the live reading. Exists so the GUI's I2C status screen can show the same
+// diagnostics the console does without either one re-deriving the register
+// map -- MCP9804_PrintStatus() is written on top of this.
+//
+// A field is only meaningful when its `*Valid` companion is true: the
+// identity read is the gate for the whole struct (false there means the part
+// did not answer at all), and each later register is reported separately so
+// one unreadable register does not discard the rest.
+typedef struct
+{
+    bool identityValid;      // false = no response; nothing else is filled in
+    bool identified;         // manufacturer and device ID both as expected
+    uint16_t manufacturerId;
+    uint16_t deviceId;       // device ID in the high byte, revision in the low
+
+    bool configValid;
+    uint16_t config;
+
+    bool resolutionValid;
+    uint16_t resolution;
+
+    bool upperValid, lowerValid, criticalValid;
+    float upperLimit, lowerLimit, criticalLimit;   // degrees Celsius
+
+    bool temperatureValid;
+    float celsius;
+    MCP9804_ALERT_STATUS alerts;
+} MCP9804_DIAGNOSTICS;
+
+// Fills `out` with the above. Returns identityValid, i.e. whether the device
+// answered at all. Read-only: touches no configuration.
+bool MCP9804_ReadDiagnostics(uint16_t address, MCP9804_DIAGNOSTICS *out);
+
+// Names for the two multi-bit fields in the registers above. Pure functions
+// of the register value -- no bus access.
+const char* MCP9804_HysteresisName(uint16_t config);
+const char* MCP9804_ResolutionName(uint16_t resolution);
+
 // Queues a non-blocking read of the raw T_A register into raw[2] (MSB
 // first) and returns immediately; `callback` fires from I2C interrupt
 // context on completion. `raw` must stay valid until then. Decode the bytes

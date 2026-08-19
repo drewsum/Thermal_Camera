@@ -189,6 +189,47 @@ void    BQ27441_DecodeFlagsRaw(const uint8_t raw[2], BQ27441_FLAG_STATUS *status
 // Prints the device's identification, configuration, and current
 // measurements to the terminal, matching MCP9804_PrintStatus()/
 // INA231A_PrintStatus()'s style.
+// The configuration and identity half of what BQ27441_PrintStatus() shows,
+// as data. Exists so the GUI's I2C status screen can show the same
+// diagnostics the console does without either one re-deriving the register
+// map -- BQ27441_PrintStatus() is written on top of this.
+//
+// Deliberately NOT the measurement registers (voltage, current, SOC, ...):
+// those already have typed accessors above and are cached in
+// application/telemetry.c every cycle, so re-reading them here would put a
+// second set of gauge transactions on the bus for numbers the firmware
+// already holds.
+//
+// A field is only meaningful when its `*Valid` companion is true. The
+// DEVICE_TYPE control round-trip is the gate for the whole struct.
+typedef struct
+{
+    bool deviceTypeValid;    // false = no response; nothing else is filled in
+    uint16_t deviceType;
+    bool identified;         // DEVICE_TYPE reads the expected 0x0421
+
+    bool controlStatusValid;
+    uint16_t controlStatus;
+    bool sealed;             // CONTROL_STATUS.SS -- see the note below
+
+    bool flagsValid;
+    uint16_t rawFlags;
+    BQ27441_FLAG_STATUS flags;
+
+    // Read-only data-memory mirrors: ground truth for what
+    // BQ27441_Configure() actually committed, as opposed to what it sent
+    bool opConfigValid;
+    uint16_t opConfig;
+
+    bool designCapacityValid;
+    uint16_t designCapacity;   // mAh
+} BQ27441_DIAGNOSTICS;
+
+// Fills `out` with the above. Returns deviceTypeValid, i.e. whether the
+// gauge answered at all. Read-only: no block session, no configuration
+// change, and no unseal attempt -- `sealed` reports the state it finds.
+bool BQ27441_ReadDiagnostics(uint16_t address, BQ27441_DIAGNOSTICS *out);
+
 void BQ27441_PrintStatus(uint16_t address);
 
 #ifdef __cplusplus

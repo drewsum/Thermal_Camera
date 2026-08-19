@@ -76,6 +76,38 @@ bool GT911_Verify(uint16_t address);
 // driver's PrintStatus() in this codebase -- does NOT re-run the reset/
 // address-select sequence, so it reflects whatever GT911_Verify() (or the
 // last reset) already established.
+// Everything GT911_PrintStatus() shows, as data: the identity registers and
+// the coordinate status byte. Exists so the GUI's I2C status screen can show
+// the same diagnostics the console does without either one re-deriving the
+// register map -- GT911_PrintStatus() is written on top of this.
+//
+// STRICTLY READ-ONLY, and that is load-bearing rather than incidental.
+// GT911_ReadTouch() acknowledges a report by WRITING the coordinate status
+// register back to zero, and gui/lv_port_indev.c must be the only caller
+// doing that -- anything else acknowledging a report consumes a touch the
+// input driver never sees. This function only reads that register, so it can
+// run alongside the input driver without stealing from it.
+typedef struct
+{
+    bool productIdValid;     // false = no response; nothing else is filled in
+    uint8_t productId[4];
+    bool identified;         // product ID reads the expected "911"
+
+    bool configVersionValid;
+    uint8_t configVersion;
+
+    bool firmwareVersionValid;
+    uint8_t firmwareVersion[2];
+
+    bool coordStatusValid;
+    uint8_t coordStatus;
+} GT911_DIAGNOSTICS;
+
+// Fills `out` with the above. Returns productIdValid, i.e. whether the
+// device answered at all. Does NOT re-run the reset/address-select sequence
+// (unlike GT911_Verify()), and does not acknowledge a touch report.
+bool GT911_ReadDiagnostics(uint16_t address, GT911_DIAGNOSTICS *out);
+
 void GT911_PrintStatus(uint16_t address);
 
 // A single touch point, in the controller's own coordinate space (which is

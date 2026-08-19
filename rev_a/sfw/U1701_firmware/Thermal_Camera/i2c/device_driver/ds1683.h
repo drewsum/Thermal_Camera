@@ -85,6 +85,39 @@ uint32_t DS1683_DecodeElapsedSecondsRaw(const uint8_t raw[4]);
 
 // Prints the device's identification, configuration, alarm status, elapsed
 // time, and event count to the terminal.
+// Everything DS1683_PrintStatus() shows, as data: the command/config/status
+// registers and the two counters. Exists so the GUI's I2C status screen can
+// show the same diagnostics the console does without either one re-deriving
+// the register map -- DS1683_PrintStatus() is written on top of this.
+//
+// A field is only meaningful when its `*Valid` companion is true. The
+// Command register read is the gate for the whole struct, and doubles as the
+// identity check -- see the caveat on DS1683_Verify().
+typedef struct
+{
+    bool commandValid;       // false = no response; nothing else is filled in
+    uint8_t command;
+    bool identified;         // Command register reads the only value it should
+
+    bool configValid;
+    uint8_t config;
+
+    bool statusValid;
+    uint8_t rawStatus;
+    DS1683_STATUS status;    // the same register, decoded
+
+    bool elapsedValid;
+    uint32_t elapsedSeconds;
+
+    bool eventCountValid;
+    uint16_t eventCount;
+} DS1683_DIAGNOSTICS;
+
+// Fills `out` with the above. Returns commandValid, i.e. whether the device
+// answered at all. Read-only: touches no configuration and does not
+// unlatch the alarm.
+bool DS1683_ReadDiagnostics(uint16_t address, DS1683_DIAGNOSTICS *out);
+
 void DS1683_PrintStatus(uint16_t address);
 
 #ifdef __cplusplus

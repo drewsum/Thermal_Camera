@@ -14,6 +14,7 @@
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
+#include <string.h>
 
 // *****************************************************************************
 // Section: Register Map
@@ -140,20 +141,52 @@ uint32_t DS1683_DecodeElapsedSecondsRaw(const uint8_t raw[4])
     return DS1683_DecodeU32LE(raw) / DS1683_ETC_TICKS_PER_SECOND;
 }
 
+bool DS1683_ReadDiagnostics(uint16_t address, DS1683_DIAGNOSTICS *out)
+{
+    if (out == NULL) return false;
+
+    // Cleared first so every *Valid flag starts false: a register the reads
+    // below never reach then reports "not read" rather than a stale value
+    memset(out, 0, sizeof(*out));
+
+    if (!I2C_ReadRegister(address, DS1683_REG_COMMAND, &out->command, 1))
+    {
+        return false;
+    }
+
+    out->commandValid = true;
+    out->identified = (out->command == 0x00u);
+
+    out->configValid = I2C_ReadRegister(address, DS1683_REG_CONFIG, &out->config, 1);
+
+    // The raw byte and the decoded view come from two reads of the same
+    // register, matching what the status print has always done -- the
+    // register is a plain latch, so the two agree
+    out->statusValid = I2C_ReadRegister(address, DS1683_REG_STATUS, &out->rawStatus, 1) &&
+                       DS1683_ReadStatus(address, &out->status);
+
+    out->elapsedValid = DS1683_ReadElapsedSeconds(address, &out->elapsedSeconds);
+    out->eventCountValid = DS1683_ReadEventCount(address, &out->eventCount);
+
+    return true;
+}
+
 void DS1683_PrintStatus(uint16_t address)
 {
+    DS1683_DIAGNOSTICS diag;
     uint8_t command;
     uint8_t config;
     uint8_t rawStatus;
     DS1683_STATUS status;
     uint32_t seconds;
-    uint16_t eventCount;
     bool identified;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- DS1683 (address 0x%02X) ---\n\r", address);
 
-    if (!I2C_ReadRegister(address, DS1683_REG_COMMAND, &command, 1))
+    // One pass over the registers, shared with the GUI's I2C status screen,
+    // so the two cannot disagree about what this part is reporting
+    if (!DS1683_ReadDiagnostics(address, &diag))
     {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    No response from device (I2C error: %d)\n\r", (int)I2C_ErrorGet());
@@ -161,12 +194,18 @@ void DS1683_PrintStatus(uint16_t address)
         return;
     }
 
-    identified = (command == 0x00u);
+    command = diag.command;
+    config = diag.config;
+    rawStatus = diag.rawStatus;
+    status = diag.status;
+    seconds = diag.elapsedSeconds;
+    identified = diag.identified;
+
     terminalTextAttributes(identified ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Command register: 0x%02X (%s)\n\r", command,
            identified ? "as expected" : "unexpected -- not a DS1683?");
 
-    if (I2C_ReadRegister(address, DS1683_REG_CONFIG, &config, 1))
+    if (diag.configValid)
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Configuration register: 0x%02X (%s%s%s)\n\r", config,
@@ -178,8 +217,7 @@ void DS1683_PrintStatus(uint16_t address)
         printf("        Alarm polarity: active %s\n\r", (config & DS1683_CONFIG_ALRM_POL) ? "high" : "low");
     }
 
-    if (I2C_ReadRegister(address, DS1683_REG_STATUS, &rawStatus, 1) &&
-        DS1683_ReadStatus(address, &status))
+    if (diag.statusValid)
     {
         bool anyAlarm = status.etcAlarm || status.eventAlarm;
 
@@ -194,7 +232,7 @@ void DS1683_PrintStatus(uint16_t address)
                status.eventPinHigh ? "high" : "low");
     }
 
-    if (DS1683_ReadElapsedSeconds(address, &seconds))
+    if (diag.elapsedValid)
     {
         uint32_t days  = seconds / 86400u;
         uint32_t hours = (seconds / 3600u) % 24u;
@@ -207,9 +245,9 @@ void DS1683_PrintStatus(uint16_t address)
                (unsigned long)hours, (unsigned long)mins, (unsigned long)secs);
     }
 
-    if (DS1683_ReadEventCount(address, &eventCount))
+    if (diag.eventCountValid)
     {
-        printf("    Event count: %u\n\r", eventCount);
+        printf("    Event count: %u\n\r", diag.eventCount);
     }
 
     terminalTextAttributesReset();

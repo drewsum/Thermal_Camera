@@ -28,6 +28,7 @@
 #include "core/device_control.h"
 #include "gpio/pin_macros.h"
 #include "i2c/i2c_devices.h"
+#include "spi/device_driver/w25q128jv.h"
 
 // Body panel geometry: fills the gap the two bars leave, inset slightly so
 // the panel edge reads as a distinct surface over the Layer 0 image. The
@@ -159,7 +160,17 @@
     VALUE(CHG_CHARGING,     "Charging")                            \
     VALUE(CHG_ENABLE,       "Charge Enable")                       \
     VALUE(CHG_USB_CURRENT,  "USB Current Limit")                   \
-    VALUE(CHG_GAUGE_GPOUT,  "Gauge Low-Battery Pin")
+    VALUE(CHG_GAUGE_GPOUT,  "Gauge Low-Battery Pin")                \
+    SECTION("SPI Flash (W25Q128JV)")                               \
+    VALUE(FLASH_ID,         "JEDEC ID")                            \
+    VALUE(FLASH_CAPACITY,   "Capacity")                            \
+    VALUE(FLASH_STATUS_REG, "Status Register 1")                   \
+    VALUE(FLASH_BUSY,       "Busy")                                \
+    VALUE(FLASH_WEL,        "Write Enable Latch")                  \
+    VALUE(FLASH_PROTECT,    "Block Protection")                    \
+    VALUE(FLASH_SRP0,       "Status Reg Lock")                     \
+    VALUE(FLASH_WP,         "Write Protect")                       \
+    VALUE(FLASH_WP_PIN,     "WP# Pin")
 
 // The value rows only -- this is what indexes value_labels[] below
 #define SYSTEM_ROW_ENUM_SECTION(label)
@@ -601,6 +612,104 @@ static void SystemScreenRefreshCharger(void)
             "battery ok", "battery LOW");
 }
 
+// SPI Flash: the "Platform Status? SPI Flash Device" section.
+//
+// Status Register 1 is a live read over SPI3 -- cheap (two bytes, no DMA,
+// SPI3_TransferBlock() is a synchronous byte loop) but still a bus
+// transaction, so it is throttled like the DS1683 rather than run at the
+// refresh rate. BUSY and WEL are the only bits that move on their own; the
+// rest change only when something writes the status register.
+//
+// Serialization needs no lock: every other user of this flash
+// (application/image_saver.c, the USB MSC LUN, the FAT volume) runs from the
+// same main-loop pass this does, and the SPI3 driver completes each transfer
+// within its own call, so nothing can be interleaved with a status read.
+#define SYSTEM_SCREEN_FLASH_READ_INTERVAL_MS  1000u
+
+static bool flash_ever_read = false;
+static uint32_t flash_last_read_ms = 0;
+
+// The JEDEC ID never changes while the part is running, so it is read once
+// from Create() alongside the MCU identity rather than on the throttle.
+static void SystemScreenSetFlashIdentity(void)
+{
+    SystemScreenSetOkBad(SYSTEM_ROW_FLASH_ID, W25Q128JV_Verify(),
+            "0xEF/0x40/0x18", "unrecognized");
+
+    SystemScreenSetValueFmt(SYSTEM_ROW_FLASH_CAPACITY, "%lu MB (%lu x 4KB)",
+            (unsigned long)(W25Q128JV_SIZE_BYTES / (1024u * 1024u)),
+            (unsigned long)(W25Q128JV_SIZE_BYTES / W25Q128JV_SECTOR_SIZE));
+}
+
+static void SystemScreenRefreshFlash(void)
+{
+    uint32_t now = GUI_GetTickMs();
+    uint8_t status;
+
+    if (flash_ever_read && ((now - flash_last_read_ms) < SYSTEM_SCREEN_FLASH_READ_INTERVAL_MS))
+    {
+        return;
+    }
+
+    flash_ever_read = true;
+    flash_last_read_ms = now;
+
+    // The WP# pin is a plain GPIO read and the software write-protect state
+    // is a cached flag, so both are free and are done whatever the status
+    // register does.
+    SystemScreenSetVerdict(SYSTEM_ROW_FLASH_WP,
+            W25Q128JV_WriteProtectIsEnabled() ? "ENABLED" : "disabled",
+            W25Q128JV_WriteProtectIsEnabled() ? SYSTEM_SCREEN_UNKNOWN_COLOR
+                                              : SYSTEM_SCREEN_OK_COLOR);
+
+    SystemScreenSetValue(SYSTEM_ROW_FLASH_WP_PIN,
+            nFLASH_SPI_WP_PIN ? "high (deasserted)" : "low (asserted)");
+
+    if (!W25Q128JV_ReadStatus(&status))
+    {
+        SystemScreenSetVerdict(SYSTEM_ROW_FLASH_STATUS_REG, "read failed",
+                SYSTEM_SCREEN_FAULT_COLOR);
+        return;
+    }
+
+    SystemScreenSetValueFmt(SYSTEM_ROW_FLASH_STATUS_REG, "0x%02X", (unsigned int)status);
+    lv_obj_set_style_text_color(value_labels[SYSTEM_ROW_FLASH_STATUS_REG],
+            lv_color_hex(SYSTEM_SCREEN_VALUE_COLOR), LV_PART_MAIN);
+
+    // Busy is a state, not a fault -- a program or erase in progress is the
+    // flash doing its job, so it is neutral rather than red.
+    SystemScreenSetVerdict(SYSTEM_ROW_FLASH_BUSY,
+            (status & W25Q128JV_STATUS_BUSY) ? "program/erase" : "ready",
+            (status & W25Q128JV_STATUS_BUSY) ? SYSTEM_SCREEN_UNKNOWN_COLOR
+                                             : SYSTEM_SCREEN_OK_COLOR);
+
+    SystemScreenSetValue(SYSTEM_ROW_FLASH_WEL,
+            (status & W25Q128JV_STATUS_WEL) ? "set (write enabled)" : "clear");
+
+    if ((status & W25Q128JV_STATUS_BP_MASK) == 0)
+    {
+        SystemScreenSetVerdict(SYSTEM_ROW_FLASH_PROTECT, "none (all writable)",
+                SYSTEM_SCREEN_OK_COLOR);
+    }
+    else
+    {
+        char text[SYSTEM_SCREEN_VALUE_MAX_CHARS];
+
+        // TB and SEC only mean anything once BP2:BP0 is non-zero -- they say
+        // which end of the array the protected region grows from and whether
+        // it is counted in 4KB sectors or 64KB blocks
+        snprintf(text, sizeof(text), "BP 0x%X, %s, %s",
+                (unsigned int)((status & W25Q128JV_STATUS_BP_MASK) >> 2),
+                (status & W25Q128JV_STATUS_TB) ? "top" : "bottom",
+                (status & W25Q128JV_STATUS_SEC) ? "4KB" : "64KB");
+
+        SystemScreenSetVerdict(SYSTEM_ROW_FLASH_PROTECT, text, SYSTEM_SCREEN_UNKNOWN_COLOR);
+    }
+
+    SystemScreenSetValue(SYSTEM_ROW_FLASH_SRP0,
+            (status & W25Q128JV_STATUS_SRP0) ? "locked with WP# low" : "writable");
+}
+
 static void SystemScreenBackClicked(lv_event_t *event)
 {
     (void)event;
@@ -713,8 +822,9 @@ lv_obj_t *SystemScreen_Create(void)
     lv_obj_set_style_bg_opa(heap_bar, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_bg_color(heap_bar, lv_color_hex(0x3080E0), LV_PART_INDICATOR);
 
-    // Static for the life of the run, so it never needs revisiting
+    // Static for the life of the run, so they never need revisiting
     SystemScreenSetIdentity();
+    SystemScreenSetFlashIdentity();
 
     SystemScreen_Refresh();
 
@@ -835,4 +945,7 @@ void SystemScreen_Refresh(void)
 
     // --- Charger (plain GPIO reads) ---------------------------------------
     SystemScreenRefreshCharger();
+
+    // --- SPI Flash (throttled, blocking SPI3) -----------------------------
+    SystemScreenRefreshFlash();
 }

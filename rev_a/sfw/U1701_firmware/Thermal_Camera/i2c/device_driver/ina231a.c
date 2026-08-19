@@ -14,6 +14,7 @@
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
+#include <string.h>
 
 // *****************************************************************************
 // Section: Register Map
@@ -308,16 +309,17 @@ bool INA231A_SetPowerDown(uint16_t address, bool powerDown)
     return INA231A_WriteReg16(address, INA231A_REG_CONFIG, config);
 }
 
-// AVG/VBUSCT/VSHCT all index their own table; kept local to the status
-// print since nothing else in the driver reasons about conversion timing.
-static const char* INA231A_AveragingName(uint16_t config)
+// AVG/VBUSCT/VSHCT all index their own table. Public (see ina231a.h) so the
+// GUI's I2C status screen decodes them identically rather than growing its
+// own copy of the same tables.
+const char* INA231A_AveragingName(uint16_t config)
 {
     static const char* const names[8] = { "1", "4", "16", "64", "128", "256", "512", "1024" };
 
     return names[(config & INA231A_CONFIG_AVG_MASK) >> 9];
 }
 
-static const char* INA231A_ConversionTimeName(uint16_t field)
+const char* INA231A_ConversionTimeName(uint16_t field)
 {
     static const char* const names[8] = { "140 us", "204 us", "332 us", "588 us",
                                           "1.1 ms", "2.116 ms", "4.156 ms", "8.244 ms" };
@@ -325,7 +327,7 @@ static const char* INA231A_ConversionTimeName(uint16_t field)
     return names[field & 0x7u];
 }
 
-static const char* INA231A_ModeName(uint16_t config)
+const char* INA231A_ModeName(uint16_t config)
 {
     switch (config & INA231A_CONFIG_MODE_MASK)
     {
@@ -340,21 +342,59 @@ static const char* INA231A_ModeName(uint16_t config)
     }
 }
 
+bool INA231A_ReadDiagnostics(uint16_t address, INA231A_DIAGNOSTICS *out)
+{
+    uint16_t rawCurrent;
+
+    if (out == NULL) return false;
+
+    // Cleared first so every *Valid flag starts false: a register the reads
+    // below never reach then reports "not read" rather than a stale value
+    memset(out, 0, sizeof(*out));
+
+    if (!INA231A_ReadReg16(address, INA231A_REG_CONFIG, &out->config))
+    {
+        return false;
+    }
+
+    out->configValid = true;
+    out->porDefault = (out->config == INA231A_CONFIG_POR_DEFAULT);
+
+    out->maskEnableValid = INA231A_ReadReg16(address, INA231A_REG_MASK_ENABLE, &out->maskEnable);
+    out->mathOverflow = out->maskEnableValid &&
+            ((out->maskEnable & INA231A_MASK_OVF) != 0);
+
+    out->calibrationValid = INA231A_ReadReg16(address, INA231A_REG_CALIBRATION, &out->calibration);
+
+    out->busVoltageValid = INA231A_ReadBusVoltage(address, &out->busVoltage);
+    out->shuntVoltageValid = INA231A_ReadShuntVoltage(address, &out->shuntVoltage);
+
+    // Raw codes, not amps/watts: converting needs the current LSB that
+    // INA231A_Configure() derived from the shunt, which this driver does not
+    // retain. The caller that knows it can scale them; the point of showing
+    // the codes is that they are what the part actually holds.
+    out->rawCurrentValid = INA231A_ReadReg16(address, INA231A_REG_CURRENT, &rawCurrent);
+    out->rawCurrent = (int16_t)rawCurrent;
+
+    out->rawPowerValid = INA231A_ReadReg16(address, INA231A_REG_POWER, &out->rawPower);
+
+    return true;
+}
+
 void INA231A_PrintStatus(uint16_t address)
 {
+    INA231A_DIAGNOSTICS diag;
     uint16_t config;
     uint16_t maskEnable;
     uint16_t calibration;
-    uint16_t rawCurrent;
-    uint16_t rawPower;
-    float busVoltage;
-    float shuntVoltage;
     bool porDefault;
 
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- INA231A (address 0x%02X) ---\n\r", address);
 
-    if (!INA231A_ReadReg16(address, INA231A_REG_CONFIG, &config))
+    // One pass over the registers, shared with the GUI's I2C status screen,
+    // so the two cannot disagree about what this part is reporting
+    if (!INA231A_ReadDiagnostics(address, &diag))
     {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    No response from device (I2C error: %d)\n\r", (int)I2C_ErrorGet());
@@ -362,7 +402,10 @@ void INA231A_PrintStatus(uint16_t address)
         return;
     }
 
-    porDefault = (config == INA231A_CONFIG_POR_DEFAULT);
+    config = diag.config;
+    maskEnable = diag.maskEnable;
+    calibration = diag.calibration;
+    porDefault = diag.porDefault;
     terminalTextAttributes(porDefault ? GREEN_COLOR : YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
     printf("    Configuration register: 0x%04X (%s%s)\n\r", config,
            (config & INA231A_CONFIG_RST) ? "RST " : "",
@@ -373,7 +416,7 @@ void INA231A_PrintStatus(uint16_t address)
            INA231A_ConversionTimeName((config & INA231A_CONFIG_VBUSCT_MASK) >> 6),
            INA231A_ConversionTimeName((config & INA231A_CONFIG_VSHCT_MASK) >> 3));
 
-    if (INA231A_ReadReg16(address, INA231A_REG_MASK_ENABLE, &maskEnable))
+    if (diag.maskEnableValid)
     {
         // OVF invalidates the Current/Power registers, so flag it loudly
         terminalTextAttributes((maskEnable & INA231A_MASK_OVF) ? RED_COLOR : GREEN_COLOR,
@@ -398,33 +441,33 @@ void INA231A_PrintStatus(uint16_t address)
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
     }
 
-    if (INA231A_ReadReg16(address, INA231A_REG_CALIBRATION, &calibration))
+    if (diag.calibrationValid)
     {
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Calibration register: 0x%04X%s\n\r", calibration,
                (calibration == 0) ? " (uncalibrated -- Current/Power read as 0)" : "");
     }
 
-    if (INA231A_ReadBusVoltage(address, &busVoltage))
+    if (diag.busVoltageValid)
     {
-        printf("    Bus voltage: %.4f V\n\r", busVoltage);
+        printf("    Bus voltage: %.4f V\n\r", diag.busVoltage);
     }
 
-    if (INA231A_ReadShuntVoltage(address, &shuntVoltage))
+    if (diag.shuntVoltageValid)
     {
-        printf("    Shunt voltage: %.6f V\n\r", shuntVoltage);
+        printf("    Shunt voltage: %.6f V\n\r", diag.shuntVoltage);
     }
 
-    if (INA231A_ReadReg16(address, INA231A_REG_CURRENT, &rawCurrent))
+    if (diag.rawCurrentValid)
     {
         printf("    Current register (raw code, needs INA231A_Configure() to convert): 0x%04X (%d)\n\r",
-               rawCurrent, (int16_t)rawCurrent);
+               (uint16_t)diag.rawCurrent, diag.rawCurrent);
     }
 
-    if (INA231A_ReadReg16(address, INA231A_REG_POWER, &rawPower))
+    if (diag.rawPowerValid)
     {
         printf("    Power register (raw code, needs INA231A_Configure() to convert): 0x%04X (%u)\n\r",
-               rawPower, rawPower);
+               diag.rawPower, diag.rawPower);
     }
 
     terminalTextAttributesReset();

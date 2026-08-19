@@ -14,6 +14,7 @@
 #include "usb_uart/terminal_control.h"
 
 #include <stdio.h>
+#include <string.h>
 
 // *****************************************************************************
 // Section: Register Map
@@ -1003,15 +1004,52 @@ void BQ27441_DecodeFlagsRaw(const uint8_t raw[2], BQ27441_FLAG_STATUS *status)
     BQ27441_DecodeFlags((uint16_t)raw[0] | ((uint16_t)raw[1] << 8), status);
 }
 
+bool BQ27441_ReadDiagnostics(uint16_t address, BQ27441_DIAGNOSTICS *out)
+{
+    if (out == NULL) return false;
+
+    // Cleared first so every *Valid flag starts false: a register the reads
+    // below never reach then reports "not read" rather than a stale value
+    memset(out, 0, sizeof(*out));
+
+    if (!BQ27441_ControlRead(address, BQ27441_CTRL_DEVICE_TYPE, &out->deviceType))
+    {
+        return false;
+    }
+
+    out->deviceTypeValid = true;
+    out->identified = (out->deviceType == BQ27441_DEVICE_TYPE_EXPECTED);
+
+    // CONTROL_STATUS, mainly for its SS (sealed) bit: the gauge ships sealed
+    // and re-seals on every reset, and while sealed it silently ignores the
+    // SET_CFGUPDATE that BQ27441_ConfigureOpConfig() needs. SS here is the
+    // direct readout of whether that boot-time unseal took.
+    out->controlStatusValid = BQ27441_ControlRead(address, BQ27441_CTRL_CONTROL_STATUS,
+            &out->controlStatus);
+    out->sealed = out->controlStatusValid &&
+            ((out->controlStatus & BQ27441_CTRLSTAT_SS) != 0);
+
+    out->flagsValid = BQ27441_ReadReg16LE(address, BQ27441_REG_FLAGS, &out->rawFlags);
+    if (out->flagsValid) BQ27441_DecodeFlags(out->rawFlags, &out->flags);
+
+    // Ground truth for both BQ27441_Configure() data-flash writes -- these
+    // read the gauge's Data Memory directly (read-only mirrors, no block
+    // session), so they show what actually committed, not what was sent.
+    out->opConfigValid = BQ27441_ReadReg16LE(address, BQ27441_REG_OPCONFIG, &out->opConfig);
+    out->designCapacityValid = BQ27441_ReadReg16LE(address, BQ27441_REG_DESIGN_CAPACITY,
+            &out->designCapacity);
+
+    return true;
+}
+
 void BQ27441_PrintStatus(uint16_t address)
 {
-    uint16_t deviceType;
+    BQ27441_DIAGNOSTICS diag;
     uint16_t controlStatus;
     uint16_t rawFlags;
     uint16_t rawSoc;
     uint16_t rawSoh;
     uint16_t opConfig;
-    uint16_t designCapacity;
     int16_t rawCurrent;
     float volts;
     float celsius;
@@ -1023,7 +1061,11 @@ void BQ27441_PrintStatus(uint16_t address)
     terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, BOLD_FONT);
     printf("    --- BQ27441 (address 0x%02X) ---\n\r", address);
 
-    if (!BQ27441_ControlRead(address, BQ27441_CTRL_DEVICE_TYPE, &deviceType))
+    // One pass over the identity/configuration registers, shared with the
+    // GUI's I2C status screen, so the two cannot disagree about them. The
+    // measurement registers below are still read here directly -- they are
+    // not part of the diagnostics struct, see the note on it.
+    if (!BQ27441_ReadDiagnostics(address, &diag))
     {
         terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    No response from device (I2C error: %d)\n\r", (int)I2C_ErrorGet());
@@ -1031,17 +1073,17 @@ void BQ27441_PrintStatus(uint16_t address)
         return;
     }
 
-    identified = (deviceType == BQ27441_DEVICE_TYPE_EXPECTED);
+    controlStatus = diag.controlStatus;
+    rawFlags = diag.rawFlags;
+    opConfig = diag.opConfig;
+    flags = diag.flags;
+    identified = diag.identified;
     terminalTextAttributes(identified ? GREEN_COLOR : RED_COLOR, BLACK_COLOR, NORMAL_FONT);
-    printf("    Device Type: 0x%04X (%s)\n\r", deviceType, identified ? "recognized" : "unrecognized");
+    printf("    Device Type: 0x%04X (%s)\n\r", diag.deviceType, identified ? "recognized" : "unrecognized");
 
-    // CONTROL_STATUS, mainly for its SS (sealed) bit: the gauge ships
-    // sealed and re-seals on every reset, and while sealed it silently
-    // ignores the SET_CFGUPDATE that BQ27441_ConfigureOpConfig() needs. So
-    // SS here is the direct readout of whether that boot-time unseal took.
-    if (BQ27441_ControlRead(address, BQ27441_CTRL_CONTROL_STATUS, &controlStatus))
+    if (diag.controlStatusValid)
     {
-        bool sealed = (controlStatus & BQ27441_CTRLSTAT_SS) != 0;
+        bool sealed = diag.sealed;
 
         terminalTextAttributes(sealed ? YELLOW_COLOR : GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         // QMAX_UP/RES_UP are the Impedance Track learn-cycle progress bits:
@@ -1062,9 +1104,8 @@ void BQ27441_PrintStatus(uint16_t address)
                (controlStatus & BQ27441_CTRLSTAT_SHUTDOWNEN) ? "SHUTDOWNEN " : "");
     }
 
-    if (BQ27441_ReadReg16LE(address, BQ27441_REG_FLAGS, &rawFlags))
+    if (diag.flagsValid)
     {
-        BQ27441_DecodeFlags(rawFlags, &flags);
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Flags: 0x%04X (%s%s%s%s%s%s%s)\n\r", rawFlags,
                flags.overTemperature ? "OT " : "",
@@ -1076,10 +1117,7 @@ void BQ27441_PrintStatus(uint16_t address)
                flags.configUpdateMode ? "CFGUPMODE " : "");
     }
 
-    // Ground truth for both BQ27441_Configure() data-flash writes -- these
-    // read the gauge's Data Memory directly (read-only mirrors, no block
-    // session), so they show what actually committed, not what was sent.
-    if (BQ27441_ReadReg16LE(address, BQ27441_REG_OPCONFIG, &opConfig))
+    if (diag.opConfigValid)
     {
         printf("    OpConfig: 0x%04X (TEMPS=%u BATLOWEN=%u GPIOPOL=%u)\n\r", opConfig,
                (opConfig & BQ27441_OPCONFIG_TEMPS_EXTERNAL) ? 1u : 0u,
@@ -1087,9 +1125,9 @@ void BQ27441_PrintStatus(uint16_t address)
                (opConfig & BQ27441_OPCONFIG_GPIOPOL)        ? 1u : 0u);
     }
 
-    if (BQ27441_ReadReg16LE(address, BQ27441_REG_DESIGN_CAPACITY, &designCapacity))
+    if (diag.designCapacityValid)
     {
-        printf("    Design Capacity (data memory): %u mAh\n\r", (unsigned)designCapacity);
+        printf("    Design Capacity (data memory): %u mAh\n\r", (unsigned)diag.designCapacity);
     }
 
     if (BQ27441_ReadVoltage(address, &volts))
