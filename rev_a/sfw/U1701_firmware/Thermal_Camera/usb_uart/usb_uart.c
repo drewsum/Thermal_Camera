@@ -488,9 +488,51 @@ void usbUartRxLUTInterface(char * cmd_string) {
 
     usb_uart_rx_ready = 0;
 
-    // Remove trailing newlines and carriage returns
-    strtok(cmd_string, "\n");
-    strtok(cmd_string, "\r");
+    // Find the end of the received line. DMA1 fills usb_uart_rx_buffer from
+    // index 0 and stops on the first '\r', so everything before that '\r' is
+    // this line -- possibly including NUL bytes, which is why this is memchr()
+    // rather than a string function (strtok()/strlen() stop at the first NUL
+    // and would see an empty command)
+    char *line_end = memchr(cmd_string, '\r', USB_UART_RX_BUFFER_SIZE);
+    if (line_end == NULL) line_end = cmd_string + USB_UART_RX_BUFFER_SIZE - 1;
+    *line_end = '\0';
+
+    // Skip leading bytes that can't start a command. A glitch on the RX line
+    // while the FT234XD/level translator come up lands a stray byte (usually a
+    // 0x00 from a framing error) at the front of the first line received after
+    // boot, so that command silently failed to match; a '\n' left over from a
+    // CRLF terminal lands in the same spot
+    uint32_t stray_byte_count = 0;
+    uint8_t first_stray_byte = 0;
+    while (cmd_string < line_end &&
+            ((unsigned char) *cmd_string <= ' ' || (unsigned char) *cmd_string > '~')) {
+
+        if (stray_byte_count == 0) first_stray_byte = (unsigned char) *cmd_string;
+        stray_byte_count++;
+        cmd_string++;
+
+    }
+
+    // Only report garbage in front of a real command -- not a bare Enter or a
+    // lone '\n' from a CRLF terminal
+    if (stray_byte_count > 0 && cmd_string < line_end &&
+            !(stray_byte_count == 1 && first_stray_byte == '\n')) {
+
+        terminalTextAttributes(YELLOW_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("USB UART: ignored %lu stray byte(s) before command (first: 0x%02X)\r\n",
+                (unsigned long) stray_byte_count, first_stray_byte);
+        terminalTextAttributesReset();
+
+    }
+
+    // Remove trailing whitespace, newlines, and control characters
+    while (line_end > cmd_string &&
+            ((unsigned char) line_end[-1] <= ' ' || (unsigned char) line_end[-1] > '~')) {
+
+        line_end--;
+        *line_end = '\0';
+
+    }
 
     // Detect and strip a trailing " -h" help flag from the received string,
     // leaving cmd_string as just the command (and, for parameterized

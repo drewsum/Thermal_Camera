@@ -152,6 +152,8 @@ void __ISR(_DMA1_VECTOR, IPL2SRS) usbUartRxDmaISR(void);
 void usbUartAddCommand(const char * input_cmd_name, const char * input_cmd_help_message, usb_uart_command_function_t input_cmd_func);
 
 // This function is what interprets strings sent over USB Virtual COM Port
+// cmd_string must be usb_uart_rx_buffer (the line is located by scanning up to
+// USB_UART_RX_BUFFER_SIZE bytes for the DMA pattern-match '\r')
 void usbUartRxLUTInterface(char * cmd_string);
 
 // Print help message, prints out list of all commands
