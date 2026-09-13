@@ -188,7 +188,7 @@ typedef struct
 {
     lv_obj_t *row;      // the tappable chip; its label is `name`
     lv_obj_t *name;
-    lv_obj_t *thumb;
+    lv_obj_t *thumb;    // hidden while there is no preview to show -- see ScreenSavedImagesShowThumb()
     lv_obj_t *size;
     uint32_t index;     // catalog index, or SAVED_ROW_UNBOUND (and hidden)
 } SAVED_ROW;
@@ -366,6 +366,7 @@ static void ScreenSavedImagesTrashClicked(lv_event_t *event);
 // callbacks are handed the SAVED_ROW rather than an index; see that struct.
 static bool ScreenSavedImagesCreateRow(SAVED_ROW *slot, int32_t width)
 {
+    lv_obj_t *frame;
     lv_obj_t *trash;
 
     slot->index = SAVED_ROW_UNBOUND;
@@ -384,19 +385,33 @@ static bool ScreenSavedImagesCreateRow(SAVED_ROW *slot, int32_t width)
     lv_obj_align(slot->name, LV_ALIGN_LEFT_MID, SAVED_NAME_X_PX, 0);
 
     // --- Preview ----------------------------------------------------------
-    // No source until its image has been decoded: the dark fill stands in
-    // for the picture so the row does not look broken.
-    slot->thumb = lv_image_create(slot->row);
-    if (slot->thumb == NULL) return false;
+    // A dark frame, with the image drawn inside it once its preview has been
+    // decoded -- the frame stands in for the picture until then so the row
+    // does not look broken. Two objects rather than one lv_image carrying the
+    // fill itself: an lv_image with no source logs "image source is NULL" on
+    // every redraw, so the image is kept hidden instead, and something else
+    // has to draw the frame while it is.
+    frame = lv_obj_create(slot->row);
+    if (frame == NULL) return false;
 
-    lv_obj_set_size(slot->thumb, SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX);
-    lv_obj_align(slot->thumb, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_obj_set_style_bg_color(slot->thumb, lv_color_hex(SAVED_THUMB_EMPTY_COLOR), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(slot->thumb, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_remove_style_all(frame);
+    lv_obj_set_size(frame, SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX);
+    lv_obj_align(frame, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_set_style_bg_color(frame, lv_color_hex(SAVED_THUMB_EMPTY_COLOR), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(frame, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_remove_flag(frame, LV_OBJ_FLAG_SCROLLABLE);
 
     // Every child of the row would otherwise swallow the press before the row
     // saw it -- the same trap Screen_CreateButton() disarms for its own label
+    lv_obj_remove_flag(frame, LV_OBJ_FLAG_CLICKABLE);
+
+    slot->thumb = lv_image_create(frame);
+    if (slot->thumb == NULL) return false;
+
+    lv_obj_set_size(slot->thumb, SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX);
+    lv_obj_align(slot->thumb, LV_ALIGN_CENTER, 0, 0);
     lv_obj_remove_flag(slot->thumb, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(slot->thumb, LV_OBJ_FLAG_HIDDEN);
 
     // --- File size --------------------------------------------------------
     slot->size = Screen_CreateLabel(slot->row, &lv_font_montserrat_14, LV_ALIGN_RIGHT_MID,
@@ -453,6 +468,31 @@ static bool ScreenSavedImagesVisibleRange(uint32_t *first, uint32_t *last)
     return true;
 }
 
+// Puts entry `index`'s preview on `row`, or hides the image (leaving just its
+// frame) if there is no preview yet. Never hands the image a NULL source to
+// draw -- see the preview note in ScreenSavedImagesCreateRow().
+static void ScreenSavedImagesShowThumb(SAVED_ROW *row, uint32_t index)
+{
+    const lv_image_dsc_t *src = ScreenSavedImagesThumbSource(index);
+
+    if (src == NULL)
+    {
+        if (!lv_obj_has_flag(row->thumb, LV_OBJ_FLAG_HIDDEN))
+        {
+            lv_obj_add_flag(row->thumb, LV_OBJ_FLAG_HIDDEN);
+        }
+
+        return;
+    }
+
+    lv_image_set_src(row->thumb, src);
+
+    if (lv_obj_has_flag(row->thumb, LV_OBJ_FLAG_HIDDEN))
+    {
+        lv_obj_remove_flag(row->thumb, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 // Turns pool row `row` into the row for catalog entry `index`: moves it to
 // that entry's place in the list and relabels it.
 static void ScreenSavedImagesFillRow(SAVED_ROW *row, uint32_t index)
@@ -470,7 +510,7 @@ static void ScreenSavedImagesFillRow(SAVED_ROW *row, uint32_t index)
     ScreenSavedImagesFormatSize(size_text, sizeof(size_text), entry->size_bytes);
     lv_label_set_text(row->size, size_text);
 
-    lv_image_set_src(row->thumb, ScreenSavedImagesThumbSource(index));
+    ScreenSavedImagesShowThumb(row, index);
 
     if (lv_obj_has_flag(row->row, LV_OBJ_FLAG_HIDDEN))
     {
@@ -700,7 +740,7 @@ static bool ScreenSavedImagesDecodeThumb(uint32_t index)
     {
         if (rows[r].index == index)
         {
-            lv_image_set_src(rows[r].thumb, ScreenSavedImagesThumbSource(index));
+            ScreenSavedImagesShowThumb(&rows[r], index);
         }
     }
 
