@@ -11,5 +11,6 @@
         "mplab-core-da"
     ],
     "cmake.sourceDirectory": "C:/Users/drewm/Documents/KiCad Projects/Projects/Thermal_Camera/rev_a/sfw/U1701_firmware/Thermal_Camera/cmake/Thermal_Camera/default",
-    "mplab.project.workspace.addNewSourceFiles": "Always"
+    "mplab.project.workspace.addNewSourceFiles": "Always",
+    "C_Cpp.intelliSenseEngine": "disabled"
 }

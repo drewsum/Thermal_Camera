@@ -54,8 +54,10 @@ bool SDFileIO_IsMounted(void);
 // card. Call after a successful SDFileIO_Mount().
 bool SDFileIO_EnsureLabel(void);
 
-// Prints one line per directory entry via the caller-supplied
+// Recursively prints the full file tree under `path` (depth-first, two
+// spaces of indent per level), one line per entry, via the caller-supplied
 // `printLine` callback (so this stays terminal/formatting agnostic).
+// Kicks the watchdog per entry, so large trees are safe to walk.
 // `path` defaults to the root ("/") if NULL or empty.
 bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line));
 

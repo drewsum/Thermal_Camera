@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "sdhc/sd_fileio.h"
+#include "core/watchdog_timer.h"
 #include "sdhc/fatfs/ff.h"
 #include "sdhc/device_driver/sd_card.h"
 #include "usb_uart/terminal_control.h"
@@ -209,6 +210,98 @@ bool SDFileIO_EnsureLabel(void)
     return (f_setlabel("THERMAL SD") == FR_OK);
 }
 
+// Deepest directory level SDFileIO_ListFiles() descends to (level 0 is the
+// starting directory's own entries). Each level keeps a DIR + FILINFO open
+// on the stack for the duration of the walk, so this bounds stack use.
+#define SD_TREE_MAX_DEPTH   8u
+// Working path buffer for the walk -- wider than the 64-byte paths the UART
+// commands accept, so a start path of that size still has room to descend
+#define SD_TREE_PATH_SIZE   128u
+
+// Formats and emits one tree line. Kept out of sdFileIOPrintTree() so the
+// line buffer isn't held on the stack at every recursion level.
+static void sdFileIOPrintTreeLine(void (*printLine)(const char *line),
+        uint8_t depth, const char *tag, const char *name, const FILINFO *fno)
+{
+    char lineBuf[80];
+    int indent = (int)depth * 2;
+    // Indent + name column is a fixed width, so sizes line up at every depth
+    int nameWidth = 13 + (2 * ((int)SD_TREE_MAX_DEPTH - 1)) - indent;
+
+    if (fno != NULL)
+    {
+        snprintf(lineBuf, sizeof(lineBuf), "%*s%s%-*s %10lu",
+                indent, "", tag, nameWidth, name, (unsigned long)fno->fsize);
+    }
+    else
+    {
+        snprintf(lineBuf, sizeof(lineBuf), "%*s%s%s", indent, "", tag, name);
+    }
+    printLine(lineBuf);
+}
+
+// Recursively lists `path` (a writable SD_TREE_PATH_SIZE buffer holding
+// pathLen chars) depth-first. Subdirectory names are appended to the buffer
+// in place and truncated back off after each descent.
+static bool sdFileIOPrintTree(char *path, size_t pathLen, uint8_t depth,
+        void (*printLine)(const char *line))
+{
+    DIR dir;
+    if (f_opendir(&dir, path) != FR_OK)
+    {
+        return false;
+    }
+
+    FILINFO fno;
+    FRESULT fr;
+
+    for (;;)
+    {
+        // A card full of images is hundreds of SD reads plus UART drain
+        // waits, which isn't assumed to fit in the watchdog window
+        kickTheDog();
+
+        fr = f_readdir(&dir, &fno);
+        if ((fr != FR_OK) || (fno.fname[0] == 0))
+        {
+            break;
+        }
+
+        if ((fno.fattrib & AM_DIR) == 0)
+        {
+            sdFileIOPrintTreeLine(printLine, depth, "       ", fno.fname, &fno);
+            continue;
+        }
+
+        sdFileIOPrintTreeLine(printLine, depth, "[DIR]  ", fno.fname, NULL);
+
+        if ((depth + 1u) >= SD_TREE_MAX_DEPTH)
+        {
+            sdFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(too deep, not listed)", NULL);
+            continue;
+        }
+
+        bool needSep = (pathLen == 0u) || (path[pathLen - 1u] != '/');
+        size_t childLen = pathLen + (needSep ? 1u : 0u) + strlen(fno.fname);
+        if (childLen >= SD_TREE_PATH_SIZE)
+        {
+            sdFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(path too long, not listed)", NULL);
+            continue;
+        }
+
+        snprintf(&path[pathLen], SD_TREE_PATH_SIZE - pathLen, "%s%s",
+                needSep ? "/" : "", fno.fname);
+        if (!sdFileIOPrintTree(path, childLen, depth + 1u, printLine))
+        {
+            sdFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(could not open)", NULL);
+        }
+        path[pathLen] = '\0';
+    }
+
+    f_closedir(&dir);
+    return true;
+}
+
 bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
 {
     if (!sdFileIOMediaAvailable() || !sd_mounted || (printLine == NULL))
@@ -216,34 +309,11 @@ bool SDFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
         return false;
     }
 
-    const char *dirPath = ((path != NULL) && (path[0] != '\0')) ? path : "/";
+    char dirPath[SD_TREE_PATH_SIZE];
+    snprintf(dirPath, sizeof(dirPath), "%s",
+            ((path != NULL) && (path[0] != '\0')) ? path : "/");
 
-    DIR dir;
-    if (f_opendir(&dir, dirPath) != FR_OK)
-    {
-        return false;
-    }
-
-    char lineBuf[64];
-    FILINFO fno;
-    FRESULT fr;
-
-    for (;;)
-    {
-        fr = f_readdir(&dir, &fno);
-        if ((fr != FR_OK) || (fno.fname[0] == 0))
-        {
-            break;
-        }
-
-        snprintf(lineBuf, sizeof(lineBuf), "%s%-13s %10lu",
-                (fno.fattrib & AM_DIR) ? "[DIR]  " : "       ",
-                fno.fname, (unsigned long)fno.fsize);
-        printLine(lineBuf);
-    }
-
-    f_closedir(&dir);
-    return true;
+    return sdFileIOPrintTree(dirPath, strlen(dirPath), 0u, printLine);
 }
 
 bool SDFileIO_ReadTextFileToTerminal(const char *path)

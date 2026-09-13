@@ -943,9 +943,15 @@ USB_UART_COMMAND(flashFormatCommand, "Flash Format",
 
 }
 
-// Callback for SDFileIO_ListFiles() -- prints one directory entry per line
+// Callback for SDFileIO_ListFiles()/FlashFileIO_ListFiles() -- prints one
+// tree entry per line. A full-card tree can be far larger than the 16KB
+// usb_uart_tx_buffer, and _mon_putc() silently drops characters once it
+// fills, so let the TX DMA drain the buffer whenever it's a quarter full.
 static void printSDFileLine(const char *line) {
     printf("    %s\r\n", line);
+    if (usb_uart_tx_buffer_head > (USB_UART_TX_BUFFER_SIZE / 4u)) {
+        while(usbUartCheckIfBusy());
+    }
 }
 
 USB_UART_COMMAND(sdCardInfoCommand, "SD Card Info?",
@@ -982,7 +988,7 @@ USB_UART_COMMAND(sdCardInfoCommand, "SD Card Info?",
 }
 
 USB_UART_COMMAND(sdListFilesCommand, "SD List Files",
-        "\b\b <path>: Lists files in the given directory on the mounted microSD card (defaults to the root directory if omitted)") {
+        "\b\b <path>: Recursively lists the full file tree under the given directory on the mounted microSD card (defaults to the root directory if omitted)") {
 
     char rx_path[64] = "";
     sscanf(input_str, "SD List Files %[^\t\n\r]", rx_path);
@@ -1264,7 +1270,7 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
 }
 
 USB_UART_COMMAND(flashListFilesCommand, "Flash List Files",
-        "\b\b <path>: Lists files in the given directory on the SPI flash FAT volume (defaults to the root directory if omitted)") {
+        "\b\b <path>: Recursively lists the full file tree under the given directory on the SPI flash FAT volume (defaults to the root directory if omitted)") {
 
     char rx_path[64] = "";
     sscanf(input_str, "Flash List Files %[^\t\n\r]", rx_path);

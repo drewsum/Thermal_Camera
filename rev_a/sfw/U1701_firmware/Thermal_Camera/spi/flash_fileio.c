@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "spi/flash_fileio.h"
+#include "core/watchdog_timer.h"
 #include "spi/device_driver/w25q128jv_disk.h"
 #include "spi/device_driver/w25q128jv.h"
 #include "sdhc/fatfs/ff.h"
@@ -208,6 +209,99 @@ bool FlashFileIO_Format(void)
     return W25Q128JV_Disk_Sync();
 }
 
+// Deepest directory level FlashFileIO_ListFiles() descends to (level 0 is
+// the starting directory's own entries). Each level keeps a DIR + FILINFO
+// open on the stack for the duration of the walk, so this bounds stack use.
+#define FLASH_TREE_MAX_DEPTH   8u
+// Working path buffer for the walk -- wider than the 64-byte paths the UART
+// commands accept, so a start path of that size still has room to descend
+#define FLASH_TREE_PATH_SIZE   128u
+
+// Formats and emits one tree line. Kept out of flashFileIOPrintTree() so the
+// line buffer isn't held on the stack at every recursion level.
+static void flashFileIOPrintTreeLine(void (*printLine)(const char *line),
+        uint8_t depth, const char *tag, const char *name, const FILINFO *fno)
+{
+    char lineBuf[80];
+    int indent = (int)depth * 2;
+    // Indent + name column is a fixed width, so sizes line up at every depth
+    int nameWidth = 13 + (2 * ((int)FLASH_TREE_MAX_DEPTH - 1)) - indent;
+
+    if (fno != NULL)
+    {
+        snprintf(lineBuf, sizeof(lineBuf), "%*s%s%-*s %10lu",
+                indent, "", tag, nameWidth, name, (unsigned long)fno->fsize);
+    }
+    else
+    {
+        snprintf(lineBuf, sizeof(lineBuf), "%*s%s%s", indent, "", tag, name);
+    }
+    printLine(lineBuf);
+}
+
+// Recursively lists `path` (a writable FLASH_TREE_PATH_SIZE buffer holding
+// pathLen chars) depth-first. Subdirectory names are appended to the buffer
+// in place and truncated back off after each descent. Mirrors
+// sdFileIOPrintTree() in sd_fileio.c.
+static bool flashFileIOPrintTree(char *path, size_t pathLen, uint8_t depth,
+        void (*printLine)(const char *line))
+{
+    DIR dir;
+    if (f_opendir(&dir, path) != FR_OK)
+    {
+        return false;
+    }
+
+    FILINFO fno;
+    FRESULT fr;
+
+    for (;;)
+    {
+        // Each entry may be flash reads plus UART drain waits, which isn't
+        // assumed to fit in the watchdog window for a large tree
+        kickTheDog();
+
+        fr = f_readdir(&dir, &fno);
+        if ((fr != FR_OK) || (fno.fname[0] == 0))
+        {
+            break;
+        }
+
+        if ((fno.fattrib & AM_DIR) == 0)
+        {
+            flashFileIOPrintTreeLine(printLine, depth, "       ", fno.fname, &fno);
+            continue;
+        }
+
+        flashFileIOPrintTreeLine(printLine, depth, "[DIR]  ", fno.fname, NULL);
+
+        if ((depth + 1u) >= FLASH_TREE_MAX_DEPTH)
+        {
+            flashFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(too deep, not listed)", NULL);
+            continue;
+        }
+
+        bool needSep = (pathLen == 0u) || (path[pathLen - 1u] != '/');
+        size_t childLen = pathLen + (needSep ? 1u : 0u) + strlen(fno.fname);
+        if (childLen >= FLASH_TREE_PATH_SIZE)
+        {
+            flashFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(path too long, not listed)", NULL);
+            continue;
+        }
+
+        snprintf(&path[pathLen], FLASH_TREE_PATH_SIZE - pathLen, "%s%s",
+                needSep ? "/" : "", fno.fname);
+        if (!flashFileIOPrintTree(path, childLen, depth + 1u, printLine))
+        {
+            flashFileIOPrintTreeLine(printLine, depth + 1u, "       ", "(could not open)", NULL);
+        }
+        path[pathLen] = '\0';
+    }
+
+    f_closedir(&dir);
+    return true;
+}
+
 bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line))
 {
     if (!flashFileIOMediaAvailable() || !flash_mounted || (printLine == NULL))
@@ -217,47 +311,21 @@ bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line)
 
     // Default to the volume root; prefix relative paths so they land on
     // this volume rather than FatFs's default drive (0: = SD card)
-    char dirPath[64];
+    char dirPath[FLASH_TREE_PATH_SIZE];
     if ((path == NULL) || (path[0] == '\0'))
     {
         strcpy(dirPath, FLASH_DRIVE_PREFIX "/");
     }
     else if ((path[0] == '0' || path[0] == '1') && (path[1] == ':'))
     {
-        strncpy(dirPath, path, sizeof(dirPath) - 1u);
-        dirPath[sizeof(dirPath) - 1u] = '\0';
+        snprintf(dirPath, sizeof(dirPath), "%s", path);
     }
     else
     {
         snprintf(dirPath, sizeof(dirPath), FLASH_DRIVE_PREFIX "%s", path);
     }
 
-    DIR dir;
-    if (f_opendir(&dir, dirPath) != FR_OK)
-    {
-        return false;
-    }
-
-    char lineBuf[64];
-    FILINFO fno;
-    FRESULT fr;
-
-    for (;;)
-    {
-        fr = f_readdir(&dir, &fno);
-        if ((fr != FR_OK) || (fno.fname[0] == 0))
-        {
-            break;
-        }
-
-        snprintf(lineBuf, sizeof(lineBuf), "%s%-13s %10lu",
-                (fno.fattrib & AM_DIR) ? "[DIR]  " : "       ",
-                fno.fname, (unsigned long)fno.fsize);
-        printLine(lineBuf);
-    }
-
-    f_closedir(&dir);
-    return true;
+    return flashFileIOPrintTree(dirPath, strlen(dirPath), 0u, printLine);
 }
 
 bool FlashFileIO_ReadTextFileToTerminal(const char *path)

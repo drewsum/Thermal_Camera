@@ -414,7 +414,7 @@ void main(void) {
     // The clock starts HERE rather than at the top of boot, so the splash
     // gets its full display time no matter how long the deferred bring-up
     // below takes.
-    #define SPLASH_SCREEN_DISPLAY_MS   3000u   // tune to taste
+    #define SPLASH_SCREEN_DISPLAY_MS   6000u   // tune to taste
     uint32_t splash_screen_shown_tick_ms = GUI_GetTickMs();
     bool splash_screen_pending = true;
 
@@ -694,6 +694,34 @@ void main(void) {
         // early-return path.
         if (power_button_sleep_request) {
             power_button_sleep_request = 0;
+
+            // Take the media back from the USB host BEFORE loading the image.
+            // While a host has the device configured, usb_msd.c unmounts the
+            // local flash volume, so the f_open() inside the loader failed,
+            // the hold below was skipped, and enterLowPowerSleep() blanked
+            // the panel immediately. Detaching hands the media back and
+            // remounts "1:" (msdHandMediaBack()); enterLowPowerSleep()'s own
+            // USB_Detach() then finds nothing left to do.
+            USB_Detach();
+
+            // Put the shutdown screen on the still-image layer (Layer 2, the
+            // same layer the splash uses, so it covers the video and GUI) and
+            // hold it before the power-down sequence blanks the display. The
+            // panel and backlight are only switched off by powerDownDisplay()
+            // inside enterLowPowerSleep(), so both stay lit for the whole
+            // hold. The hold is skipped if the load failed (no SHUTDOWN.PNG,
+            // or the flash volume didn't remount) -- there'd be nothing to
+            // see. Blocking is fine here, the board is going down: the
+            // watchdog is kicked by hand since the superloop's kick is no
+            // longer reached.
+            #define SHUTDOWN_SCREEN_DISPLAY_MS   3000u
+            if (ImageLoader_DisplayPNG(IMAGE_MEDIA_SPI_FLASH, "SHUTDOWN.PNG")) {
+                uint32_t shutdown_screen_shown_tick_ms = GUI_GetTickMs();
+                while ((GUI_GetTickMs() - shutdown_screen_shown_tick_ms) < SHUTDOWN_SCREEN_DISPLAY_MS) {
+                    kickTheDog();
+                }
+            }
+
             enterLowPowerSleep();
         }
 

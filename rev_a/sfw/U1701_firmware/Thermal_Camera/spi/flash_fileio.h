@@ -63,9 +63,10 @@ bool FlashFileIO_IsMounted(void);
 // chip (W25Q128JV_EraseChip()).
 bool FlashFileIO_Format(void);
 
-// Prints one line per directory entry via the caller-supplied `printLine`
-// callback -- mirrors SDFileIO_ListFiles(). `path` defaults to the volume
-// root if NULL or empty; relative paths get the "1:" prefix applied here.
+// Recursively prints the full file tree under `path`, one line per entry,
+// via the caller-supplied `printLine` callback -- mirrors
+// SDFileIO_ListFiles(). `path` defaults to the volume root if NULL or
+// empty; relative paths get the "1:" prefix applied here.
 bool FlashFileIO_ListFiles(const char *path, void (*printLine)(const char *line));
 
 // Dumps a text file's contents to the terminal via printf -- mirrors
