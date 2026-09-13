@@ -32,8 +32,8 @@
     ten-thousandth.
 
     Capacity: IMAGE_CATALOG_MAX_ENTRIES names, which is the bound on what
-    this costs in RAM (the table is static -- 256 x 20 bytes) and on what
-    the GUI has to build widgets for. A card holding more than that is not
+    this costs in RAM (the table is static -- 256 x 24 bytes) and on the
+    size of the GUI's thumbnail cache, which keeps one preview per entry. A card holding more than that is not
     an error: the newest IMAGE_CATALOG_MAX_ENTRIES are kept and
     ImageCatalog_GetFoundCount() reports the true total, so the screen can
     say so rather than quietly lying about how many images exist.
@@ -58,8 +58,8 @@ extern "C" {
 #endif
 
 // How many names a scan keeps. See the capacity note in the file header --
-// raising it costs 20 bytes of static RAM each, plus the GUI widgets the
-// Saved Images screen builds per row.
+// raising it costs 24 bytes of static RAM each, plus one cell of the Saved
+// Images screen's DDR2 thumbnail cache (gui/screens/screen_saved_images.h).
 #define IMAGE_CATALOG_MAX_ENTRIES  256u
 
 // Longest path this module builds: the directory, a separator, an 8.3 name
@@ -68,11 +68,15 @@ extern "C" {
         (sizeof(IMAGE_SAVER_DIRECTORY_PATH) + 1u + IMAGE_SAVER_NAME_MAX)
 
 // One saved image. `name` is the bare 8.3 filename with no directory, as
-// FatFs reported it.
+// FatFs reported it. `timestamp` is FatFs's last-modified stamp, packed as
+// (fdate << 16) | ftime -- not shown anywhere, it is there so a cache keyed
+// on a file can tell a new file apart from an old one that had the same
+// name (image_saver.c re-issues the highest number after it is deleted).
 typedef struct
 {
     char name[IMAGE_SAVER_NAME_MAX];
     uint32_t size_bytes;
+    uint32_t timestamp;
 } IMAGE_CATALOG_ENTRY;
 
 // Walks IMAGE_SAVER_DIRECTORY and rebuilds the table, newest first.

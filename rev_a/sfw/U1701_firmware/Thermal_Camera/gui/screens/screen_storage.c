@@ -19,6 +19,7 @@
 #include "gui/lvgl/lvgl.h"
 
 #include "application/flir/flir_vospi.h"
+#include "gui/screens/screen_saved_images.h"
 #include "core/ddr2.h"
 #include "core/device_control.h"
 #include "glcd/glcd.h"
@@ -106,6 +107,7 @@ extern uint32_t _min_heap_size[];
     VALUE(DDR2_LVGL,      "LVGL Heap")                             \
     VALUE(DDR2_LAYER2,    "GLCD Layer 2 Image")                    \
     VALUE(DDR2_VOSPI,     "FLIR VoSPI Frames x2")                  \
+    VALUE(DDR2_THUMBS,    "Image Preview Cache")                   \
     VALUE(DDR2_FREE,      "Unreserved")
 
 // The value rows only -- this is what indexes value_labels[] below
@@ -145,7 +147,8 @@ static const STORAGE_SCREEN_ROW storage_bar_rows[] =
     STORAGE_ROW_SRAM_STATIC, STORAGE_ROW_SRAM_HEAP, STORAGE_ROW_SRAM_STACK,
     STORAGE_ROW_DDR2_FRAMEBUF, STORAGE_ROW_DDR2_OVERLAY_A,
     STORAGE_ROW_DDR2_OVERLAY_B, STORAGE_ROW_DDR2_LVGL,
-    STORAGE_ROW_DDR2_LAYER2, STORAGE_ROW_DDR2_VOSPI, STORAGE_ROW_DDR2_FREE,
+    STORAGE_ROW_DDR2_LAYER2, STORAGE_ROW_DDR2_VOSPI, STORAGE_ROW_DDR2_THUMBS,
+    STORAGE_ROW_DDR2_FREE,
 };
 
 #define STORAGE_SCREEN_BAR_ROW_COUNT \
@@ -495,7 +498,8 @@ void ScreenStorage_Refresh(void)
             + (2u * GLCD_OVERLAY_SIZE_BYTES)
             + GUI_LVGL_HEAP_SIZE_BYTES
             + GLCD_LAYER2_SIZE_BYTES
-            + (2u * FLIR_VOSPI_FRAME_SIZE_BYTES);
+            + (2u * FLIR_VOSPI_FRAME_SIZE_BYTES)
+            + SCREEN_SAVED_IMAGES_THUMB_CACHE_SIZE;
 
     ScreenStorageFormatBytes(text, sizeof(text), DDR2_SIZE_BYTES);
     ScreenStorageSetValue(STORAGE_ROW_DDR2_TOTAL, text);
@@ -512,6 +516,8 @@ void ScreenStorage_Refresh(void)
     ScreenStorageSetFraction(STORAGE_ROW_DDR2_LAYER2, GLCD_LAYER2_SIZE_BYTES,
             DDR2_SIZE_BYTES, STORAGE_SCREEN_UNKNOWN_COLOR);
     ScreenStorageSetFraction(STORAGE_ROW_DDR2_VOSPI, 2u * FLIR_VOSPI_FRAME_SIZE_BYTES,
+            DDR2_SIZE_BYTES, STORAGE_SCREEN_UNKNOWN_COLOR);
+    ScreenStorageSetFraction(STORAGE_ROW_DDR2_THUMBS, SCREEN_SAVED_IMAGES_THUMB_CACHE_SIZE,
             DDR2_SIZE_BYTES, STORAGE_SCREEN_UNKNOWN_COLOR);
 
     // Green, because unlike every other DDR2 row this one IS headroom

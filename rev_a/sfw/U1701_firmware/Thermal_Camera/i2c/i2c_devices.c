@@ -562,6 +562,22 @@ bool I2CDevices_ReadEventCount(I2C_DEVICE_ID id, uint16_t *count)
     return true;
 }
 
+bool I2CDevices_ResetElapsedTimeCounter(I2C_DEVICE_ID id)
+{
+    if (!I2CDevices_IdIsValid(id) || (i2cDeviceKinds[id] != I2C_DEVICE_KIND_DS1683))
+    {
+        return false;
+    }
+
+    if (!DS1683_ResetCounters(i2cDeviceAddresses[id]))
+    {
+        I2CDevices_ReportI2CError(id);
+        return false;
+    }
+
+    return true;
+}
+
 static bool I2CDevices_IdIsKind(I2C_DEVICE_ID id, I2C_DEVICE_KIND kind)
 {
     return I2CDevices_IdIsValid(id) && (i2cDeviceKinds[id] == kind);

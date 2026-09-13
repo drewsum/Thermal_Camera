@@ -207,6 +207,12 @@ bool I2CDevices_ReadElapsedSeconds(I2C_DEVICE_ID id, uint32_t *seconds);
 // Same kind requirement as I2CDevices_ReadElapsedSeconds().
 bool I2CDevices_ReadEventCount(I2C_DEVICE_ID id, uint16_t *count);
 
+// Zeroes `id`'s event count and elapsed time (DS1683_ResetCounters()).
+// Blocks for the EEPROM write time. Same kind requirement as
+// I2CDevices_ReadElapsedSeconds(). True means the writes were ACKed, not
+// that they took -- read the counters back to confirm.
+bool I2CDevices_ResetElapsedTimeCounter(I2C_DEVICE_ID id);
+
 // --- Queued (non-blocking) reads ------------------------------------------
 // Each call queues one register read for `id` and returns immediately;
 // false means the device kind doesn't match, or the I2C queue was full

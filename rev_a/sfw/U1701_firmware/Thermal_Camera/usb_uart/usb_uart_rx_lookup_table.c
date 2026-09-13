@@ -42,6 +42,7 @@
 #include "glcd/glcd.h"
 #include "gui/gui.h"
 #include "gui/lv_port_indev.h"
+#include "gui/screens/screen_saved_images.h"
 #include "application/backlight_pwm.h"
 #include "application/image_loader.h"
 #include "application/flir/flir.h"
@@ -449,6 +450,69 @@ USB_UART_COMMAND(clearErrorsCommand, "Clear Errors", "Clears all error handler f
     printf("Error Handler flags cleared\n\r");
     terminalTextAttributesReset();
     
+}
+
+USB_UART_COMMAND(resetETCCommand, "Reset ETC",
+        "Zeroes the DS1683 elapsed time counter and event (power cycle) count") {
+
+    uint32_t elapsedSeconds;
+    uint16_t powerCycleCount;
+    bool elapsedValid;
+    bool countValid;
+    DS1683_STATUS status;
+
+    if (!I2CDevices_IsPresent(I2C_DEV_ETR_1)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("Elapsed time recorder not present -- nothing reset\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    // The DS1683 ignores (but still ACKs) every write while EVENT is high,
+    // and only accepts them once EVENT has been low for at least t_W
+    if (!DS1683_ReadStatus(I2CDevices_GetAddress(I2C_DEV_ETR_1), &status)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset failed: status read error (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (status.eventPinHigh) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset not possible: DS1683 EVENT pin is high -- nothing written\r\n");
+        printf("(the DS1683 blocks all writes while EVENT is high; it must be held low for >= 10ms first)\r\n");
+        terminalTextAttributesReset();
+        return;
+    }
+
+    if (!I2CDevices_ResetElapsedTimeCounter(I2C_DEV_ETR_1)) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset failed (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+        terminalTextAttributesReset();
+        return;
+    }
+
+    // The part ACKs writes it ignores, so the read-back is the real result.
+    // Allow a few seconds on the ETC in case EVENT went high mid-sequence.
+    elapsedValid = I2CDevices_ReadElapsedSeconds(I2C_DEV_ETR_1, &elapsedSeconds);
+    countValid = I2CDevices_ReadEventCount(I2C_DEV_ETR_1, &powerCycleCount);
+
+    if (elapsedValid && countValid && (powerCycleCount == 0u) && (elapsedSeconds <= 5u)) {
+        terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset: Total Board Time %lu s, Power Cycle Count %u\r\n",
+               (unsigned long)elapsedSeconds, powerCycleCount);
+    } else if (elapsedValid && countValid) {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset did not take: Total Board Time %lu s, Power Cycle Count %u\r\n",
+               (unsigned long)elapsedSeconds, powerCycleCount);
+        printf("(writes ACKed but ignored -- EVENT not low for >= 10ms, or Password Value not the default)\r\n");
+    } else {
+        terminalTextAttributes(RED_COLOR, BLACK_COLOR, NORMAL_FONT);
+        printf("ETC reset written, but read-back failed (I2C error: %d)\r\n", (int)I2C_ErrorGet());
+    }
+
+    terminalTextAttributesReset();
+
 }
 
 USB_UART_COMMAND(platformStatusCommand, "Platform Status?",
@@ -1250,7 +1314,8 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
                 + (2u * GLCD_OVERLAY_SIZE_BYTES)
                 + GUI_LVGL_HEAP_SIZE_BYTES
                 + GLCD_LAYER2_SIZE_BYTES
-                + (2u * FLIR_VOSPI_FRAME_SIZE_BYTES);
+                + (2u * FLIR_VOSPI_FRAME_SIZE_BYTES)
+                + SCREEN_SAVED_IMAGES_THUMB_CACHE_SIZE;
 
         terminalTextAttributes(GREEN_COLOR, BLACK_COLOR, NORMAL_FONT);
         printf("    Total: %10lu bytes (%lu KB)\r\n",
@@ -1262,6 +1327,7 @@ USB_UART_COMMAND(storageUsageCommand, "Storage Usage?",
         printStorageReservationLine("LVGL Heap:", GUI_LVGL_HEAP_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("GLCD Layer 2 Image:", GLCD_LAYER2_SIZE_BYTES, DDR2_SIZE_BYTES);
         printStorageReservationLine("FLIR VoSPI Frames (x2):", 2u * FLIR_VOSPI_FRAME_SIZE_BYTES, DDR2_SIZE_BYTES);
+        printStorageReservationLine("Image Preview Cache:", SCREEN_SAVED_IMAGES_THUMB_CACHE_SIZE, DDR2_SIZE_BYTES);
         printStorageReservationLine("Unreserved:", DDR2_SIZE_BYTES - reservedBytes, DDR2_SIZE_BYTES);
     }
 

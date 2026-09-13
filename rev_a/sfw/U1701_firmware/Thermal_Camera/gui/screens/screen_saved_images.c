@@ -6,8 +6,9 @@
 
   Summary:
     See screen_saved_images.h for the layout, how the full-screen view takes
-    its tap, and why the scan and the previews run off a timer rather than
-    out of the refresh.
+    its tap, why the scan and the previews run off a timer rather than out of
+    the refresh, and why the list is a small pool of recycled rows over a
+    DDR2 thumbnail cache rather than one widget tree per image.
 *******************************************************************************/
 
 #include <stdio.h>
@@ -20,6 +21,8 @@
 #include "gui/lvgl/lvgl.h"
 #include "application/image_catalog.h"
 #include "application/image_loader.h"
+#include "application/still_capture.h"
+#include "core/ddr2.h"
 #include "sdhc/sd_fileio.h"
 
 // gui/lv_conf.h keeps the widget set trimmed to what the screens actually
@@ -48,7 +51,8 @@
 #define SAVED_SCROLLBAR_LANE_PX     14
 
 // Row geometry. Taller than the menu's rows because a row here has to hold
-// a preview; the pitch is what the visible-row arithmetic below works in.
+// a preview; the pitch is what the visible-row and row-placement arithmetic
+// below works in -- a row for catalog index i always sits at i * pitch.
 #define SAVED_ROW_HEIGHT_PX         34
 #define SAVED_ROW_GAP_PX            4
 #define SAVED_ROW_PITCH_PX          (SAVED_ROW_HEIGHT_PX + SAVED_ROW_GAP_PX)
@@ -67,17 +71,43 @@
 #define SAVED_TRASH_HEIGHT_PX       30
 #define SAVED_SIZE_GAP_PX           6
 
-// How many previews are held at once. Only about four rows fit the panel, so
-// this covers everything on screen with room either side for a scroll in
-// progress; each one costs 40 x 30 x 3 = 3,600 bytes of the LVGL heap
-// (8 x 3,600 = 28,800 bytes), taken once in Create() and never released.
-#define SAVED_THUMB_SLOT_COUNT      8u
+#define SAVED_THUMB_PIXEL_BYTES     (SAVED_THUMB_WIDTH_PX * SAVED_THUMB_HEIGHT_PX * 3)
+
+// How many row widgets exist. The panel's content box is 144px tall, so at
+// most five rows (three whole, two partial) are ever on screen at once; the
+// pool covers that plus one row above and a couple below, so a row being
+// scrolled into view is already built and labelled by the time it arrives.
+// This is the whole cost of the list in widgets, however many images the
+// card holds -- see the row pool note in screen_saved_images.h.
+#define SAVED_ROW_POOL_COUNT        8u
+
+// A pool row that is not currently standing in for any catalog entry
+#define SAVED_ROW_UNBOUND           UINT32_MAX
+
+// A catalog entry whose preview has no cache cell yet (only ever seen between
+// the two passes of ScreenSavedImagesSyncThumbs())
+#define SAVED_THUMB_NO_CELL         UINT16_MAX
 
 // How often the worker timer runs. One scan or one preview decode per tick
 // -- see screen_saved_images.h. Fast enough that the previews fill in as
 // quickly as the decoder can produce them, slow enough to leave the main
 // loop and the FLIR video path room between them.
 #define SAVED_WORKER_INTERVAL_MS    30
+
+// How long the touchscreen has to have been left alone before a preview is
+// decoded. A decode blocks the main loop, and a press or a flick that lands
+// inside one is read late -- which is what made this screen feel laggy.
+// Long enough to cover the gap between the flicks of someone paging down a
+// long list, short enough that the previews still seem to arrive on their
+// own.
+#define SAVED_DECODE_SETTLE_MS      250
+
+// How far past the visible rows, in each direction, previews are decoded
+// ahead of being needed once the visible ones are done. About a page, so the
+// next scroll usually lands on rows that are already drawn; bounded so the
+// screen goes quiet soon after it is opened, instead of working through the
+// whole card with the main loop stalled one decode at a time.
+#define SAVED_PREFETCH_ROWS         5u
 
 // Colors, all already in use elsewhere in this GUI:
 //   0xE04040  the save-image screen's failure red -- the bin, and Delete
@@ -100,46 +130,81 @@
 #define SAVED_CONFIRM_BUTTON_X_PX   54
 #define SAVED_CONFIRM_BUTTON_Y_PX   28
 
-// Where a row's children sit in its child list. Screen_CreateButton() makes
-// the chip's label first, so it is always child 0 -- for a row that label is
-// the filename, and for the bin and the Delete button it is the glyph that
-// gets recolored. The preview is added immediately after the row's name.
-// Nothing else here reaches into an object by child index.
+// Screen_CreateButton() makes the chip's label first, so it is always child
+// 0 -- for a row that label is the filename, and for the bin and the Delete
+// button it is the glyph that gets recolored. Nothing else here reaches into
+// an object by child index; a row's other parts are kept in SAVED_ROW.
 #define SAVED_BUTTON_CHILD_LABEL    0
-#define SAVED_ROW_CHILD_NAME        SAVED_BUTTON_CHILD_LABEL
-#define SAVED_ROW_CHILD_THUMB       1
 
-// What a row's preview is doing. PENDING is the initial state of every row
-// after a rebuild and the only one the worker acts on.
+// The cache is one fixed cell per catalog entry, so a cell has to be able to
+// hold a preview, and the whole cache has to stay inside the unreserved DDR2
+// it was given -- clear of the still-capture image below it and of the end
+// of the part. Sizes are spelled out from pixel geometry rather than taken
+// from the *_SIZE macros, which carry casts #if cannot evaluate (the same
+// reason as gui.c's heap guards).
+#if SAVED_THUMB_PIXEL_BYTES > SCREEN_SAVED_IMAGES_THUMB_CELL_BYTES
+    #error "A saved-image preview no longer fits one thumbnail cache cell (screen_saved_images.h)"
+#endif
+
+#if SCREEN_SAVED_IMAGES_THUMB_CACHE_OFFSET < \
+        ((STILL_CAPTURE_RGB_ADDRESS - DDR2_KSEG1_BASE_ADDRESS) + (320 * 240 * 3))
+    #error "The saved-image thumbnail cache (screen_saved_images.h) starts inside the still-capture image buffer"
+#endif
+
+#if (SCREEN_SAVED_IMAGES_THUMB_CACHE_OFFSET \
+        + (IMAGE_CATALOG_MAX_ENTRIES * SCREEN_SAVED_IMAGES_THUMB_CELL_BYTES)) > DDR2_SIZE_BYTES
+    #error "The saved-image thumbnail cache (screen_saved_images.h) runs off the end of DDR2"
+#endif
+
+// What a catalog entry's preview is doing. PENDING is where every entry new
+// to the list starts, and the only state the worker acts on.
 typedef enum
 {
-    SAVED_THUMB_PENDING = 0,   // no preview yet; decode it when it scrolls into view
-    SAVED_THUMB_READY,         // a slot below holds it and the row is showing it
-    SAVED_THUMB_FAILED         // the decode failed; do not keep retrying it
+    SAVED_THUMB_PENDING = 0,   // no preview yet; decode it once it is near the view
+    SAVED_THUMB_READY,         // its cell holds the decoded preview
+    SAVED_THUMB_FAILED         // the decode failed; not retried until the screen is re-entered
 } SAVED_THUMB_STATE;
 
-// One cached preview. `buf` is created once in Create() and reused for
-// whatever image the slot is lent to next -- it is both the image source
-// LVGL draws through and the memory the decoder writes into, and `pixels` is
-// just its pixel pointer kept to hand.
-//
-// `name` rather than a catalog index is what identifies the image, because
-// indices shift the moment a row above is deleted -- see the rebuild.
+// The preview of one catalog entry, kept in catalog order: thumbs[i] is
+// entry i. The file's name, size and timestamp are copied in because they
+// are what identify it once the catalog changes underneath -- indices shift
+// the moment a row above is deleted, and a name alone is not enough either,
+// since image_saver.c re-issues the newest image's number after it is
+// deleted. See ScreenSavedImagesSyncThumbs().
 typedef struct
 {
-    lv_draw_buf_t *buf;
-    uint8_t *pixels;
     char name[IMAGE_SAVER_NAME_MAX];
-    lv_obj_t *image;    // the row widget showing it, or NULL if it has none
-    uint32_t row;       // that row's catalog index, meaningless if image is NULL
-    uint32_t stamp;     // claim order, for the least-recently-used eviction
-    bool used;
-} SAVED_THUMB_SLOT;
+    uint32_t size_bytes;
+    uint32_t timestamp;
+    uint16_t cell;      // which DDR2 cache cell holds the pixels
+    uint8_t state;      // SAVED_THUMB_STATE
+} SAVED_THUMB;
+
+// One recycled row. `index` is the catalog entry it is currently drawn as,
+// and the row's event callbacks read it from here rather than being handed
+// an index when the row was built -- the same widgets stand for different
+// images as the list scrolls.
+typedef struct
+{
+    lv_obj_t *row;      // the tappable chip; its label is `name`
+    lv_obj_t *name;
+    lv_obj_t *thumb;
+    lv_obj_t *size;
+    uint32_t index;     // catalog index, or SAVED_ROW_UNBOUND (and hidden)
+} SAVED_ROW;
 
 static SCREEN_HEADER header;
 
 static lv_obj_t *panel = NULL;
 static lv_obj_t *empty_label = NULL;
+
+// A 1x1, style-less object parked at the bottom edge of the last row. With
+// only SAVED_ROW_POOL_COUNT rows in the panel, this is what gives it the
+// scroll extent of the whole list -- LVGL sizes the scroll range from where
+// the children are, and the rows alone only reach as far as the view.
+static lv_obj_t *list_end = NULL;
+
+static SAVED_ROW rows[SAVED_ROW_POOL_COUNT];
 
 static lv_obj_t *confirm_overlay = NULL;
 static lv_obj_t *confirm_name_label = NULL;
@@ -149,26 +214,28 @@ static lv_obj_t *confirm_name_label = NULL;
 static lv_obj_t *viewer_catcher = NULL;
 static bool viewer_showing = false;
 
-static SAVED_THUMB_SLOT thumb_slots[SAVED_THUMB_SLOT_COUNT];
-static uint32_t thumb_stamp = 0;
-
-static uint8_t thumb_state[IMAGE_CATALOG_MAX_ENTRIES];
+// The preview cache. thumbs[] follows the catalog; the descriptors are one
+// per DDR2 cell and never move, because an lv_image keeps the pointer it was
+// given rather than a copy. All of it is .bss, so every entry starts empty
+// at boot and whatever DDR2 held before a reset is never shown.
+static SAVED_THUMB thumbs[IMAGE_CATALOG_MAX_ENTRIES];
+static SAVED_THUMB thumbs_prev[IMAGE_CATALOG_MAX_ENTRIES];   // scratch for the sync
+static uint32_t thumb_count = 0;
+static lv_image_dsc_t thumb_dsc[IMAGE_CATALOG_MAX_ENTRIES];
 
 // Which row the delete prompt is currently asking about. Only meaningful
 // while confirm_overlay is visible.
 static uint32_t confirm_row = 0;
 
-// Set by the event callbacks to ask the worker timer to redraw the list,
-// rather than redrawing inline: the rows are what those callbacks were
-// dispatched FROM, and deleting the object tree an event is still walking is
-// the one way to turn a tap into a crash.
-//
-// rescan_pending is the stronger of the two -- it re-reads the directory
-// first. A delete needs only the redraw (ImageCatalog_Delete() has already
-// closed the gap in the table), where a card coming or going invalidates the
-// table itself and has to go back to the filesystem.
-static bool rebuild_pending = false;
+// Set to ask the worker timer to re-read the directory and redraw the list
+// -- by a row that found its file gone, and by the card coming or going. Not
+// done inline because a scan is blocking card traffic, and the row asking is
+// the one whose own tap is still being dispatched.
 static bool rescan_pending = false;
+
+// When the touchscreen was last seen in use (pressed, scrolling, or the list
+// still animating) -- see SAVED_DECODE_SETTLE_MS
+static uint32_t last_busy_tick = 0;
 
 // Whether the screen was active on the previous tick, and what the card was
 // doing -- the two edges that make the list stale (see the worker).
@@ -179,79 +246,96 @@ static bool worker_last_mounted = false;
 // Section: Preview cache
 // *****************************************************************************
 
-// Drops whatever a slot is lending out: the row stops drawing it (its buffer
-// is about to be overwritten) and goes back to PENDING, so scrolling to it
-// again decodes it afresh.
-static void ScreenSavedImagesReleaseSlot(SAVED_THUMB_SLOT *slot)
+// Where cell `cell` of the cache lives: the DDR2 memory the decoder writes
+// into, and that the cell's descriptor points LVGL at
+static uint8_t *ScreenSavedImagesCellPixels(uint32_t cell)
 {
-    if (slot->image != NULL)
-    {
-        lv_image_set_src(slot->image, NULL);
-
-        if (slot->row < IMAGE_CATALOG_MAX_ENTRIES)
-        {
-            thumb_state[slot->row] = SAVED_THUMB_PENDING;
-        }
-    }
-
-    slot->image = NULL;
-    slot->used = false;
-    slot->name[0] = '\0';
+    return (uint8_t *)(uintptr_t)(SCREEN_SAVED_IMAGES_THUMB_CACHE_ADDRESS
+            + (cell * SCREEN_SAVED_IMAGES_THUMB_CELL_BYTES));
 }
 
-// A slot to decode into: a free one if there is any, otherwise the one lent
-// out longest ago. With more slots than rows on screen, the victim is always
-// a row that has been scrolled off -- which is what makes taking it cheap.
-static SAVED_THUMB_SLOT *ScreenSavedImagesClaimSlot(void)
+// What the row for catalog entry `index` should be showing: its preview if
+// one has been decoded, otherwise nothing, which leaves the row's dark frame.
+static const lv_image_dsc_t *ScreenSavedImagesThumbSource(uint32_t index)
 {
-    SAVED_THUMB_SLOT *victim = &thumb_slots[0];
+    if (index >= thumb_count) return NULL;
+    if (thumbs[index].state != SAVED_THUMB_READY) return NULL;
+    if (thumbs[index].cell >= IMAGE_CATALOG_MAX_ENTRIES) return NULL;
+
+    return &thumb_dsc[thumbs[index].cell];
+}
+
+// Re-lines thumbs[] up with the catalog after a scan or a delete, keeping
+// every preview whose file is still there and handing the cells of the ones
+// that are gone to the entries that are new.
+//
+// Both lists are sorted the same way -- descending by name, which is how
+// image_catalog.c keeps its table and therefore how thumbs[] was left last
+// time -- so this is one merge walk rather than a search per entry. An entry
+// keeps its preview only if its size and timestamp match as well as its
+// name: a different card, or a new capture issued a deleted image's number,
+// is a different picture under the same name.
+//
+// There is a cell for every entry the catalog can hold, so nothing is ever
+// evicted and the second pass can never run out of cells.
+static void ScreenSavedImagesSyncThumbs(void)
+{
+    static bool cell_taken[IMAGE_CATALOG_MAX_ENTRIES];
+    uint32_t count = ImageCatalog_GetCount();
+    uint32_t prev_count = thumb_count;
+    uint32_t old = 0;
+    uint32_t next_cell = 0;
     uint32_t index;
 
-    for (index = 0; index < SAVED_THUMB_SLOT_COUNT; index++)
-    {
-        if (!thumb_slots[index].used) return &thumb_slots[index];
+    memcpy(thumbs_prev, thumbs, prev_count * sizeof(thumbs[0]));
+    memset(cell_taken, 0, sizeof(cell_taken));
 
-        if (thumb_slots[index].stamp < victim->stamp) victim = &thumb_slots[index];
+    for (index = 0; index < count; index++)
+    {
+        const IMAGE_CATALOG_ENTRY *entry = ImageCatalog_GetEntry(index);
+        SAVED_THUMB *thumb = &thumbs[index];
+
+        memcpy(thumb->name, entry->name, sizeof(thumb->name));
+        thumb->size_bytes = entry->size_bytes;
+        thumb->timestamp = entry->timestamp;
+        thumb->cell = SAVED_THUMB_NO_CELL;
+        thumb->state = SAVED_THUMB_PENDING;
+
+        // Old entries that sort above this one are no longer on the card
+        while ((old < prev_count) &&
+               (strcmp(thumbs_prev[old].name, entry->name) > 0))
+        {
+            old++;
+        }
+
+        // Nothing old left, or nothing old by this name: new to the list
+        if ((old >= prev_count) || (strcmp(thumbs_prev[old].name, entry->name) != 0)) continue;
+
+        if ((thumbs_prev[old].size_bytes == entry->size_bytes) &&
+            (thumbs_prev[old].timestamp == entry->timestamp) &&
+            (thumbs_prev[old].cell < IMAGE_CATALOG_MAX_ENTRIES))
+        {
+            thumb->cell = thumbs_prev[old].cell;
+            thumb->state = thumbs_prev[old].state;
+            cell_taken[thumb->cell] = true;
+        }
+
+        old++;
     }
 
-    ScreenSavedImagesReleaseSlot(victim);
+    for (index = 0; index < count; index++)
+    {
+        if (thumbs[index].cell != SAVED_THUMB_NO_CELL) continue;
 
-    return victim;
-}
+        while ((next_cell < IMAGE_CATALOG_MAX_ENTRIES) && cell_taken[next_cell]) next_cell++;
 
-// Points `image` at `slot`'s picture. lv_image_set_src() only stores the
-// pointer, which is why the draw buffer belongs to the slot and not to this
-// call -- the widget reads it on every redraw.
-static void ScreenSavedImagesBindSlot(SAVED_THUMB_SLOT *slot, lv_obj_t *image,
-        uint32_t row)
-{
-    if (image == NULL) return;
+        if (next_cell >= IMAGE_CATALOG_MAX_ENTRIES) break;   // cannot happen, see above
 
-    slot->image = image;
-    slot->row = row;
-    slot->stamp = ++thumb_stamp;
-    slot->used = true;
+        thumbs[index].cell = (uint16_t)next_cell;
+        cell_taken[next_cell] = true;
+    }
 
-    lv_image_set_src(image, slot->buf);
-
-    thumb_state[row] = SAVED_THUMB_READY;
-}
-
-// The preview widget of row `index`, or NULL if there is no such row. Rows
-// are children of the panel in list order, so the catalog index IS the child
-// index -- the one place that relationship is relied on.
-static lv_obj_t *ScreenSavedImagesRowThumb(uint32_t index)
-{
-    lv_obj_t *row;
-
-    if (panel == NULL) return NULL;
-    if (index >= (uint32_t)lv_obj_get_child_count(panel)) return NULL;
-
-    row = lv_obj_get_child(panel, (int32_t)index);
-
-    if (row == NULL) return NULL;
-
-    return lv_obj_get_child(row, SAVED_ROW_CHILD_THUMB);
+    thumb_count = count;
 }
 
 // *****************************************************************************
@@ -277,87 +361,60 @@ static void ScreenSavedImagesFormatSize(char *text, size_t size, uint32_t bytes)
 static void ScreenSavedImagesRowClicked(lv_event_t *event);
 static void ScreenSavedImagesTrashClicked(lv_event_t *event);
 
-// Builds one row: preview, name, size, bin. Returns false if any widget
-// could not be created, which aborts the rebuild rather than leaving a
-// half-built list.
-static bool ScreenSavedImagesCreateRow(uint32_t index, int32_t width)
+// Builds one pool row: preview, name, size, bin -- empty and hidden, since
+// it stands for no image until ScreenSavedImagesBindRows() gives it one. Its
+// callbacks are handed the SAVED_ROW rather than an index; see that struct.
+static bool ScreenSavedImagesCreateRow(SAVED_ROW *slot, int32_t width)
 {
-    const IMAGE_CATALOG_ENTRY *entry = ImageCatalog_GetEntry(index);
-    char size_text[16];
-    lv_obj_t *row;
-    lv_obj_t *thumb;
-    lv_obj_t *size_label;
     lv_obj_t *trash;
 
-    if (entry == NULL) return false;
+    slot->index = SAVED_ROW_UNBOUND;
 
     // The whole row is the tap target that opens the image -- the bin below
     // is a child of it, and children are hit-tested first, so the two do not
     // fight over the press.
-    row = Screen_CreateButton(panel, LV_ALIGN_TOP_LEFT, 0,
-            (int32_t)(index * SAVED_ROW_PITCH_PX), width, SAVED_ROW_HEIGHT_PX,
-            entry->name, ScreenSavedImagesRowClicked, (void *)(uintptr_t)index);
+    slot->row = Screen_CreateButton(panel, LV_ALIGN_TOP_LEFT, 0, 0,
+            width, SAVED_ROW_HEIGHT_PX, "", ScreenSavedImagesRowClicked, slot);
 
-    if (row == NULL) return false;
-
-    // From here on the row exists, so every failure below takes it back down
-    // with it -- the caller stops the list at this index, and a row missing
-    // half its parts would sit at the bottom of it looking like an image
-    // whose name and preview had gone missing.
+    if (slot->row == NULL) return false;
 
     // Screen_CreateButton centers its label; this list wants the name beside
-    // the preview. lv_obj_get_child(row, SAVED_ROW_CHILD_NAME) is that label.
-    lv_obj_align(lv_obj_get_child(row, SAVED_ROW_CHILD_NAME), LV_ALIGN_LEFT_MID,
-            SAVED_NAME_X_PX, 0);
+    // the preview.
+    slot->name = lv_obj_get_child(slot->row, SAVED_BUTTON_CHILD_LABEL);
+    lv_obj_align(slot->name, LV_ALIGN_LEFT_MID, SAVED_NAME_X_PX, 0);
 
     // --- Preview ----------------------------------------------------------
-    // Created with no source: the worker decodes it later, and until then the
-    // dark fill below stands in for the picture so the row does not look
-    // broken. MUST be child SAVED_ROW_CHILD_THUMB -- see that macro.
-    thumb = lv_image_create(row);
+    // No source until its image has been decoded: the dark fill stands in
+    // for the picture so the row does not look broken.
+    slot->thumb = lv_image_create(slot->row);
+    if (slot->thumb == NULL) return false;
 
-    if (thumb == NULL)
-    {
-        lv_obj_delete(row);
-        return false;
-    }
-
-    lv_obj_set_size(thumb, SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX);
-    lv_obj_align(thumb, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_obj_set_style_bg_color(thumb, lv_color_hex(SAVED_THUMB_EMPTY_COLOR), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(thumb, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_size(slot->thumb, SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX);
+    lv_obj_align(slot->thumb, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_set_style_bg_color(slot->thumb, lv_color_hex(SAVED_THUMB_EMPTY_COLOR), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(slot->thumb, LV_OPA_COVER, LV_PART_MAIN);
 
     // Every child of the row would otherwise swallow the press before the row
     // saw it -- the same trap Screen_CreateButton() disarms for its own label
-    lv_obj_remove_flag(thumb, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(slot->thumb, LV_OBJ_FLAG_CLICKABLE);
 
     // --- File size --------------------------------------------------------
-    ScreenSavedImagesFormatSize(size_text, sizeof(size_text), entry->size_bytes);
+    slot->size = Screen_CreateLabel(slot->row, &lv_font_montserrat_14, LV_ALIGN_RIGHT_MID,
+            -(SAVED_TRASH_WIDTH_PX + SAVED_SIZE_GAP_PX), 0, "");
 
-    size_label = Screen_CreateLabel(row, &lv_font_montserrat_14, LV_ALIGN_RIGHT_MID,
-            -(SAVED_TRASH_WIDTH_PX + SAVED_SIZE_GAP_PX), 0, size_text);
+    if (slot->size == NULL) return false;
 
-    if (size_label == NULL)
-    {
-        lv_obj_delete(row);
-        return false;
-    }
-
-    lv_obj_set_style_text_color(size_label, lv_color_hex(SAVED_DIM_TEXT_COLOR), LV_PART_MAIN);
-    lv_obj_remove_flag(size_label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_text_color(slot->size, lv_color_hex(SAVED_DIM_TEXT_COLOR), LV_PART_MAIN);
+    lv_obj_remove_flag(slot->size, LV_OBJ_FLAG_CLICKABLE);
 
     // --- Bin --------------------------------------------------------------
     // Clickable, unlike the two above: this is the one part of the row that
     // does something other than open the image.
-    trash = Screen_CreateButton(row, LV_ALIGN_RIGHT_MID, 0, 0,
+    trash = Screen_CreateButton(slot->row, LV_ALIGN_RIGHT_MID, 0, 0,
             SAVED_TRASH_WIDTH_PX, SAVED_TRASH_HEIGHT_PX, LV_SYMBOL_TRASH,
-            ScreenSavedImagesTrashClicked, (void *)(uintptr_t)index);
+            ScreenSavedImagesTrashClicked, slot);
 
-    if (trash == NULL)
-    {
-        lv_obj_delete(row);
-        return false;
-    }
+    if (trash == NULL) return false;
 
     // Red, border and glyph both, because it is the only control on this
     // screen that destroys something
@@ -366,24 +423,153 @@ static bool ScreenSavedImagesCreateRow(uint32_t index, int32_t width)
     lv_obj_set_style_text_color(lv_obj_get_child(trash, SAVED_BUTTON_CHILD_LABEL),
             lv_color_hex(SAVED_DANGER_COLOR), LV_PART_MAIN);
 
+    lv_obj_add_flag(slot->row, LV_OBJ_FLAG_HIDDEN);
+
     return true;
 }
 
-// Empties the list and builds it again from the catalog as it stands now.
+// The catalog indices of the rows currently scrolled into view, inclusive.
+// Returns false when the list is empty. Worked out from the panel's scroll
+// offset and the fixed row pitch rather than by asking each row whether it
+// is visible -- the rows are laid out at explicit offsets, so this is exact.
+static bool ScreenSavedImagesVisibleRange(uint32_t *first, uint32_t *last)
+{
+    int32_t scroll;
+    int32_t view_height;
+
+    if ((panel == NULL) || (thumb_count == 0)) return false;
+
+    scroll = lv_obj_get_scroll_y(panel);
+    if (scroll < 0) scroll = 0;   // over-scroll bounce at the top
+
+    view_height = lv_obj_get_content_height(panel);
+
+    *first = (uint32_t)(scroll / SAVED_ROW_PITCH_PX);
+    *last = (uint32_t)((scroll + view_height) / SAVED_ROW_PITCH_PX);
+
+    if (*first >= thumb_count) return false;
+    if (*last >= thumb_count) *last = thumb_count - 1u;
+
+    return true;
+}
+
+// Turns pool row `row` into the row for catalog entry `index`: moves it to
+// that entry's place in the list and relabels it.
+static void ScreenSavedImagesFillRow(SAVED_ROW *row, uint32_t index)
+{
+    const IMAGE_CATALOG_ENTRY *entry = ImageCatalog_GetEntry(index);
+    char size_text[16];
+
+    if (entry == NULL) return;
+
+    row->index = index;
+
+    lv_obj_set_y(row->row, (int32_t)(index * SAVED_ROW_PITCH_PX));
+    lv_label_set_text(row->name, entry->name);
+
+    ScreenSavedImagesFormatSize(size_text, sizeof(size_text), entry->size_bytes);
+    lv_label_set_text(row->size, size_text);
+
+    lv_image_set_src(row->thumb, ScreenSavedImagesThumbSource(index));
+
+    if (lv_obj_has_flag(row->row, LV_OBJ_FLAG_HIDDEN))
+    {
+        lv_obj_remove_flag(row->row, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+// Points the pool at whatever part of the list is scrolled into view.
 //
-// Only ever called from the worker timer -- see rebuild_pending. Every row
-// widget is destroyed here, so the preview pool is re-pointed at the new
-// rows first: slots are matched to rows BY NAME, which is what keeps the
-// previews of everything else on screen when one image is deleted (the
-// catalog indices below the deleted row all shift by one, so matching on
-// those would re-decode the whole visible page).
+// Runs on every LV_EVENT_SCROLL, so it does next to nothing until the view
+// has moved a whole row: a row still inside the window keeps its binding
+// untouched, and only the rows that fell out of it are relabelled for the
+// entries coming in. The window starts one row above the first visible one,
+// so a drag back up finds that row already built.
+static void ScreenSavedImagesBindRows(void)
+{
+    uint32_t first, last;
+    uint32_t start = 0;
+    uint32_t end = 0;
+    uint32_t index, r;
+
+    if (panel == NULL) return;
+
+    if (ScreenSavedImagesVisibleRange(&first, &last))
+    {
+        start = (first > 0u) ? (first - 1u) : 0u;
+
+        // Near the end, slide the window back so the whole pool is still in
+        // use rather than leaving rows idle past the last entry
+        if (thumb_count <= SAVED_ROW_POOL_COUNT) start = 0u;
+        else if (start > (thumb_count - SAVED_ROW_POOL_COUNT)) start = thumb_count - SAVED_ROW_POOL_COUNT;
+
+        end = start + SAVED_ROW_POOL_COUNT;
+        if (end > thumb_count) end = thumb_count;
+    }
+
+    for (r = 0; r < SAVED_ROW_POOL_COUNT; r++)
+    {
+        if ((rows[r].index != SAVED_ROW_UNBOUND) &&
+            ((rows[r].index < start) || (rows[r].index >= end)))
+        {
+            rows[r].index = SAVED_ROW_UNBOUND;
+        }
+    }
+
+    for (index = start; index < end; index++)
+    {
+        SAVED_ROW *free_row = NULL;
+        bool bound = false;
+
+        for (r = 0; r < SAVED_ROW_POOL_COUNT; r++)
+        {
+            if (rows[r].index == index)
+            {
+                bound = true;
+                break;
+            }
+
+            if ((rows[r].index == SAVED_ROW_UNBOUND) && (free_row == NULL)) free_row = &rows[r];
+        }
+
+        if (bound) continue;
+
+        // The window is never wider than the pool, so a free row is always
+        // there; this only keeps a logic error from dereferencing NULL
+        if (free_row == NULL) break;
+
+        ScreenSavedImagesFillRow(free_row, index);
+    }
+
+    // Rows left over are hidden, not just emptied: a hidden object is left
+    // out of the panel's scroll extent, where a stale one parked past the end
+    // of a shrunken list would hold the scroll range open
+    for (r = 0; r < SAVED_ROW_POOL_COUNT; r++)
+    {
+        if ((rows[r].index == SAVED_ROW_UNBOUND) &&
+            !lv_obj_has_flag(rows[r].row, LV_OBJ_FLAG_HIDDEN))
+        {
+            lv_obj_add_flag(rows[r].row, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
+static void ScreenSavedImagesPanelScrolled(lv_event_t *event)
+{
+    (void)event;
+
+    ScreenSavedImagesBindRows();
+}
+
+// Redraws the list from the catalog as it stands now, after a scan or a
+// delete. No widget is created or destroyed -- the row pool is re-pointed --
+// so this costs the same however long the list is, and is safe to call from
+// an event callback.
 static void ScreenSavedImagesRebuild(void)
 {
-    uint32_t count = ImageCatalog_GetCount();
-    int32_t row_width;
     int32_t scroll;
     int32_t scroll_max;
-    uint32_t index;
+    uint32_t r;
 
     if (panel == NULL) return;
 
@@ -393,59 +579,37 @@ static void ScreenSavedImagesRebuild(void)
     scroll = lv_obj_get_scroll_y(panel);
     if (scroll < 0) scroll = 0;   // elastic over-scroll at the top
 
-    // The widgets the slots were lending to are about to be freed. Forget the
-    // pointers WITHOUT releasing the slots -- the decoded pictures are still
-    // good, and the loop below hands them back to whichever new row wants them.
-    for (index = 0; index < SAVED_THUMB_SLOT_COUNT; index++)
+    ScreenSavedImagesSyncThumbs();
+
+    // Every binding is stale now -- the entry a row names may have moved or
+    // gone -- so all of them are dropped and the bind below starts over. The
+    // rows are hidden too, so none is left holding the scroll extent past the
+    // new end of the list while it is re-measured.
+    for (r = 0; r < SAVED_ROW_POOL_COUNT; r++)
     {
-        thumb_slots[index].image = NULL;
-        thumb_slots[index].row = IMAGE_CATALOG_MAX_ENTRIES;
+        rows[r].index = SAVED_ROW_UNBOUND;
+        lv_obj_add_flag(rows[r].row, LV_OBJ_FLAG_HIDDEN);
     }
 
-    lv_obj_clean(panel);
-
-    // The panel's content box: its own width less the left padding and the
-    // wider right padding that keeps the scrollbar lane clear
-    row_width = LV_HOR_RES - (2 * SAVED_PANEL_INSET_PX)
-            - SAVED_PANEL_PAD_PX - SAVED_SCROLLBAR_LANE_PX;
-
-    for (index = 0; index < count; index++)
+    if (thumb_count > 0)
     {
-        const IMAGE_CATALOG_ENTRY *entry = ImageCatalog_GetEntry(index);
-        uint32_t slot;
-
-        thumb_state[index] = SAVED_THUMB_PENDING;
-
-        if ((entry == NULL) || !ScreenSavedImagesCreateRow(index, row_width))
-        {
-            // Out of heap partway through. Keep what was built -- a short
-            // list is still usable -- and stop asking for more.
-            count = index;
-            break;
-        }
-
-        // Does the pool still hold this image's preview from before the
-        // rebuild? If so the row gets it back without a decode.
-        for (slot = 0; slot < SAVED_THUMB_SLOT_COUNT; slot++)
-        {
-            if (!thumb_slots[slot].used) continue;
-            if (thumb_slots[slot].image != NULL) continue;
-
-            if (strcmp(thumb_slots[slot].name, entry->name) == 0)
-            {
-                ScreenSavedImagesBindSlot(&thumb_slots[slot],
-                        ScreenSavedImagesRowThumb(index), index);
-                break;
-            }
-        }
+        lv_obj_set_y(list_end, (int32_t)(thumb_count * SAVED_ROW_PITCH_PX)
+                - SAVED_ROW_GAP_PX - 1);
+        lv_obj_remove_flag(list_end, LV_OBJ_FLAG_HIDDEN);
     }
+    else
+    {
+        lv_obj_add_flag(list_end, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    // LVGL bounds a scroll against where the children currently ARE, and the
+    // end marker above has so far only been told where it is going to be
+    lv_obj_update_layout(panel);
 
     // Put the reader back where they were, but no further down than the list
     // now reaches -- it is usually one row shorter than it was, and scrolling
-    // past the end would leave the panel showing nothing at all. Computed
-    // here rather than left to LVGL because the rows were positioned by hand,
-    // so their extent is known exactly.
-    scroll_max = (int32_t)(count * SAVED_ROW_PITCH_PX) - SAVED_ROW_GAP_PX
+    // past the end would leave the panel showing nothing at all.
+    scroll_max = (int32_t)(thumb_count * SAVED_ROW_PITCH_PX) - SAVED_ROW_GAP_PX
             - lv_obj_get_content_height(panel);
 
     if (scroll_max < 0) scroll_max = 0;
@@ -453,23 +617,13 @@ static void ScreenSavedImagesRebuild(void)
 
     lv_obj_scroll_to_y(panel, scroll, LV_ANIM_OFF);
 
-    // Slots whose image is gone from the list entirely (it was deleted, or
-    // the card changed) are dead weight -- free them for the rows that are
-    // actually here
-    for (index = 0; index < SAVED_THUMB_SLOT_COUNT; index++)
-    {
-        if (thumb_slots[index].used && (thumb_slots[index].image == NULL))
-        {
-            thumb_slots[index].used = false;
-            thumb_slots[index].name[0] = '\0';
-        }
-    }
+    ScreenSavedImagesBindRows();
 
     // The empty state carries the reason there is nothing to show, since the
     // two reasons want different things done about them
     if (empty_label != NULL)
     {
-        if (count > 0)
+        if (thumb_count > 0)
         {
             lv_obj_add_flag(empty_label, LV_OBJ_FLAG_HIDDEN);
         }
@@ -489,86 +643,102 @@ static void ScreenSavedImagesRebuild(void)
 // Section: Worker
 // *****************************************************************************
 
-// The catalog indices of the rows currently scrolled into view, inclusive.
-// Returns false when the list is empty. Worked out from the panel's scroll
-// offset and the fixed row pitch rather than by asking each row whether it
-// is visible -- the rows are laid out at explicit offsets, so this is exact
-// and does not walk the list.
-static bool ScreenSavedImagesVisibleRange(uint32_t *first, uint32_t *last)
+// Whether the user is in the middle of doing something with the screen: a
+// finger down, a scroll still coasting after the finger left, the list
+// springing back from an over-scroll, or the screen still sliding in. Any
+// blocking work started now would be felt as the list freezing under them.
+static bool ScreenSavedImagesUserBusy(void)
 {
-    uint32_t count = ImageCatalog_GetCount();
-    int32_t scroll;
-    int32_t view_height;
+    lv_indev_t *indev = NULL;
 
-    if ((panel == NULL) || (count == 0)) return false;
+    while ((indev = lv_indev_get_next(indev)) != NULL)
+    {
+        if (lv_indev_get_state(indev) == LV_INDEV_STATE_PRESSED) return true;
 
-    scroll = lv_obj_get_scroll_y(panel);
-    if (scroll < 0) scroll = 0;   // over-scroll bounce at the top
+        // Stays set through the throw that follows a flick, until it stops
+        if (lv_indev_get_scroll_obj(indev) != NULL) return true;
+    }
 
-    view_height = lv_obj_get_content_height(panel);
+    if (lv_anim_get(panel, NULL) != NULL) return true;
+    if (lv_anim_get(lv_obj_get_screen(panel), NULL) != NULL) return true;
 
-    *first = (uint32_t)(scroll / SAVED_ROW_PITCH_PX);
-    *last = (uint32_t)((scroll + view_height) / SAVED_ROW_PITCH_PX);
+    return false;
+}
 
-    if (*first >= count) return false;
-    if (*last >= count) *last = count - 1u;
+// Decodes the preview of catalog entry `index` if it still needs one, and
+// shows it on the row currently drawn for that entry, if there is one.
+// Returns true if a decode was attempted, whether or not it worked -- either
+// way the tick's one piece of blocking work has been spent.
+static bool ScreenSavedImagesDecodeThumb(uint32_t index)
+{
+    char path[IMAGE_CATALOG_PATH_MAX];
+    SAVED_THUMB *thumb;
+    uint32_t r;
+
+    if (index >= thumb_count) return false;
+
+    thumb = &thumbs[index];
+
+    if (thumb->state != SAVED_THUMB_PENDING) return false;
+
+    if ((thumb->cell >= IMAGE_CATALOG_MAX_ENTRIES) ||
+        !ImageCatalog_BuildPath(index, path, sizeof(path)) ||
+        !ImageLoader_DecodeThumbnail(IMAGE_MEDIA_SD_CARD, path,
+                ScreenSavedImagesCellPixels(thumb->cell),
+                SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX))
+    {
+        // A file that will not decode is not going to start: mark it and
+        // move on, or the worker would spend every tick on it forever.
+        // The row keeps its empty frame.
+        thumb->state = SAVED_THUMB_FAILED;
+        return true;
+    }
+
+    thumb->state = SAVED_THUMB_READY;
+
+    for (r = 0; r < SAVED_ROW_POOL_COUNT; r++)
+    {
+        if (rows[r].index == index)
+        {
+            lv_image_set_src(rows[r].thumb, ScreenSavedImagesThumbSource(index));
+        }
+    }
 
     return true;
 }
 
-// Decodes the preview of one visible row that hasn't got one. Returns false
-// if every visible row is already resolved, which is the steady state.
+// One preview decode: a visible row's first, top to bottom, and once those
+// are all drawn, the rows just past the view, nearest first and below before
+// above (the list is newest first, so reading it means scrolling down).
+// Returns false once there is nothing left in reach to decode, which is the
+// steady state.
 static bool ScreenSavedImagesDecodeOnePreview(void)
 {
-    char path[IMAGE_CATALOG_PATH_MAX];
-    uint32_t first, last, index;
+    uint32_t first, last, index, distance;
 
     if (!ScreenSavedImagesVisibleRange(&first, &last)) return false;
 
     for (index = first; index <= last; index++)
     {
-        const IMAGE_CATALOG_ENTRY *entry;
-        SAVED_THUMB_SLOT *slot;
-        lv_obj_t *image;
+        if (ScreenSavedImagesDecodeThumb(index)) return true;
+    }
 
-        if (thumb_state[index] != SAVED_THUMB_PENDING) continue;
+    for (distance = 1u; distance <= SAVED_PREFETCH_ROWS; distance++)
+    {
+        if (ScreenSavedImagesDecodeThumb(last + distance)) return true;
 
-        entry = ImageCatalog_GetEntry(index);
-        image = ScreenSavedImagesRowThumb(index);
-
-        if ((entry == NULL) || (image == NULL) ||
-            !ImageCatalog_BuildPath(index, path, sizeof(path)))
-        {
-            thumb_state[index] = SAVED_THUMB_FAILED;
-            return true;
-        }
-
-        slot = ScreenSavedImagesClaimSlot();
-
-        if (!ImageLoader_DecodeThumbnail(IMAGE_MEDIA_SD_CARD, path, slot->pixels,
-                SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX))
-        {
-            // A file that will not decode is not going to start: mark it and
-            // move on, or the worker would spend every tick on it forever.
-            // The row keeps its empty frame.
-            thumb_state[index] = SAVED_THUMB_FAILED;
-            return true;
-        }
-
-        snprintf(slot->name, sizeof(slot->name), "%s", entry->name);
-        ScreenSavedImagesBindSlot(slot, image, index);
-
-        return true;
+        if ((first >= distance) && ScreenSavedImagesDecodeThumb(first - distance)) return true;
     }
 
     return false;
 }
 
 // One piece of blocking work per tick, and only while the list is the thing
-// being looked at -- see screen_saved_images.h.
+// being looked at and is being left alone -- see screen_saved_images.h.
 static void ScreenSavedImagesWorker(lv_timer_t *timer)
 {
     bool mounted;
+    uint32_t index;
 
     (void)timer;
 
@@ -580,18 +750,27 @@ static void ScreenSavedImagesWorker(lv_timer_t *timer)
 
     // Arriving on the screen: whatever the catalog holds is from the last
     // visit, and the shutter button or a USB host may have changed the card
-    // since. Rebuilding beats showing a list that is quietly wrong.
+    // since. Rebuilding beats showing a list that is quietly wrong -- and it
+    // is cheap, because the previews of every file still there are kept.
     if (!worker_was_active)
     {
         worker_was_active = true;
         worker_last_mounted = SDFileIO_IsMounted();
         rescan_pending = false;
-        rebuild_pending = false;
+        last_busy_tick = lv_tick_get();
 
         // A prompt left open when the screen was navigated away from is a
         // question about a row that no longer exists -- it does not come back
         // with the screen
         if (confirm_overlay != NULL) lv_obj_add_flag(confirm_overlay, LV_OBJ_FLAG_HIDDEN);
+
+        // A preview that failed last visit gets another try each visit: the
+        // likely causes (the LVGL heap briefly too fragmented for the decode,
+        // a card read error) are not permanent
+        for (index = 0; index < thumb_count; index++)
+        {
+            if (thumbs[index].state == SAVED_THUMB_FAILED) thumbs[index].state = SAVED_THUMB_PENDING;
+        }
 
         ImageCatalog_Scan();
         ScreenSavedImagesRebuild();
@@ -605,12 +784,22 @@ static void ScreenSavedImagesWorker(lv_timer_t *timer)
 
     // Likewise while the delete prompt is up, and for a sharper reason: the
     // prompt is a question about one row, held as its catalog index, and a
-    // rebuild renumbers those. A card inserted between the tap on the bin and
+    // rescan renumbers those. A card inserted between the tap on the bin and
     // the tap on Delete would otherwise mean deleting a different file than
     // the one named on screen. Nothing here is urgent enough to risk that --
     // it all happens as soon as the question is answered.
     if ((confirm_overlay != NULL) &&
         !lv_obj_has_flag(confirm_overlay, LV_OBJ_FLAG_HIDDEN)) return;
+
+    // And while a finger is on the glass or the list is still moving. This
+    // also holds back the rescan below: it re-points the rows, and the row
+    // under a finger must not turn into a different image before the tap
+    // lands.
+    if (ScreenSavedImagesUserBusy())
+    {
+        last_busy_tick = lv_tick_get();
+        return;
+    }
 
     mounted = SDFileIO_IsMounted();
 
@@ -620,16 +809,16 @@ static void ScreenSavedImagesWorker(lv_timer_t *timer)
         rescan_pending = true;
     }
 
-    if (rescan_pending || rebuild_pending)
+    if (rescan_pending)
     {
-        if (rescan_pending) ImageCatalog_Scan();
-
         rescan_pending = false;
-        rebuild_pending = false;
 
+        ImageCatalog_Scan();
         ScreenSavedImagesRebuild();
         return;
     }
+
+    if (lv_tick_elaps(last_busy_tick) < SAVED_DECODE_SETTLE_MS) return;
 
     (void)ScreenSavedImagesDecodeOnePreview();
 }
@@ -653,18 +842,20 @@ void ScreenSavedImages_DismissViewer(void)
 // PNG decode -- which is why the row stays visibly pressed until it lands.
 static void ScreenSavedImagesRowClicked(lv_event_t *event)
 {
-    uintptr_t index = (uintptr_t)lv_event_get_user_data(event);
+    const SAVED_ROW *row = lv_event_get_user_data(event);
     char path[IMAGE_CATALOG_PATH_MAX];
 
-    if (!ImageCatalog_BuildPath((uint32_t)index, path, sizeof(path))) return;
+    if ((row == NULL) || (row->index == SAVED_ROW_UNBOUND)) return;
+
+    if (!ImageCatalog_BuildPath(row->index, path, sizeof(path))) return;
 
     if (!ImageLoader_DisplayPNG(IMAGE_MEDIA_SD_CARD, path))
     {
         // The file the row names is gone or unreadable, so the list is
         // describing a card that no longer looks like that -- re-read it
         // rather than leaving a row that does nothing when tapped. Handed to
-        // the worker like every other rebuild, since this is a row's own
-        // event callback.
+        // the worker, since a scan is blocking and this is a row's own event
+        // callback.
         rescan_pending = true;
         return;
     }
@@ -686,12 +877,16 @@ static void ScreenSavedImagesViewerClicked(lv_event_t *event)
 // whole of this callback's effect.
 static void ScreenSavedImagesTrashClicked(lv_event_t *event)
 {
-    uintptr_t index = (uintptr_t)lv_event_get_user_data(event);
-    const IMAGE_CATALOG_ENTRY *entry = ImageCatalog_GetEntry((uint32_t)index);
+    const SAVED_ROW *row = lv_event_get_user_data(event);
+    const IMAGE_CATALOG_ENTRY *entry;
+
+    if ((row == NULL) || (row->index == SAVED_ROW_UNBOUND)) return;
+
+    entry = ImageCatalog_GetEntry(row->index);
 
     if ((entry == NULL) || (confirm_overlay == NULL)) return;
 
-    confirm_row = (uint32_t)index;
+    confirm_row = row->index;
 
     // Naming the file in the prompt is the point of it: the bins are 30px
     // apart and the row that was tapped is about to be hidden behind the dim
@@ -707,9 +902,10 @@ static void ScreenSavedImagesConfirmDeleteClicked(lv_event_t *event)
     if (confirm_overlay != NULL) lv_obj_add_flag(confirm_overlay, LV_OBJ_FLAG_HIDDEN);
 
     // ImageCatalog_Delete() closes the gap in the table itself, so the list
-    // only has to be redrawn -- and that redraw is deferred to the worker,
-    // because it destroys the very row whose bin dispatched this event
-    if (ImageCatalog_Delete(confirm_row)) rebuild_pending = true;
+    // only has to be redrawn, not re-scanned. Done right here rather than
+    // deferred: the rebuild only re-points the row pool, it destroys nothing,
+    // and this button is not one of the rows anyway.
+    if (ImageCatalog_Delete(confirm_row)) ScreenSavedImagesRebuild();
 }
 
 static void ScreenSavedImagesConfirmCancelClicked(lv_event_t *event)
@@ -806,6 +1002,7 @@ static bool ScreenSavedImagesCreateConfirm(lv_obj_t *screen)
 lv_obj_t *ScreenSavedImages_Create(void)
 {
     lv_obj_t *screen = Screen_Create();
+    int32_t row_width;
     uint32_t index;
 
     if (screen == NULL) return NULL;
@@ -839,6 +1036,32 @@ lv_obj_t *ScreenSavedImages_Create(void)
     // ON rather than AUTO: AUTO only shows the bar while a scroll is in
     // progress, which leaves no hint that there is anything below the fold.
     lv_obj_set_scrollbar_mode(panel, LV_SCROLLBAR_MODE_ON);
+
+    // Re-points the row pool as the list moves -- see
+    // ScreenSavedImagesBindRows()
+    lv_obj_add_event_cb(panel, ScreenSavedImagesPanelScrolled, LV_EVENT_SCROLL, NULL);
+
+    // --- Row pool ---------------------------------------------------------
+    // The panel's content box: its own width less the left padding and the
+    // wider right padding that keeps the scrollbar lane clear
+    row_width = LV_HOR_RES - (2 * SAVED_PANEL_INSET_PX)
+            - SAVED_PANEL_PAD_PX - SAVED_SCROLLBAR_LANE_PX;
+
+    for (index = 0; index < SAVED_ROW_POOL_COUNT; index++)
+    {
+        if (!ScreenSavedImagesCreateRow(&rows[index], row_width)) return NULL;
+    }
+
+    // Draws nothing and takes no taps: remove_style_all() strips the theme's
+    // fill and border, and removing the flag stops it catching a press. See
+    // list_end.
+    list_end = lv_obj_create(panel);
+    if (list_end == NULL) return NULL;
+
+    lv_obj_remove_style_all(list_end);
+    lv_obj_set_size(list_end, 1, 1);
+    lv_obj_remove_flag(list_end, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(list_end, LV_OBJ_FLAG_HIDDEN);
 
     // --- Empty state ------------------------------------------------------
     // A child of the SCREEN, not of the panel: the rebuild empties the panel
@@ -876,40 +1099,31 @@ lv_obj_t *ScreenSavedImages_Create(void)
     lv_obj_add_event_cb(viewer_catcher, ScreenSavedImagesViewerClicked,
             LV_EVENT_CLICKED, NULL);
 
-    // --- Preview buffer pool ----------------------------------------------
-    // Taken once, here, and never released: a per-decode allocation of this
-    // size would churn the LVGL heap the GUI and every PNG decode share, and
-    // the pool is small enough (see SAVED_THUMB_SLOT_COUNT) to simply own.
+    // --- Preview cache descriptors ----------------------------------------
+    // One per DDR2 cell, pointing at it for good. A plain lv_image_dsc_t,
+    // NOT an lv_draw_buf_t marked LV_IMAGE_FLAGS_ALLOCATED: that flag tells
+    // LVGL it owns the memory and may hand it back to lv_malloc's allocator,
+    // which for a pointer into DDR2 outside the LVGL heap would corrupt the
+    // heap. The price is that the image decoder wraps the descriptor in a
+    // draw buffer on each redraw -- a few field copies per 40x30 preview --
+    // and that wrap checks alignment, which a cell boundary always passes
+    // (4096 is a multiple of LV_DRAW_BUF_ALIGN), so it does not log.
     //
-    // lv_draw_buf_create() rather than lv_malloc() behind a hand-filled
-    // lv_image_dsc_t, for two reasons that are really one. It aligns the
-    // pixels to LV_DRAW_BUF_ALIGN, which lv_malloc() does not promise; and it
-    // marks the result LV_IMAGE_FLAGS_ALLOCATED, which makes the image
-    // decoder hand the buffer straight to the renderer. A plain descriptor
-    // instead gets re-wrapped through lv_draw_buf_init() on EVERY redraw of
-    // EVERY preview, and unaligned pixels make that log "Data is not aligned,
-    // ignored" each time -- the picture still draws, but the console fills
-    // with it.
-    //
-    // The stride is passed explicitly rather than left to LVGL to derive, so
+    // The stride is set explicitly rather than left to LVGL to derive, so
     // that it cannot start padding rows: ImageLoader_DecodeThumbnail() writes
     // width * 3 bytes per row with no gap between them.
-    for (index = 0; index < SAVED_THUMB_SLOT_COUNT; index++)
+    for (index = 0; index < IMAGE_CATALOG_MAX_ENTRIES; index++)
     {
-        SAVED_THUMB_SLOT *slot = &thumb_slots[index];
+        lv_image_dsc_t *dsc = &thumb_dsc[index];
 
-        slot->buf = lv_draw_buf_create(SAVED_THUMB_WIDTH_PX, SAVED_THUMB_HEIGHT_PX,
-                LV_COLOR_FORMAT_RGB888, SAVED_THUMB_STRIDE_BYTES);
-
-        if (slot->buf == NULL) return NULL;
-
-        slot->pixels = slot->buf->data;
-
-        slot->image = NULL;
-        slot->row = IMAGE_CATALOG_MAX_ENTRIES;
-        slot->name[0] = '\0';
-        slot->stamp = 0;
-        slot->used = false;
+        memset(dsc, 0, sizeof(*dsc));
+        dsc->header.magic = LV_IMAGE_HEADER_MAGIC;
+        dsc->header.cf = LV_COLOR_FORMAT_RGB888;
+        dsc->header.w = SAVED_THUMB_WIDTH_PX;
+        dsc->header.h = SAVED_THUMB_HEIGHT_PX;
+        dsc->header.stride = SAVED_THUMB_STRIDE_BYTES;
+        dsc->data_size = SAVED_THUMB_PIXEL_BYTES;
+        dsc->data = ScreenSavedImagesCellPixels(index);
     }
 
     // The list is deliberately NOT scanned here: Create() runs at boot, where
@@ -955,5 +1169,11 @@ void ScreenSavedImages_Refresh(void)
         snprintf(title, sizeof(title), "Saved Images (%lu)", (unsigned long)count);
     }
 
-    if (header.title_label != NULL) lv_label_set_text(header.title_label, title);
+    // Only on a change: lv_label_set_text() redraws the header every time
+    // it is called, and this runs twice a second
+    if ((header.title_label != NULL) &&
+        (strcmp(lv_label_get_text(header.title_label), title) != 0))
+    {
+        lv_label_set_text(header.title_label, title);
+    }
 }

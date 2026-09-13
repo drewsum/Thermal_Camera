@@ -11,8 +11,11 @@
 
 #include "i2c/device_driver/ds1683.h"
 #include "i2c/i2c_master.h"
+#include "core/device_control.h"
+#include "core/watchdog_timer.h"
 #include "usb_uart/terminal_control.h"
 
+#include <xc.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -48,6 +51,12 @@
 
 // The ETC register accumulates in 250ms ticks.
 #define DS1683_ETC_TICKS_PER_SECOND    4u
+
+// Datasheet t_W (EEPROM write time) is 10ms max, timed from the STOP;
+// doubled for margin.
+#define DS1683_EEPROM_WRITE_WAIT_MS    20u
+
+#define DS1683_TICKS_PER_MS            ((uint32_t)(SYSCLK_INT / 2u / 1000u))
 
 // *****************************************************************************
 // Section: Register Encode/Decode Helpers
@@ -128,6 +137,51 @@ bool DS1683_ClearAlarm(uint16_t address)
     uint8_t value = DS1683_COMMAND_CLR_ALM;
 
     return I2C_WriteRegister(address, DS1683_REG_COMMAND, &value, 1);
+}
+
+// Busy-wait using CP0 Count (SYSCLK/2 ticks per second), kicking the
+// watchdog. Only for the short EEPROM write-time waits below.
+static void DS1683_DelayMs(uint32_t ms)
+{
+    uint32_t start = _CP0_GET_COUNT();
+    uint32_t ticks = ms * DS1683_TICKS_PER_MS;
+
+    while ((_CP0_GET_COUNT() - start) < ticks)
+    {
+        kickTheDog();
+    }
+}
+
+bool DS1683_ResetCounters(uint16_t address)
+{
+    static const uint8_t password[4] = { 0xFFu, 0xFFu, 0xFFu, 0xFFu };
+    static const uint8_t zeros[4]    = { 0x00u, 0x00u, 0x00u, 0x00u };
+
+    // PWE powers up all-ones, which already matches the default PWV --
+    // written anyway so the unlock doesn't depend on nothing having
+    // disturbed PWE since power-up
+    if (!I2C_WriteRegister(address, DS1683_REG_PWE, password, sizeof(password)))
+    {
+        return false;
+    }
+
+    // EEPROM write time starts at the STOP, so each counter gets its own
+    // transaction followed by the full wait before the bus is used again
+    if (!I2C_WriteRegister(address, DS1683_REG_EVENT_COUNTER, zeros, 2))
+    {
+        return false;
+    }
+
+    DS1683_DelayMs(DS1683_EEPROM_WRITE_WAIT_MS);
+
+    if (!I2C_WriteRegister(address, DS1683_REG_ETC, zeros, 4))
+    {
+        return false;
+    }
+
+    DS1683_DelayMs(DS1683_EEPROM_WRITE_WAIT_MS);
+
+    return true;
 }
 
 bool DS1683_QueueReadElapsedTime(uint16_t address, uint8_t raw[4],

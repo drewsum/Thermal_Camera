@@ -71,6 +71,21 @@ bool DS1683_ReadStatus(uint16_t address, DS1683_STATUS *status);
 // cleared). No effect on the ETC/EVENT alarm flags themselves.
 bool DS1683_ClearAlarm(uint16_t address);
 
+// Zeroes the Event Counter and the ETC. Enters the factory-default password
+// (0xFFFFFFFF) into PWE first, then writes each counter and waits out its
+// EEPROM write time before the next transaction. BLOCKS for ~2x that write
+// time.
+//
+// Only takes effect while the EVENT pin is LOW: the DS1683 halts all writes
+// while EVENT is high, and accepts them only once EVENT has been low for at
+// least t_W (10ms). On this board EVENT is tied to +3.0V, so an in-circuit
+// reset from the MCU is not possible without holding EVENT low.
+//
+// Returns false only if a write was not ACKed. The part ACKs a write it
+// ignores (EVENT high, or a non-default Password Value), so success here
+// does NOT prove the counters changed -- read them back to confirm.
+bool DS1683_ResetCounters(uint16_t address);
+
 // Queues a non-blocking read of the raw ETC register into raw[4] (LSB
 // first -- the DS1683 is little-endian, unlike MCP9804/INA231A) and returns
 // immediately; `callback` fires from I2C interrupt context on completion.

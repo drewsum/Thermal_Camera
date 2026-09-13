@@ -67,7 +67,10 @@
       +9MB+64KB 230,400 B  KSEG1  still capture, frozen RGB888 image
                                     -- uncached: Layer 0 scans it out directly
                                        while the shutter capture is held
-      +10MB     22MB              unreserved
+      +10MB     1,048,576 B KSEG0 Saved Images preview cache
+                                    (gui/screens/screen_saved_images.h)
+                                    -- cached, CPU-only; 256 x 4KB cells
+      +11MB     21MB              unreserved
 
     The overlay buffers are uncached because the GLCD Controller's DMA reads
     them (same reasoning as Layer 0, see core/ddr2.h's cache note). The LVGL

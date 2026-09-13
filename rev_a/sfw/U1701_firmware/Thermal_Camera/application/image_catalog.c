@@ -72,7 +72,8 @@ static bool ImageCatalogIsPNG(const char *name)
 // one, and the last one is pushed off the end. That is what makes the cap
 // keep the NEWEST IMAGE_CATALOG_MAX_ENTRIES rather than whichever ones FatFs
 // happened to report first.
-static void ImageCatalogInsert(const char *name, uint32_t size_bytes)
+static void ImageCatalogInsert(const char *name, uint32_t size_bytes,
+        uint32_t timestamp)
 {
     uint32_t position;
     uint32_t i;
@@ -96,6 +97,7 @@ static void ImageCatalogInsert(const char *name, uint32_t size_bytes)
     snprintf(catalogEntries[position].name, sizeof(catalogEntries[position].name),
             "%s", name);
     catalogEntries[position].size_bytes = size_bytes;
+    catalogEntries[position].timestamp = timestamp;
 }
 
 bool ImageCatalog_Scan(void)
@@ -144,7 +146,8 @@ bool ImageCatalog_Scan(void)
 
         catalogFound++;
 
-        ImageCatalogInsert(catalogInfo.fname, (uint32_t)catalogInfo.fsize);
+        ImageCatalogInsert(catalogInfo.fname, (uint32_t)catalogInfo.fsize,
+                ((uint32_t)catalogInfo.fdate << 16) | (uint32_t)catalogInfo.ftime);
     }
 
     f_closedir(&catalogDir);
