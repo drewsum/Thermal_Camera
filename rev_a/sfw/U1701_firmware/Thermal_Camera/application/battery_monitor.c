@@ -38,15 +38,16 @@ void printBatteryControlPins(void) {
     // pin block -- tracing the schematic shows it's driven by the BQ27441
     // fuel gauge's GPOUT pin, configured (BQ27441_ConfigureOpConfig(), in
     // i2c/device_driver/bq27441.c) via OpConfig[BATLOWEN]=1 to mirror the
-    // Flags().SOC1 low-charge threshold, with OpConfig[GPIOPOL]=0 so the
-    // pin reads LOW when SOC1 is asserted (battery low). This is
+    // Flags().SOC1 low-charge threshold, with OpConfig[GPIOPOL]=1 so the
+    // pin reads HIGH when SOC1 is asserted (battery low) -- the polarity the
+    // LOW BATT LED gate (U2703) expects. This is
     // independent from, and shown alongside, the fuel gauge's own SOCF
     // flag in printBatteryStatus() -- one is a hardware GPIO mirror of the
     // SOC1 threshold, the other is polled over I2C against the SOCF
     // threshold; they can disagree.
-    terminalRow(TERMINAL_SGR_OK_BAD(BATT_LOWBATT_PIN),
+    terminalRow(TERMINAL_SGR_OK_BAD(!BATT_LOWBATT_PIN),
                 "    Fuel Gauge Low-Battery Indicator (GPOUT) reports %s",
-                BATT_LOWBATT_PIN ? "battery not low" : "battery LOW");
+                BATT_LOWBATT_PIN ? "battery LOW" : "battery not low");
 }
 
 // this function prints the "Battery" Platform Status? section

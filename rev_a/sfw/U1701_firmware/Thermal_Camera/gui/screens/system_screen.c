@@ -604,11 +604,11 @@ static void SystemScreenRefreshCharger(void)
 
     // NOT a MAX8903 signal despite sitting in the same pin block: this is
     // the BQ27441 fuel gauge's GPOUT, configured to mirror the gauge's SOC1
-    // low-charge threshold with GPIOPOL=0, so it reads LOW when the battery
+    // low-charge threshold with GPIOPOL=1, so it reads HIGH when the battery
     // is low. It can legitimately disagree with the "Low" entry in the
     // battery Status row above, which is polled over I2C against the
     // different SOCF threshold -- see i2c/device_driver/bq27441.c.
-    SystemScreenSetOkBad(SYSTEM_ROW_CHG_GAUGE_GPOUT, BATT_LOWBATT_PIN,
+    SystemScreenSetOkBad(SYSTEM_ROW_CHG_GAUGE_GPOUT, !BATT_LOWBATT_PIN,
             "battery ok", "battery LOW");
 }
 

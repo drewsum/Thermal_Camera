@@ -145,7 +145,7 @@
 #define BQ27441_OPCONFIG_BYTE_OFFSET       0u      // OpConfig sits at offset 0, big-endian
 #define BQ27441_OPCONFIG_TEMPS_EXTERNAL    0x0001u // 1 = external thermistor on BIN
 #define BQ27441_OPCONFIG_BATLOWEN          0x0004u // 1 = GPOUT mirrors SOC1 instead of SOC_INT
-#define BQ27441_OPCONFIG_GPIOPOL           0x0800u // 0 = GPOUT active-low when SOC1 asserted, 1 = active-high
+#define BQ27441_OPCONFIG_GPIOPOL           0x0800u // 1 = GPOUT active-high when SOC1 asserted, 0 = active-low
 
 // Subclass 82 "State" holds the pack description Impedance Track gauges
 // against. Out of the box these describe a 1200mAh cell, so an unconfigured
@@ -599,7 +599,12 @@ static BQ27441_CONFIG_STEP BQ27441_ApplyOpConfig(uint16_t address)
     // something in the same decade as the thermistor.
     desired &= (uint16_t)~BQ27441_OPCONFIG_TEMPS_EXTERNAL;
     desired |= BQ27441_OPCONFIG_BATLOWEN;         // GPOUT mirrors SOC1 (-> BATT_LOWBATT_PIN)
-    desired &= (uint16_t)~BQ27441_OPCONFIG_GPIOPOL; // GPIOPOL=0: GPOUT active-low when SOC1 asserted
+    // GPIOPOL=1: GPOUT active-HIGH when SOC1 asserted. GPOUT is open-drain
+    // with R1407 (10k) pulling BATT_LOWBAT up to +3.0V, and the LOW BATT LED
+    // gate (U2703, 74LVC1G97 wired as NAND with an inverted SHDN input on
+    // the PGOOD LEDs sheet) lights D2703 only when BATT_LOWBAT is HIGH. The
+    // TRM default GPIOPOL=0 lit the LED at 100% charge.
+    desired |= BQ27441_OPCONFIG_GPIOPOL;
 
     if (desired == opConfig)
     {
