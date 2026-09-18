@@ -3,19 +3,19 @@ name: Firmware build
 on:
   push:
     paths:
-      - 'rev_a/sfw/U1701_firmware/Thermal_Camera.X/**'
+      - 'rev_a/sfw/U1701_firmware/Thermal_Camera/**'
       - '.github/workflows/firmware-build.yml'
+      - '.github/scripts/build-firmware.sh'
   pull_request:
     paths:
-      - 'rev_a/sfw/U1701_firmware/Thermal_Camera.X/**'
+      - 'rev_a/sfw/U1701_firmware/Thermal_Camera/**'
       - '.github/workflows/firmware-build.yml'
+      - '.github/scripts/build-firmware.sh'
   workflow_dispatch:
 
 env:
-  PROJECT_DIR: rev_a/sfw/U1701_firmware/Thermal_Camera.X
-  XC32_VERSION: 4.45
-  DFP_VERSION: 1.5.231
-  DFP_NAME: PIC32MZ-DA_DFP
+  PROJECT_DIR: rev_a/sfw/U1701_firmware/Thermal_Camera
+  PROJECT_JSON: .vscode/Thermal_Camera.mplab.json
 
 jobs:
   build:
@@ -23,15 +23,38 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The toolchain and pack versions are properties of the MPLAB project, not
+      # of this workflow -- read them back so a version bump in the IDE can't
+      # leave CI silently building against something else.
+      - name: Read toolchain, pack and device from the MPLAB project
+        id: proj
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          json="$PROJECT_JSON"
+          conf='.configurations[] | select(.name=="default")'
+          xc32=$(jq -er ".propertyGroups[] | select(.name==\"default-XC32\") | .provider" "$json" | sed 's/.*xc32@//')
+          dfp_name=$(jq -er "$conf | .packs[0].name" "$json")
+          dfp_version=$(jq -er "$conf | .packs[0].version" "$json")
+          device=$(jq -er "$conf | .device" "$json")
+          echo "xc32=$xc32"               >> "$GITHUB_OUTPUT"
+          echo "dfp_name=$dfp_name"       >> "$GITHUB_OUTPUT"
+          echo "dfp_version=$dfp_version" >> "$GITHUB_OUTPUT"
+          echo "### Build configuration"      >> "$GITHUB_STEP_SUMMARY"
+          echo "- device: \`$device\`"        >> "$GITHUB_STEP_SUMMARY"
+          echo "- XC32: \`v$xc32\`"           >> "$GITHUB_STEP_SUMMARY"
+          echo "- DFP: \`$dfp_name $dfp_version\`" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Cache XC32 compiler
         id: cache-xc32
         uses: actions/cache@v6
         with:
           path: /opt/microchip/xc32
-          key: xc32-${{ env.XC32_VERSION }}
+          key: xc32-${{ steps.proj.outputs.xc32 }}
 
       - name: Install XC32 compiler
         if: steps.cache-xc32.outputs.cache-hit != 'true'
+        env:
+          XC32_VERSION: ${{ steps.proj.outputs.xc32 }}
         run: |
           curl -fSL -A "Mozilla/4.0" -o /tmp/xc32.run \
             "https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/xc32-v${XC32_VERSION}-full-install-linux-x64-installer.run"
@@ -43,65 +66,42 @@ jobs:
         id: cache-dfp
         uses: actions/cache@v6
         with:
-          path: /opt/microchip/packs/${{ env.DFP_NAME }}/${{ env.DFP_VERSION }}
-          key: dfp-${{ env.DFP_NAME }}-${{ env.DFP_VERSION }}
+          path: /opt/microchip/packs/${{ steps.proj.outputs.dfp_name }}/${{ steps.proj.outputs.dfp_version }}
+          key: dfp-${{ steps.proj.outputs.dfp_name }}-${{ steps.proj.outputs.dfp_version }}
 
       - name: Install device family pack (DFP)
         if: steps.cache-dfp.outputs.cache-hit != 'true'
+        env:
+          DFP_NAME: ${{ steps.proj.outputs.dfp_name }}
+          DFP_VERSION: ${{ steps.proj.outputs.dfp_version }}
         run: |
-          sudo mkdir -p /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          sudo mkdir -p "/opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}"
           curl -fSL -o /tmp/dfp.atpack \
             "https://packs.download.microchip.com/Microchip.${DFP_NAME}.${DFP_VERSION}.atpack"
-          sudo unzip -q /tmp/dfp.atpack -d /opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}
+          sudo unzip -q /tmp/dfp.atpack -d "/opt/microchip/packs/${DFP_NAME}/${DFP_VERSION}"
           rm /tmp/dfp.atpack
 
+      # The MPLAB VS Code CMake/Ninja build can't be replayed here: the
+      # extension regenerates cmake/Thermal_Camera/<conf>/.generated/ per
+      # machine, hard-coding "c:\Program Files\Microchip\..." paths, so those
+      # fragments are gitignored and absent from a checkout. The build script
+      # reconstructs the same build from the files that *are* tracked --
+      # .vscode/Thermal_Camera.mplab.json and cmake/.../user.cmake.
       - name: Build
         working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          set +e
-          make \
-            IGNORE_LOCAL=TRUE \
-            MKDIR="mkdir -p" \
-            MP_CC=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-gcc \
-            MP_CPPC=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-g++ \
-            MP_AS=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-as \
-            MP_LD=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-ld \
-            MP_AR=/opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-ar \
-            DFP_DIR=/opt/microchip/packs/${DFP_NAME}/${DFP_VERSION} \
-            CONF=default
-          make_status=$?
-          set -e
-
-          # nbproject/Makefile-default.mk's last recipe line invokes
-          # bin2hex as "${MP_CC_DIR}\\xc32-bin2hex ..." -- MP_CC_DIR is
-          # never set on this runner, so after the shell's own backslash
-          # escaping (\\ -> \) that reduces to a command literally named
-          # "\xc32-bin2hex" (a leading backslash baked into the filename),
-          # which can never resolve via PATH since the real binary has no
-          # backslash in its name. If that's the only reason make failed
-          # (the .elf was still produced by the link command that runs
-          # right before it in the same recipe), finish the job ourselves;
-          # any other failure is a genuine build error and must propagate.
-          elf_path=dist/default/production/Thermal_Camera.X.production.elf
-
-          if [ $make_status -ne 0 ]; then
-            if [ ! -f "$elf_path" ]; then
-              echo "make failed before producing $elf_path -- treating as a real build error"
-              exit $make_status
-            fi
-
-            echo "make failed only on the broken bin2hex invocation -- running xc32-bin2hex manually"
-            /opt/microchip/xc32/v${XC32_VERSION}/bin/xc32-bin2hex "$elf_path"
-          fi
+        env:
+          XC32_BIN: /opt/microchip/xc32/v${{ steps.proj.outputs.xc32 }}/bin
+          DFP_DIR: /opt/microchip/packs/${{ steps.proj.outputs.dfp_name }}/${{ steps.proj.outputs.dfp_version }}
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/build-firmware.sh"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: firmware-image
           path: |
-            ${{ env.PROJECT_DIR }}/dist/default/production/*.hex
-            ${{ env.PROJECT_DIR }}/dist/default/production/*.elf
-            ${{ env.PROJECT_DIR }}/dist/default/production/*.map
+            ${{ env.PROJECT_DIR }}/out/Thermal_Camera/*.hex
+            ${{ env.PROJECT_DIR }}/out/Thermal_Camera/*.elf
+            ${{ env.PROJECT_DIR }}/out/Thermal_Camera/*.map
           if-no-files-found: error
 
   static-analysis:
@@ -112,6 +112,9 @@ jobs:
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
 
+      # Advisory only -- no --error-exitcode, so findings are reported in the
+      # log without blocking a merge. gui/lvgl and sdhc/fatfs are vendored
+      # upstream code and are not this project's to clean up.
       - name: Run cppcheck
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
@@ -121,4 +124,8 @@ jobs:
             --inline-suppr \
             --force \
             --std=c99 \
-            $(find . -maxdepth 1 -name '*.c')
+            -i gui/lvgl \
+            -i sdhc/fatfs \
+            -i _build \
+            -i out \
+            .
