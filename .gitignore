@@ -24,6 +24,5 @@ fp-info-cache
 *.dsn
 *.ses
 
-# Exported BOM files
-*.xml
-*.csv
+rev_a/hdw/Thermal_Camera/~Thermal_Camera.kicad_pcb.lck
+rev_a/hdw/Thermal_Camera/~Thermal_Camera.kicad_pro.lck

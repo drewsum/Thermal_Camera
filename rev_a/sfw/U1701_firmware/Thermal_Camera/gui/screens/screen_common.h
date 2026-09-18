@@ -1,0 +1,153 @@
+/*******************************************************************************
+  Shared Screen Furniture
+
+  File Name:
+    screen_common.h
+
+  Summary:
+    The look every GUI screen shares: a transparent screen background, the
+    translucent bars, and the header with the clock in it.
+
+  Description:
+    Lives here rather than being copied into each screen so the screens
+    can't drift apart visually, and so the one piece of live data every
+    screen shows -- the RTCC clock in the top-right corner -- is read and
+    formatted in exactly one place.
+
+    Everything is deliberately built from the three widgets gui/lv_conf.h
+    enables (base object, label, bar). If a screen needs another widget,
+    turn it on there first and expect to pay for it in program flash.
+*******************************************************************************/
+
+#ifndef SCREEN_COMMON_H
+#define SCREEN_COMMON_H
+
+#include <stdbool.h>
+
+#include "gui/lvgl/lvgl.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Height of the top/bottom bars, and the inset of their contents. Shared so
+// a screen's body can size itself against them (the usable middle is
+// 240 - 2*SCREEN_BAR_HEIGHT_PX tall).
+#define SCREEN_BAR_HEIGHT_PX     36
+#define SCREEN_BAR_PADDING_PX    8
+
+// How opaque the bars and panels are over the GLCD Layer 0 image. Enough to
+// keep white text readable over an arbitrary photo, transparent enough that
+// the hardware blend is visibly doing something.
+#define SCREEN_BAR_OPACITY       LV_OPA_60
+
+// A screen's header: the top bar, its title, and the two clock labels the
+// refresh below rewrites. Screens keep one of these and otherwise don't
+// touch its members.
+typedef struct
+{
+    lv_obj_t *bar;
+    lv_obj_t *title_label;
+    lv_obj_t *date_label;
+    lv_obj_t *time_label;
+} SCREEN_HEADER;
+
+// Creates a screen object (not attached to any display until loaded) with a
+// fully transparent background and no padding, so GLCD Layer 0 shows
+// through and full-width children really do span the panel. Returns NULL on
+// failure.
+lv_obj_t *Screen_Create(void);
+
+// Creates one of the translucent full-width bars on `parent`, aligned to
+// LV_ALIGN_TOP_MID or LV_ALIGN_BOTTOM_MID. Returns NULL on failure.
+lv_obj_t *Screen_CreateBar(lv_obj_t *parent, lv_align_t align);
+
+// Creates a white label on `parent` in `font`, aligned as given, showing
+// `text`. Returns NULL on failure.
+lv_obj_t *Screen_CreateLabel(lv_obj_t *parent, const lv_font_t *font,
+        lv_align_t align, int32_t x_offset, int32_t y_offset, const char *text);
+
+// Builds the top bar for `screen`: `title` on the left, date over time on
+// the right. Fills in `header`. Returns false on failure.
+bool Screen_CreateHeader(lv_obj_t *screen, const char *title, SCREEN_HEADER *header);
+
+// Rewrites the header's date/time from rtcc_shadow (core/rtcc.h), which the
+// RTCC interrupt maintains -- a plain struct read, no device access. Safe to
+// call on a header whose creation failed.
+void Screen_RefreshHeader(SCREEN_HEADER *header);
+
+// Minimum touch target. Fingertips are ~9mm and this panel is ~0.22mm/px, so
+// anything much under this is a target the user has to aim at. Applied as a
+// floor on button height, not a fixed size.
+#define SCREEN_TOUCH_TARGET_MIN_PX   28
+
+// Width of the header back button, and the gap between it and the title that
+// Screen_AddBackButton() shifts the title by.
+#define SCREEN_BACK_BUTTON_WIDTH_PX  32
+#define SCREEN_BACK_BUTTON_GAP_PX    8
+
+// Creates a tappable chip on `parent`: a rounded outline with a centered
+// white label, wired to call `cb` with `user_data` on LV_EVENT_CLICKED.
+// Pass w/h of 0 to size to the text plus padding.
+//
+// Unfilled at rest -- only the border and label are drawn, so the Layer 0
+// image shows through -- and filled solid while held, which is the whole of
+// the press feedback.
+//
+// Built from a base object rather than lv_button because gui/lv_conf.h
+// leaves LV_USE_BUTTON off to save flash -- base objects are clickable in
+// LVGL v9 anyway, and this only wants the visual states, which styles give.
+// Returns NULL on failure.
+lv_obj_t *Screen_CreateButton(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, lv_event_cb_t cb, void *user_data);
+
+// Rewrites the text of a button made by Screen_CreateButton(), for the case
+// where a control's meaning changes with state (the save-image screen's
+// "Cancel" becoming "Done" once the write has finished). No-op on NULL or on
+// an object that isn't one of those buttons.
+void Screen_SetButtonText(lv_obj_t *button, const char *text);
+
+// Size of the box a checkbox draws its tick in, and the gap between that box
+// and the label beside it.
+#define SCREEN_CHECKBOX_BOX_PX       18
+#define SCREEN_CHECKBOX_GAP_PX       8
+
+// Creates a checkbox on `parent`: a translucent chip holding a square box
+// and a label, the whole of it one tap target. `cb` is called on
+// LV_EVENT_CLICKED with `user_data`, AFTER the check state has been
+// toggled -- so a handler can just read Screen_IsCheckboxChecked() rather
+// than tracking the state itself.
+//
+// Built from a base object and labels for the same reason as
+// Screen_CreateButton(): gui/lv_conf.h leaves LV_USE_CHECKBOX off, and the
+// only things lv_checkbox would add here are a theme style and a bullet it
+// draws itself. The tick is LV_SYMBOL_OK out of the same font as the text.
+//
+// Chip-backed rather than outline-only (the button's treatment) because this
+// one sits over the middle of a thermal image rather than inside a bar, and
+// an unfilled tick box over a hot scene is not readable.
+//
+// Returns NULL on failure.
+lv_obj_t *Screen_CreateCheckbox(lv_obj_t *parent, lv_align_t align,
+        int32_t x_offset, int32_t y_offset, int32_t w, int32_t h,
+        const char *text, bool checked, lv_event_cb_t cb, void *user_data);
+
+// Reads and writes the check state of a Screen_CreateCheckbox() object.
+// Setting it does NOT run the object's event callback -- it is for pushing a
+// state the caller already owns back into the widget. Get returns false on
+// NULL or on an object that isn't one of those checkboxes.
+bool Screen_IsCheckboxChecked(lv_obj_t *checkbox);
+void Screen_SetCheckboxChecked(lv_obj_t *checkbox, bool checked);
+
+// Adds a back button ("<") to the left of `header`'s bar and shifts the
+// title right to make room, so a screen reached from the menu can return to
+// it. `cb` is called on LV_EVENT_CLICKED with `user_data`. Call after
+// Screen_CreateHeader(). Returns false on failure.
+bool Screen_AddBackButton(SCREEN_HEADER *header, lv_event_cb_t cb, void *user_data);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SCREEN_COMMON_H */
